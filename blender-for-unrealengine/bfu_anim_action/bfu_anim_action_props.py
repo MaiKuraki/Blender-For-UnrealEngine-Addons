@@ -143,6 +143,28 @@ class BFU_OT_UpdateObjActionListButton(bpy.types.Operator):
         UpdateExportActionList(bpy.context.object)
         return {'FINISHED'}
 
+class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
+    bl_label = "Select All"
+    bl_idname = "object.selectallobjactionlist"
+    bl_description = "Select all action list"
+
+    def execute(self, context):
+        if bpy.context.object.bfu_action_asset_list:
+            for item in bpy.context.object.bfu_action_asset_list:
+                item.use = True
+        return {'FINISHED'}
+
+class BFU_OT_DeselectAllObjActionListButton(bpy.types.Operator):
+    bl_label = "Deselect"
+    bl_idname = "object.deselectallobjactionlist"
+    bl_description = "Deselect all action list"
+
+    def execute(self, context):
+        if bpy.context.object.bfu_action_asset_list:
+            for item in bpy.context.object.bfu_action_asset_list:
+                item.use = False
+        return {'FINISHED'}
+
 class BFU_OT_ObjExportAction(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Action data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'})
     use: bpy.props.BoolProperty(name="use this action", default=False, override={'LIBRARY_OVERRIDABLE'})
@@ -164,6 +186,8 @@ def get_object_prefix_name_to_export(obj: bpy.types.Object) -> str:
 classes = (
     BFU_UL_ActionExportTarget,
     BFU_OT_UpdateObjActionListButton,
+    BFU_OT_SelectAllObjActionListButton,
+    BFU_OT_DeselectAllObjActionListButton,
     BFU_OT_ObjExportAction,
 )
 

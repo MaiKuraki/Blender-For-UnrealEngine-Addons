@@ -64,9 +64,13 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                         maxrows=5,
                         rows=5
                     )
-                    ActionListProperty.operator(
+                    UpdateObjActionList = ActionListProperty.row()
+                    UpdateObjActionList.operator(
                         "object.updateobjactionlist",
                         icon='RECOVER_LAST')
+                    SelectDeselectObjActionList = ActionListProperty.row()
+                    SelectDeselectObjActionList.operator("object.selectallobjactionlist")
+                    SelectDeselectObjActionList.operator("object.deselectallobjactionlist")
                 if obj.bfu_anim_action_export_enum == "export_specific_prefix":
                     ActionListProperty.prop(obj, 'bfu_prefix_name_to_export')
 
