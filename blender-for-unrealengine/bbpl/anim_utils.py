@@ -513,7 +513,9 @@ class AnimationManagment():
 
             # Action was was added in Blender 4.4
             if bpy.app.version >= (4, 4, 0):
-                obj.animation_data.action_slot = self.action_slot
+                # Cannot set slot without an assigned Action.
+                if obj.animation_data.action: 
+                    obj.animation_data.action_slot = self.action_slot
 
             obj.animation_data.action_extrapolation = self.action_extrapolation
             obj.animation_data.action_blend_type = self.action_blend_type
