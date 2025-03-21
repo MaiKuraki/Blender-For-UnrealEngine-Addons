@@ -26,11 +26,17 @@ except ImportError:
     import unreal_engine as unreal
 
 def load_asset(name):
-    find_asset = unreal.find_asset(name, follow_redirectors=True)
-    if find_asset is None:
-        # Load asset if not find.
-        find_asset = unreal.load_asset(name, follow_redirectors=True)
-    return find_asset
+    # Convert ObjectPath to PackageName
+    package_name = name.split('.')[0]
+    asset_exist = unreal.EditorAssetLibrary.does_asset_exist(package_name)
+    if asset_exist:
+        find_asset = unreal.find_asset(name, follow_redirectors=True)
+        if find_asset is None:
+            # Load asset if not find.
+            # Sometimes assets exist but not found because unloaded.
+            find_asset = unreal.load_asset(name, follow_redirectors=True)
+        return find_asset
+    return None
      
 
 def get_selected_level_actors() -> List[unreal.Actor]:
