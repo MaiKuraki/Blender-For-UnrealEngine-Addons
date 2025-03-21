@@ -55,7 +55,5 @@ def write_single_asset_additional_data(unreal_exported_asset: bfu_export_logs.bf
     asset_additional_data.update(bfu_light_map.bfu_light_map_utils.get_light_map_asset_data(unreal_exported_asset))
     asset_additional_data.update(bfu_nanite.bfu_nanite_utils.get_nanite_asset_additional_data(unreal_exported_asset))
 
-    asset_additional_data["preview_import_path"] = unreal_exported_asset.GetFilenameWithExtension()
-
     bfu_export_text_files_utils.add_generated_json_footer(asset_additional_data)
     return asset_additional_data

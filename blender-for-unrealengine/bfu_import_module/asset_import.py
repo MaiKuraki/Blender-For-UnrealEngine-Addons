@@ -297,14 +297,12 @@ def ImportTask(asset_data):
     import_module_utils.print_debug_step("Process pre import")
     # Check is the file alredy exit
     if asset_additional_data:
-        if "preview_import_path" in asset_additional_data:
-            task_asset_full_path = itask.get_task().destination_path+"/"+asset_additional_data["preview_import_path"]+"."+asset_additional_data["preview_import_path"]
-            find_target_asset = import_module_unreal_utils.load_asset(task_asset_full_path)
-            if find_target_asset:
+        task_asset_full_path = itask.get_preview_import_refs()
+        find_target_asset = import_module_unreal_utils.load_asset(task_asset_full_path)
+        if find_target_asset:
+            # Vertex color
+            bfu_import_vertex_color.bfu_import_vertex_color_utils.apply_one_asset_settings(itask, find_target_asset, asset_additional_data)
 
-                # Vertex color
-                bfu_import_vertex_color.bfu_import_vertex_color_utils.apply_one_asset_settings(itask, find_target_asset, asset_additional_data)
-                    
     # ###############[ import asset ]################
     import_module_utils.print_debug_step("Process import asset")
     if asset_type == "Animation":
