@@ -309,7 +309,7 @@ def ImportTask(asset_data):
         # For animation the script will import a skeletal mesh and remove after.
         # If the skeletal mesh already exists, try to remove it.
 
-        asset_name = import_module_unreal_utils.valid_unreal_asset_name(asset_data["asset_name"])
+        asset_name = import_module_unreal_utils.clean_filename_for_unreal(asset_data["asset_name"])
         asset_path = f"SkeletalMesh'{asset_data['full_import_path']}/{asset_name}.{asset_name}'"
 
         if unreal.EditorAssetLibrary.does_asset_exist(asset_path):

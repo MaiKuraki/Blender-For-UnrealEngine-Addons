@@ -59,8 +59,11 @@ def is_unreal_version_greater_or_equal(target_major: int, target_minor: int = 0,
     )
 
 
-def valid_unreal_asset_name(filename):
-    """Returns a valid Unreal asset name by replacing invalid characters."""
+def clean_filename_for_unreal(filename):
+    """
+    Returns a valid Unreal asset name by replacing invalid characters.
+    Normalizes string, removes non-alpha characters
+    """
 
     filename = filename.replace('.', '_')
     filename = filename.replace('(', '_')

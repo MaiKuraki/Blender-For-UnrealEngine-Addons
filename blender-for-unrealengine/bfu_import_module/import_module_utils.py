@@ -41,15 +41,3 @@ def JsonLoadFile(json_file_path):
 def print_debug_step(*args):
     if config.print_debug_steps:
         print(*args)
-
-def clean_filename_for_unreal(filename):
-    # Normalizes string, removes non-alpha characters
-    # Asset name in Unreal use
-
-    filename = filename.replace('.', '_')
-    filename = filename.replace('(', '_')
-    filename = filename.replace(')', '_')
-    filename = filename.replace(' ', '_')
-    valid_chars = "-_%s%s" % (string.ascii_letters, string.digits)
-    filename = ''.join(c for c in filename if c in valid_chars)
-    return filename

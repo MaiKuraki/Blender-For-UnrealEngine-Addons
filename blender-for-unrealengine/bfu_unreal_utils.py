@@ -23,7 +23,7 @@ from . import bfu_utils
 def get_predicted_skeleton_name(obj):
     # Get the predicted skeleton name in Unreal Engine
     scene = bpy.context.scene
-    return scene.bfu_skeleton_prefix_export_name + bfu_utils.ValidUnrealAssetsName(obj.name) + "_Skeleton"
+    return scene.bfu_skeleton_prefix_export_name + bfu_utils.clean_filename_for_unreal(obj.name) + "_Skeleton"
 
 def get_predicted_skeleton_path(obj):
     scene = bpy.context.scene
@@ -41,7 +41,7 @@ def get_predicted_skeleton_ref(obj):
 def get_predicted_skeletal_mesh_name(obj):
     # Get the predicted SkeletalMesh name in Unreal Engine
     scene = bpy.context.scene
-    return scene.bfu_skeletal_mesh_prefix_export_name + bfu_utils.ValidUnrealAssetsName(obj.name)
+    return scene.bfu_skeletal_mesh_prefix_export_name + bfu_utils.clean_filename_for_unreal(obj.name)
 
 def get_predicted_skeletal_mesh_path(obj):
     scene = bpy.context.scene

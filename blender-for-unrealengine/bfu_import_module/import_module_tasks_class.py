@@ -53,7 +53,7 @@ class ImportTaks():
 
     def get_preview_import_refs(self):
         filename_without_ext = os.path.splitext(os.path.basename(self.task.filename))[0]
-        assetname = import_module_utils.clean_filename_for_unreal(filename_without_ext)
+        assetname = import_module_unreal_utils.clean_filename_for_unreal(filename_without_ext)
         return self.task.destination_path+"/"+assetname+"."+assetname
                     
     def set_task_option(self, new_task_option):

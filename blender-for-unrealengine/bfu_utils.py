@@ -1062,7 +1062,7 @@ def ValidFilenameForUnreal(filename):
     return (''.join(c for c in newfilename if c != ".")+extension)
 
 
-def ValidUnrealAssetsName(filename):
+def clean_filename_for_unreal(filename):
     # Normalizes string, removes non-alpha characters
     # Asset name in Unreal use
 
