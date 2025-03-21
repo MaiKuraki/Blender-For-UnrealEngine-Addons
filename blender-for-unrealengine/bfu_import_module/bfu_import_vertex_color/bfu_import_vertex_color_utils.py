@@ -19,6 +19,7 @@
 from typing import Optional
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
+from .. import import_module_utils
 
 try:
     import unreal
@@ -29,7 +30,7 @@ support_interchange = import_module_unreal_utils.get_support_interchange()
 
 def get_vertex_override_color(asset_additional_data: dict) -> Optional[unreal.LinearColor]:
     """Retrieves the vertex override color from the asset data, if available."""
-    print("Set Vertex Color import settings.")
+    import_module_utils.print_debug_step("Set Vertex Color import settings.")
 
     if asset_additional_data is None:
         return None
@@ -83,7 +84,7 @@ def get_vertex_color_import_option(asset_additional_data: dict) -> Optional[unre
 
 def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
     """Applies vertex color settings during the import process."""
-    print("Set Vertex Color post import settings.")
+    import_module_utils.print_debug_step("Set Vertex Color post import settings.")
 
     asset_type = asset_data.get("asset_type")
     if asset_type not in ["StaticMesh", "SkeletalMesh"]:

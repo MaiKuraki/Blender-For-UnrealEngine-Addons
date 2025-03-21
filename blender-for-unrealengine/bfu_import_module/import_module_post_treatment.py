@@ -18,6 +18,7 @@
 
 import os
 from . import import_module_unreal_utils
+from . import import_module_utils
 
 try:
     import unreal
@@ -27,7 +28,7 @@ except ImportError:
 
 def import_static_lod(asset, asset_options, asset_data, asset_additional_data, lod_name, lod_number):
 
-    print(f"Start Import Lod_{str(lod_number)} ({lod_name})")
+    import_module_utils.print_debug_step(f"Start Import Lod_{str(lod_number)} ({lod_name})")
 
     if "LevelOfDetail" in asset_additional_data:
         if lod_name in asset_additional_data["LevelOfDetail"]:
@@ -58,6 +59,7 @@ def import_skeletal_lod(asset, asset_options, asset_data, asset_additional_data,
             pass
 
 def set_static_mesh_lods(asset, asset_options, asset_data, asset_additional_data):
+    import_module_utils.print_debug_step("Process Static Lods")
     # Import the StaticMesh lod(s)
     unreal.EditorStaticMeshLibrary.remove_lods(asset)  
     import_static_lod(asset, asset_options, asset_data, asset_additional_data, "lod_1", 1)
@@ -68,6 +70,7 @@ def set_static_mesh_lods(asset, asset_options, asset_data, asset_additional_data
 
 
 def set_skeletal_mesh_lods(asset, asset_options, asset_data, asset_additional_data):
+    import_module_utils.print_debug_step("Process Skeletal Lods")
     # Import the SkeletalMesh lod(s)
     import_skeletal_lod(asset, asset_options, asset_data, asset_additional_data, "lod_1", 1)
     import_skeletal_lod(asset, asset_options, asset_data, asset_additional_data, "lod_2", 2)

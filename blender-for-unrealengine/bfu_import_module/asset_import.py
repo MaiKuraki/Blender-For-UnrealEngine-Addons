@@ -125,10 +125,10 @@ def ImportTask(asset_data):
 
     TaskOption = import_module_tasks_helper.init_options_data(asset_type, itask.use_interchange)
     itask.set_task_option(TaskOption)
-    print("S1")
     # Alembic
     
     if asset_type == "Alembic":
+        import_module_utils.print_debug_step("Process Alembic")
         alembic_import_data = itask.get_abc_import_settings()
         alembic_import_data.static_mesh_settings.set_editor_property("merge_meshes", True)
         alembic_import_data.set_editor_property("import_type", unreal.AlembicImportType.SKELETAL)
@@ -145,8 +145,8 @@ def ImportTask(asset_data):
     # unreal.FbxImportUI
     # https://docs.unrealengine.com/4.26/en-US/PythonAPI/class/FbxImportUI.html
 
-    print("S1.5")
-    # Import transform
+    import_module_utils.print_debug_step("Process transform and curve")
+    # Import transform and curve
     if itask.use_interchange:
         animation_pipeline = itask.get_igap_animation()
         if "do_not_import_curve_with_zero" in asset_data:
@@ -158,15 +158,10 @@ def ImportTask(asset_data):
         if "do_not_import_curve_with_zero" in asset_data:
             anim_sequence_import_data.set_editor_property('do_not_import_curve_with_zero', asset_data["do_not_import_curve_with_zero"]) 
 
-    print("S2")
-
     if asset_type == "Alembic":
-        print("S2.1")
         itask.get_abc_import_settings().set_editor_property('import_type', unreal.AlembicImportType.SKELETAL)
         
     else:
-
-        print("S2.2")
         if asset_type == "Animation" :
             if itask.use_interchange:
                 if origin_skeleton:
@@ -177,7 +172,6 @@ def ImportTask(asset_data):
                 if origin_skeleton:
                     itask.get_fbx_import_ui().set_editor_property('Skeleton', origin_skeleton)
 
-        print("S2.3")
         if asset_type == "SkeletalMesh":
             if itask.use_interchange:
                 if origin_skeleton:
@@ -191,8 +185,7 @@ def ImportTask(asset_data):
                 else:
                     print("Skeleton is not set, a new skeleton asset will be created...")                  
    
-
-        print("S3")
+        import_module_utils.print_debug_step("Set Asset Type")
         # Set Asset Type
         if itask.use_interchange:
             if asset_type == "StaticMesh":
@@ -211,7 +204,8 @@ def ImportTask(asset_data):
                 itask.get_fbx_import_ui().set_editor_property('original_import_type', unreal.FBXImportType.FBXIT_ANIMATION)
             else:
                 itask.get_fbx_import_ui().set_editor_property('original_import_type', unreal.FBXImportType.FBXIT_SKELETAL_MESH)
-        print("S4")
+        
+        import_module_utils.print_debug_step("Set Material Use")
         # Set Material Use
         if itask.use_interchange:
             if asset_type == "Animation":
@@ -223,14 +217,14 @@ def ImportTask(asset_data):
                 itask.get_fbx_import_ui().set_editor_property('import_materials', False)
             else:
                 itask.get_fbx_import_ui().set_editor_property('import_materials', True)
-        print("S5")
+        
+        import_module_utils.print_debug_step("Set Texture Type")
         # Set Texture Use
         if itask.use_interchange:
             itask.get_igap_texture().set_editor_property('import_textures', False)
         else:
             itask.get_fbx_import_ui().set_editor_property('import_textures', False)
 
-        print("S6")
         if itask.use_interchange:
             if asset_type == "Animation":
                 itask.get_igap_animation().set_editor_property('import_animations', True)
@@ -255,7 +249,7 @@ def ImportTask(asset_data):
                 if "create_physics_asset" in asset_data:
                     itask.get_fbx_import_ui().set_editor_property('create_physics_asset', asset_data["create_physics_asset"])
 
-        print("S7")
+        import_module_utils.print_debug_step("Process per-modules changes")
         # Vertex color
         bfu_import_vertex_color.bfu_import_vertex_color_utils.apply_import_settings(itask, asset_data, asset_additional_data)
 
@@ -268,7 +262,6 @@ def ImportTask(asset_data):
         # Nanite
         bfu_import_nanite.bfu_import_nanite_utils.apply_import_settings(itask, asset_data, asset_additional_data)
 
-        print("S8")
         if itask.use_interchange:
             itask.get_igap_mesh().set_editor_property('combine_static_meshes', True)
             itask.get_igap_mesh().set_editor_property('combine_skeletal_meshes', True)
@@ -301,7 +294,7 @@ def ImportTask(asset_data):
                 itask.get_skeletal_mesh_import_data().set_editor_property('normal_import_method', unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS_AND_TANGENTS)
 
     # ###############[ pre import ]################
-    print("S9")
+    import_module_utils.print_debug_step("Process pre import")
     # Check is the file alredy exit
     if asset_additional_data:
         if "preview_import_path" in asset_additional_data:
@@ -313,7 +306,7 @@ def ImportTask(asset_data):
                 bfu_import_vertex_color.bfu_import_vertex_color_utils.apply_one_asset_settings(itask, find_target_asset, asset_additional_data)
                     
     # ###############[ import asset ]################
-    print("S10")
+    import_module_utils.print_debug_step("Process import asset")
     if asset_type == "Animation":
         # For animation the script will import a skeletal mesh and remove after.
         # If the skeletal mesh already exists, try to remove it.
@@ -326,10 +319,8 @@ def ImportTask(asset_data):
             if old_asset.asset_class == "SkeletalMesh":
                 unreal.EditorAssetLibrary.delete_asset(asset_path)
 
-    print("S10.5")
-    print("--->", itask.get_task().automated)
     itask.import_asset_task()
-    print("S11")
+    import_module_utils.print_debug_step("Import asset done!")
     
     if len(itask.get_imported_assets()) == 0:
         fail_reason = 'Error zero imported object for: ' + asset_data["asset_name"]
@@ -338,11 +329,10 @@ def ImportTask(asset_data):
 
     # ###############[ Post treatment ]################
 
-    print("S11.5")
+    import_module_utils.print_debug_step("Process Post treatment")
     if asset_data["asset_type"] == "Animation":
         bfu_import_animations.bfu_import_animations_utils.apply_post_import_assets_changes(itask, asset_data)
 
-    print("S12")
     if asset_type == "StaticMesh":
         if "static_mesh_lod_group" in asset_data:
             if asset_data["static_mesh_lod_group"]:
@@ -360,7 +350,6 @@ def ImportTask(asset_data):
                 elif asset_data["collision_trace_flag"] == "CTF_UseComplexAsSimple":
                     collision_data.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
 
-    print("S13")
     if asset_type == "SkeletalMesh":
         print("S13.1")
         if origin_skeleton is None:
@@ -374,8 +363,6 @@ def ImportTask(asset_data):
             else:
                 print("Error: export skeleton not found after import!")
                 
-
-    print("S13.5")
     if itask.use_interchange:
         if asset_type == "StaticMesh":
             itask.get_igap_common_mesh().set_editor_property('recompute_normals', False)
@@ -400,7 +387,6 @@ def ImportTask(asset_data):
             if "enable_skeletal_mesh_per_poly_collision" in asset_data:
                 itask.get_imported_skeletal_mesh().set_editor_property('enable_per_poly_collision', asset_data["enable_skeletal_mesh_per_poly_collision"])
             
-    print("S14")
     # Socket
     if asset_type == "SkeletalMesh":
         # Import the SkeletalMesh socket(s)
@@ -426,21 +412,18 @@ def ImportTask(asset_data):
                 # NEED UNREAL ENGINE IMPLEMENTATION IN PYTHON API.
                 # skeleton.add_socket(new_socket)
 
-    print("S15")
     # Lod
     if asset_type == "StaticMesh":
         import_module_post_treatment.set_static_mesh_lods(itask.get_imported_static_mesh(), itask.get_task_options(), asset_data, asset_additional_data)
 
-    print("S15.1")
     if asset_type == "SkeletalMesh":
         import_module_post_treatment.set_skeletal_mesh_lods(itask.get_imported_skeletal_mesh(), itask.get_task_options(), asset_data, asset_additional_data)
 
-    print("S15.2")
     # Preview mesh
     if asset_type == "Animation":
         import_module_post_treatment.set_sequence_preview_skeletal_mesh(itask.get_imported_anim_sequence(), origin_skeletal_mesh)
 
-    print("S15.3")
+    import_module_utils.print_debug_step("Process per-modules apply asset settings")
     # Vertex color
     bfu_import_vertex_color.bfu_import_vertex_color_utils.apply_asset_settings(itask, asset_additional_data)
 
@@ -453,7 +436,6 @@ def ImportTask(asset_data):
     # Nanite
     bfu_import_nanite.bfu_import_nanite_utils.apply_asset_settings(itask, asset_additional_data)
 
-    print("S15.4")
     if asset_type == "Alembic":
         pass
         # @TODO Need to found how create an physical asset, generate bodies, and assign it.
@@ -471,7 +453,7 @@ def ImportTask(asset_data):
         )
         """
 
-    print("S16")
+
     # #################################[EndChange]
     return "SUCCESS", itask.get_imported_assets()
 
@@ -489,9 +471,8 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
     def PrepareImportTask(asset_data):
         counter = str(len(ImportedList)+1) + "/" + str(len(assets_data["assets"]))
         print("Import asset " + counter + ": ", asset_data["asset_name"])
-        print("S0")
         result, assets = ImportTask(asset_data)
-        print("S17")
+
         if result == "SUCCESS":
             ImportedList.append([assets, asset_data["asset_type"]])
         else:

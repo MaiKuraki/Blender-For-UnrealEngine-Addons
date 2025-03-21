@@ -19,6 +19,7 @@
 from typing import Optional
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
+from .. import import_module_utils
 
 try:
     import unreal
@@ -29,7 +30,7 @@ support_interchange = import_module_unreal_utils.get_support_interchange()
 
 
 def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
-    print("Set Nanite import settings.")
+    import_module_utils.print_debug_step("Set Nanite import settings.")
 
     asset_type = asset_data.get("asset_type")
     if asset_type not in ["StaticMesh", "SkeletalMesh"]:
@@ -62,7 +63,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
 
 
 def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
-    print("Set Nanite post import settings.")
+    import_module_utils.print_debug_step("Set Nanite post import settings.")
 
     # Check   
     static_mesh = itask.get_imported_static_mesh()
