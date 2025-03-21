@@ -251,8 +251,20 @@ def GetExportDesiredChilds(obj):
 
 
 def RemoveAllConsraints(obj):
+
     for b in obj.pose.bones:
         for c in b.constraints:
+
+            # In Blender 4.4 for some constraint when I remove a constraint from python code it crash.
+            # Disable it and clear drivers before remove fix the crash. I don't know why...
+            fcurve_path = f'pose.bones["{b.name}"].constraints["{c.name}"].influence'
+            if obj.animation_data and obj.animation_data.drivers:
+                for fcurve in obj.animation_data.drivers:
+                    if fcurve.data_path == fcurve_path:
+                        obj.animation_data.drivers.remove(fcurve)
+                        break
+
+            c.enabled = False
             b.constraints.remove(c)
 
 
