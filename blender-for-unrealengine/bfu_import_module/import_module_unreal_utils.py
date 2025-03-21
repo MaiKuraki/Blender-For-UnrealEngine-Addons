@@ -25,9 +25,32 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
+import unreal
+import re
+
+def get_package_path_from_any_string(asset_string: str) -> str:
+    """
+    Convert any asset reference string (including full object references with /Script/...)
+    into a clean package path suitable for EditorAssetLibrary functions.
+    """
+    
+    # Match format like /Script/Engine.SkeletalMesh'/Game/Path/Asset.Asset'
+    match = re.match(r"^/Script/.+?'(/Game/.+?)'\s*$", asset_string)
+    if match:
+        asset_path = match.group(1)
+    else:
+        asset_path = asset_string
+
+    # Handle /Game/Path/Asset.Asset -> /Game/Path/Asset
+    if asset_path.count(".") == 1:
+        asset_path = asset_path.split(".")[0]
+
+    return asset_path
+
+
 def load_asset(name):
     # Convert ObjectPath to PackageName
-    package_name = name.split('.')[0]
+    package_name = get_package_path_from_any_string(name)
     asset_exist = unreal.EditorAssetLibrary.does_asset_exist(package_name)
     if asset_exist:
         find_asset = unreal.find_asset(name, follow_redirectors=True)
