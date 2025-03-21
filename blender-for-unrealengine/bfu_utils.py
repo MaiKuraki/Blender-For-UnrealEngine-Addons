@@ -250,8 +250,7 @@ def GetExportDesiredChilds(obj):
 
 
 
-def RemoveAllConsraints(obj):
-
+def remove_all_bones_consraints(obj):
     for b in obj.pose.bones:
         for c in b.constraints:
 
