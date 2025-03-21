@@ -19,3 +19,4 @@
 
 automated_import_tasks = True #False when debug only, used to show import dialog.
 force_use_interchange = "Auto" #Auto by default, you can use Interchange or FBX
+print_debug_steps = False

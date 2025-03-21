@@ -18,6 +18,7 @@
 
 import sys
 import json
+from . import config
 
 
 def JsonLoad(json_file):
@@ -36,3 +37,6 @@ def JsonLoadFile(json_file_path):
         with open(json_file_path, "r", encoding="utf8") as json_file:
             return JsonLoad(json_file)
 
+def print_debug_step(*args):
+    if config.print_debug_steps:
+        print(*args)
