@@ -16,9 +16,10 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
+import os
 from typing import List, Optional
 from . import import_module_unreal_utils
+from .import import_module_utils
 from . import config
 
 try:
@@ -50,6 +51,11 @@ class ImportTaks():
                 # Set values inside unreal.FbxStaticMeshImportData or ...
                 self.use_interchange = False
 
+    def get_preview_import_refs(self):
+        filename_without_ext = os.path.splitext(os.path.basename(self.task.filename))[0]
+        assetname = import_module_utils.clean_filename_for_unreal(filename_without_ext)
+        return self.task.destination_path+"/"+assetname+"."+assetname
+                    
     def set_task_option(self, new_task_option):
         self.task_option = new_task_option
 
