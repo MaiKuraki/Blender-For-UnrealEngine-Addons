@@ -23,10 +23,10 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
+from . import bpl
 from . import import_module_utils
 from . import import_module_unreal_utils
 from . import sequencer_utils
-
 
 
 def ready_for_sequence_import():
@@ -62,7 +62,7 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
     print("Sequencer reference created", seq)
 
     # Process import
-    print("========================= Import started ! =========================")
+    bpl.advprint.print_simple_title("Import started !")
 
     # Set frame rate
     myFFrameRate = sequencer_utils.get_sequencer_framerate(
@@ -128,12 +128,12 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
         camera_cut_section.set_start_frame_seconds(section["start_time"]/float(sequencer_frame_rate_numerator))
     # Import result
 
-    print('========================= Imports completed ! =========================')
+    bpl.advprint.print_simple_title("Imports completed !")
     ImportedCameraStr = []
     for cam in ImportedCamera:
         ImportedCameraStr.append(cam[0])
         print(ImportedCameraStr)
-        print('=========================')
+        bpl.advprint.print_separator()
 
     # Select and open seq in content browser
     if import_module_unreal_utils.is_unreal_version_greater_or_equal(5,0):

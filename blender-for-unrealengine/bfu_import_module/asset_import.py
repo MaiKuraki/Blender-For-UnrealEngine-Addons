@@ -500,7 +500,7 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
 
 
     # Process import
-    print('========================= Import started ! =========================')
+    bpl.advprint.print_simple_title("Import started !")
     counter = bpl.utils.CounterTimer()
 
     # Import assets with a specific order
@@ -514,7 +514,7 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
     for asset_data in GetAssetByType("Animation"):
         PrepareImportTask(asset_data)
 
-    print('========================= Full import completed !  =========================')
+    bpl.advprint.print_simple_title("Full import completed !")
 
     # import result
     StaticMesh_ImportedList = []
@@ -552,7 +552,7 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
         for asset in assets:
             PathList.append(asset.get_path_name())
     unreal.EditorAssetLibrary.sync_browser_to_objects(PathList)
-    print('=========================')
+    bpl.advprint.print_separator()
 
     if show_finished_popup:
         if len(ImportFailList) > 0:
