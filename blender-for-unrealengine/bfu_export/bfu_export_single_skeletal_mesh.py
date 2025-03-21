@@ -145,7 +145,7 @@ def ExportSingleSkeletalMesh(
         my_skeletal_export_scale.ApplySkeletalExportScale(rrf, is_a_proxy=export_as_proxy)
 
     # Set rename temporarily the Armature as "Armature"
-    bfu_utils.remove_all_bones_consraints(active)
+    bfu_utils.disable_all_bones_consraints(active)
     bpy.context.object.data.pose_position = 'REST'
 
     bfu_export_utils.ConvertArmatureConstraintToModifiers(active)

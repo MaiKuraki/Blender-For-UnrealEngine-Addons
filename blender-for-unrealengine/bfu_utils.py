@@ -247,7 +247,10 @@ def GetExportDesiredChilds(obj):
     return DesiredObj
 
 
-
+def disable_all_bones_consraints(obj):
+    for b in obj.pose.bones:
+        for c in b.constraints:
+            c.enabled = False
 
 
 def remove_all_bones_consraints(obj):
