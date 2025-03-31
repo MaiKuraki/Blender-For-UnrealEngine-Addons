@@ -65,14 +65,20 @@ def add_generated_json_meta_data(json_data):
         'import_modiule_path': import_modiule_path,
     }
 
+def is_read_only(filepath):
+    return os.path.exists(filepath) and not os.access(filepath, os.W_OK)
+
 def export_single_text_file(text, dirpath, filename):
     # Export single text
-
     counter = bpl.utils.CounterTimer()
 
     absdirpath = bpy.path.abspath(dirpath)
     bfu_basics.verifi_dirs(absdirpath)
     fullpath = os.path.join(absdirpath, filename)
+
+    if is_read_only(fullpath):
+        print(f"Cannot write to '{fullpath}': File is read-only.")
+        return None
 
     with open(fullpath, "w") as file:
         file.write(text)
@@ -89,6 +95,10 @@ def export_single_json_file(json_data, dirpath, filename):
     absdirpath = bpy.path.abspath(dirpath)
     bfu_basics.verifi_dirs(absdirpath)
     fullpath = os.path.join(absdirpath, filename)
+
+    if is_read_only(fullpath):
+        print(f"Cannot write to '{fullpath}': File is read-only.")
+        return None
 
     with open(fullpath, 'w') as json_file:
         json.dump(json_data, json_file, ensure_ascii=False, sort_keys=False, indent=4)

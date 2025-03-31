@@ -39,6 +39,8 @@ def write_all_data_files():
     addon_prefs = bfu_basics.GetAddonPrefs()
     
     root_dirpath = bpy.path.abspath(scene.bfu_export_other_file_path)
+
+    # Export log
     if scene.bfu_use_text_export_log:
         Text = languages.ti("write_text_additional_track_start") + "\n"
         Text += "" + "\n"
@@ -59,7 +61,10 @@ def write_all_data_files():
         source = os.path.join(bfu_path, "asset_import_script.py")
         filename = bfu_basics.ValidFilename(scene.bfu_file_import_asset_script_name)
         destination = os.path.join(root_dirpath, filename)
-        copyfile(source, destination)
+        if bfu_export_text_files_utils.is_read_only(destination):
+            print(f"Cannot replace '{destination}': File is read-only.")
+        else:
+            copyfile(source, destination)
 
     if scene.bfu_use_text_import_sequence_script:
         json_data = bfu_export_text_files_sequencer_data.write_sequencer_tracks_data()
@@ -67,6 +72,9 @@ def write_all_data_files():
         source = os.path.join(bfu_path, "sequencer_import_script.py")
         filename = bfu_basics.ValidFilename(scene.bfu_file_import_sequencer_script_name)
         destination = os.path.join(root_dirpath, filename)
-        copyfile(source, destination)
+        if bfu_export_text_files_utils.is_read_only(destination):
+            print(f"Cannot replace '{destination}': File is read-only.")
+        else:
+            copyfile(source, destination)
     time_log.end_time_log()
 
