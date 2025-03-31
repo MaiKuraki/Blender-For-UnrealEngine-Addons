@@ -27,16 +27,20 @@ from .. import bfu_assets_manager
 
 def get_lod_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
     asset_data = {}
+    return asset_data
+
+def get_lod_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+    asset_data = {}
+
+    # Add lod group name
     if asset.object:
         if asset.asset_type in ["StaticMesh"]:
             if (asset.object.bfu_use_static_mesh_lod_group):
                 asset_data["static_mesh_lod_group"] = asset.object.bfu_static_mesh_lod_group
             else:
                 asset_data["static_mesh_lod_group"] = None
-    return asset_data
 
-def get_lod_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
-    asset_data = {}
+    # Add lod slots
     if asset.object:
         asset_data['level_of_details'] = {}
 
