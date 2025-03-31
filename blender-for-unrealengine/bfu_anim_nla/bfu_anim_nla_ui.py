@@ -40,11 +40,12 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
     is_skeletal_mesh = bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
-        scene.bfu_animation_nla_properties_expanded.draw(layout)
-        if scene.bfu_animation_nla_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_nla_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # NLA
             if is_skeletal_mesh:
-                NLAAnim = layout.row()
+                NLAAnim = panel.row()
                 NLAAnim.prop(obj, 'bfu_anim_nla_use')
                 NLAAnimChild = NLAAnim.column()
                 NLAAnimChild.enabled = obj.bfu_anim_nla_use
@@ -55,7 +56,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
 
             # NLA Time
             if obj.type != "CAMERA" and obj.bfu_skeleton_export_procedure != "auto-rig-pro":
-                NLATimeProperty = layout.column()
+                NLATimeProperty = panel.column()
                 NLATimeProperty.enabled = obj.bfu_anim_nla_use
                 NLATimeProperty.prop(obj, 'bfu_anim_nla_start_end_time_enum')
                 if obj.bfu_anim_nla_start_end_time_enum == "with_customframes":

@@ -33,9 +33,10 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("SCENE", "GENERAL"):
 
-        scene.bfu_collection_properties_expanded.draw(layout)
-        if scene.bfu_collection_properties_expanded.is_expend():
-            collectionListProperty = layout.column()
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_collection_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
+            collectionListProperty = panel.column()
             collectionListProperty.template_list(
                 # type and unique id
                 "BFU_UL_CollectionExportTarget", "",
@@ -54,11 +55,11 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
                 col_name = scene.bfu_collection_asset_list[scene.bfu_active_collection_asset_list].name
                 if col_name in bpy.data.collections:
                     col = bpy.data.collections[col_name]
-                    col_prop = layout
+                    col_prop = panel
                     col_prop.prop(col, 'bfu_export_folder_name', icon='FILE_FOLDER')
-                    bfu_export_procedure.bfu_export_procedure_ui.draw_collection_export_procedure(layout, col)
+                    bfu_export_procedure.bfu_export_procedure_ui.draw_collection_export_procedure(panel, col)
 
-            collectionPropertyInfo = layout.row().box().split(factor=0.75)
+            collectionPropertyInfo = panel.row().box().split(factor=0.75)
             collection_asset_cache = bfu_cached_asset_list.GetCollectionAssetCache()
             collection_export_asset_list = collection_asset_cache.GetCollectionAssetList()
             collectionNum = len(collection_export_asset_list)
@@ -67,4 +68,4 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
                 " Collection(s) will be exported.")
             collectionPropertyInfo.label(text=collectionFeedback, icon='INFO')
             collectionPropertyInfo.operator("object.showscenecollection")
-            layout.label(text='Note: The collection are exported like StaticMesh.')
+            panel.label(text='Note: The collection are exported like StaticMesh.')

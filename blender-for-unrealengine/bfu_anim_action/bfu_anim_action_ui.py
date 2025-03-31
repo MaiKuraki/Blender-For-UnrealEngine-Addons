@@ -44,11 +44,12 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
-        scene.bfu_animation_action_properties_expanded.draw(layout)
-        if scene.bfu_animation_action_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_action_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             if is_skeletal_mesh:
                 # Action list
-                ActionListProperty = layout.column()
+                ActionListProperty = panel.column()
                 ActionListProperty.prop(obj, 'bfu_anim_action_export_enum')
                 if obj.bfu_anim_action_export_enum == "export_specific_list":
                     ActionListProperty.template_list(
@@ -69,7 +70,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
 
             # Action Time
             if obj.type != "CAMERA" and obj.bfu_skeleton_export_procedure != "auto-rig-pro":
-                ActionTimeProperty = layout.column()
+                ActionTimeProperty = panel.column()
                 ActionTimeProperty.enabled = obj.bfu_anim_action_export_enum != 'dont_export'
                 ActionTimeProperty.prop(obj, 'bfu_anim_action_start_end_time_enum')
                 if obj.bfu_anim_action_start_end_time_enum == "with_customframes":
@@ -82,7 +83,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                     OfsetTime.prop(obj, 'bfu_anim_action_end_frame_offset')
 
             else:
-                layout.label(
+                panel.label(
                     text=(
                         "Note: animation start/end use scene frames" +
                         " with the camera for the sequencer.")
@@ -90,7 +91,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
 
             # Nomenclature
             if is_skeletal_mesh:
-                export_anim_naming = layout.column()
+                export_anim_naming = panel.column()
                 export_anim_naming.enabled = obj.bfu_anim_action_export_enum != 'dont_export'
                 export_anim_naming.prop(obj, 'bfu_anim_naming_type')
                 if obj.bfu_anim_naming_type == "include_custom_name":

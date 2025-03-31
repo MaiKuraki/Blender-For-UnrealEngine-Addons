@@ -49,9 +49,10 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):            
         scene = bpy.context.scene 
         if bfu_groom_utils.is_groom(obj):
-            scene.bfu_groom_alembic_properties_expanded.draw(layout)
-            if scene.bfu_groom_alembic_properties_expanded.is_expend():
-                AlembicProp = layout.column()
+            accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_groom_alembic_properties_expanded")
+            header, panel = accordion.draw(layout)
+            if accordion.is_expend():
+                AlembicProp = panel.column()
                 AlembicProp.label(text="(Alembic animation are exported with scene position.)")
                 AlembicProp.label(text="(Use import script for use the origin position.)")
                 AlembicProp.prop(obj, 'bfu_create_sub_folder_with_groom_alembic_name')

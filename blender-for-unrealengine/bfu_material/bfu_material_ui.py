@@ -43,11 +43,12 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
-        scene.bfu_object_material_properties_expanded.draw(layout)
-        if scene.bfu_object_material_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_material_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
             if asset_class and asset_class.use_materials == True:
-                bfu_material_search_location = layout.column()
+                bfu_material_search_location = panel.column()
                 bbpl.blender_layout.layout_doc_button.add_doc_page_operator(bfu_material_search_location, text="About Materials", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Material")
                 bfu_material_search_location.prop(obj, 'bfu_material_search_location')
                 bfu_material_search_location.prop(obj, 'bfu_import_materials')

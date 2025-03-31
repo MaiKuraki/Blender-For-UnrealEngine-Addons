@@ -61,18 +61,19 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
-        scene.bfu_skeleton_properties_expanded.draw(layout)
-        if scene.bfu_skeleton_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_skeleton_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
 
             # SkeletalMesh prop
-            AssetType2 = layout.column()
+            AssetType2 = panel.column()
 
             export_procedure_prop = AssetType2.column()
             export_procedure_prop.prop(obj, 'bfu_skeleton_export_procedure')
 
             AssetType2.prop(obj, 'bfu_create_sub_folder_with_skeletal_mesh_name')
             AssetType2.prop(obj, 'bfu_export_deform_only')
-            ue_standard_skeleton = layout.column()
+            ue_standard_skeleton = panel.column()
             ue_standard_skeleton.label(text="(ue-standard)")
             ue_standard_skeleton_props = ue_standard_skeleton.column()
             ue_standard_skeleton_props.enabled = obj.bfu_skeleton_export_procedure == "ue-standard"

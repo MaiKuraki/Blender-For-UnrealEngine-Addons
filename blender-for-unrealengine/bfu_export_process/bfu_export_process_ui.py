@@ -29,36 +29,38 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
 
-    scene.bfu_export_process_properties_expanded.draw(layout)
-    if scene.bfu_export_process_properties_expanded.is_expend():
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_export_process_properties_expanded")
+    header, panel = accordion.draw(layout)
+    if accordion.is_expend():
 
         # Feedback info :
         final_asset_cache = bfu_cached_asset_list.GetfinalAssetCache()
         final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
         AssetNum = len(final_asset_list_to_export)
-        AssetInfo = layout.row().box().split(factor=0.75)
+        AssetInfo = panel.row().box().split(factor=0.75)
         AssetFeedback = str(AssetNum) + " Asset(s) will be exported."
         AssetInfo.label(text=AssetFeedback, icon='INFO')
         AssetInfo.operator("object.showasset")
 
         # Export button :
-        checkButton = layout.row(align=True)
+        checkButton = panel.row(align=True)
         checkButton.operator("object.checkpotentialerror", icon='FILE_TICK')
         checkButton.operator("object.openpotentialerror", icon='LOOP_BACK', text="")
 
-        exportButton = layout.row()
+        exportButton = panel.row()
         exportButton.scale_y = 2.0
         exportButton.operator("object.exportforunreal", icon='EXPORT')
 
-    scene.bfu_script_tool_expanded.draw(layout)
-    if scene.bfu_script_tool_expanded.is_expend():
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_script_tool_expanded")
+    header, panel = accordion.draw(layout)
+    if accordion.is_expend():
         if addon_prefs.useGeneratedScripts:
-            copyButton = layout.row()
+            copyButton = panel.row()
             copyButton.operator("object.copy_importassetscript_command")
             copyButton.operator("object.copy_importsequencerscript_command")
-            layout.label(text="Click on one of the buttons to copy the import command.", icon='INFO')
-            layout.label(text="Then paste it into the cmd console of unreal.")
-            layout.label(text="You need activate python plugins in Unreal Engine.")
+            panel.label(text="Click on one of the buttons to copy the import command.", icon='INFO')
+            panel.label(text="Then paste it into the cmd console of unreal.")
+            panel.label(text="You need activate python plugins in Unreal Engine.")
 
         else:
-            layout.label(text='(Generated scripts are deactivated.)')
+            panel.label(text='(Generated scripts are deactivated.)')

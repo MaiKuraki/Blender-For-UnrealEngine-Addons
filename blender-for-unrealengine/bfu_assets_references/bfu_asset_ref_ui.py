@@ -45,13 +45,13 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
     
     # Draw UI
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):   
-        scene.bfu_engine_ref_properties_expanded.draw(layout)
-        if scene.bfu_engine_ref_properties_expanded.is_expend():
-
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_engine_ref_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # SkeletalMesh prop
             if is_skeletal_mesh:
                 if not obj.bfu_export_as_lod_mesh:
-                    unreal_engine_refs = layout.column()
+                    unreal_engine_refs = panel.column()
                     draw_skeleton_prop(unreal_engine_refs, obj)
                     draw_skeletal_mesh_prop(unreal_engine_refs, obj)
 

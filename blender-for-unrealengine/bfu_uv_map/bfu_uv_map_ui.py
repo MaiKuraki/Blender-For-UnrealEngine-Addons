@@ -37,10 +37,11 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
-        scene.bfu_object_uv_map_properties_expanded.draw(layout)
-        if scene.bfu_object_uv_map_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_uv_map_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # Geometry Node Uv
-            bfu_convert_geometry_node_attribute_to_uv = layout.column()
+            bfu_convert_geometry_node_attribute_to_uv = panel.column()
             convert_geometry_node_attribute_to_uv_use = bfu_convert_geometry_node_attribute_to_uv.row()
             convert_geometry_node_attribute_to_uv_use.prop(obj, 'bfu_convert_geometry_node_attribute_to_uv')
             bbpl.blender_layout.layout_doc_button.add_doc_page_operator(convert_geometry_node_attribute_to_uv_use, url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/UV-Maps#geometry-node-uv")
@@ -49,7 +50,7 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             bfu_convert_geometry_node_attribute_to_uv_name.enabled = obj.bfu_convert_geometry_node_attribute_to_uv
 
             # Extreme UV Scale
-            ui_correct_extrem_uv_scale = layout.column()
+            ui_correct_extrem_uv_scale = panel.column()
             ui_correct_extrem_uv_scale_use = ui_correct_extrem_uv_scale.row()
             ui_correct_extrem_uv_scale_use.prop(obj, 'bfu_use_correct_extrem_uv_scale')
             bbpl.blender_layout.layout_doc_button.add_doc_page_operator(ui_correct_extrem_uv_scale_use, url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/UV-Maps#extreme-uv-scale")
@@ -61,21 +62,22 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
 
 def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
-    scene.bfu_tools_uv_map_properties_expanded.draw(layout)
-    if scene.bfu_tools_uv_map_properties_expanded.is_expend():
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_uv_map_properties_expanded")
+    header, panel = accordion.draw(layout)
+    if accordion.is_expend():
         ready_for_correct_extrem_uv_scale = False
         obj = bpy.context.object
         if obj and obj.type == "MESH":
             if bbpl.utils.active_mode_is("EDIT"):
                 ready_for_correct_extrem_uv_scale = True
             else:
-                layout.label(text="Switch to Edit Mode.", icon='INFO')
+                panel.label(text="Switch to Edit Mode.", icon='INFO')
         else:
-            layout.label(text="Select an mesh object", icon='INFO')
+            panel.label(text="Select an mesh object", icon='INFO')
 
 
             # Draw buttons (correct_extrem_uv)
-        Buttons_correct_extrem_uv_scale = layout.row()
+        Buttons_correct_extrem_uv_scale = panel.row()
         Button_correct_extrem_uv_scale = Buttons_correct_extrem_uv_scale.column()
         Button_correct_extrem_uv_scale.enabled = ready_for_correct_extrem_uv_scale
         Button_correct_extrem_uv_scale.operator("object.correct_extrem_uv", icon='UV')

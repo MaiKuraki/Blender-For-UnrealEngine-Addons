@@ -43,10 +43,11 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
-        scene.bfu_object_light_map_properties_expanded.draw(layout)
-        if scene.bfu_object_light_map_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_light_map_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             if is_static_mesh:
-                StaticMeshLightMapRes = layout.box()
+                StaticMeshLightMapRes = panel.box()
                 StaticMeshLightMapRes.prop(obj, 'bfu_static_mesh_light_map_mode')
                 if obj.bfu_static_mesh_light_map_mode == "CustomMap":
                     CustomLightMap = StaticMeshLightMapRes.column()
@@ -62,12 +63,13 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 if obj.bfu_static_mesh_light_map_mode != "Default":
                     CompuntedLightMap = str(bfu_light_map_utils.GetCompuntedLightMap(obj))
                     StaticMeshLightMapRes.label(text='Compunted light map: ' + CompuntedLightMap)
-                bfu_generate_light_map_uvs = layout.row()
+                bfu_generate_light_map_uvs = panel.row()
                 bfu_generate_light_map_uvs.prop(obj, 'bfu_generate_light_map_uvs')
 
 def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
-    scene.bfu_tools_light_map_properties_expanded.draw(layout)
-    if scene.bfu_tools_light_map_properties_expanded.is_expend():
-        checkButton = layout.column()
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_light_map_properties_expanded")
+    header, panel = accordion.draw(layout)
+    if accordion.is_expend():
+        checkButton = panel.column()
         checkButton.operator("object.comput_all_lightmap", icon='TEXTURE')

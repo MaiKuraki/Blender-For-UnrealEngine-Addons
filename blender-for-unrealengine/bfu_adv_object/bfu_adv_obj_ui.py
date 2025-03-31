@@ -44,9 +44,10 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
-        scene.bfu_object_advanced_properties_expanded.draw(layout)
-        if scene.bfu_object_advanced_properties_expanded.is_expend():
-            transformProp = layout.column()
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_advanced_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
+            transformProp = panel.column()
             is_not_alembic_animation = not bfu_alembic_animation.bfu_alembic_animation_utils.is_alembic_animation(obj)
             is_not_camera = not bfu_camera.bfu_camera_utils.is_camera(obj)
             if is_not_alembic_animation and is_not_camera:
@@ -59,7 +60,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             if bfu_camera.bfu_camera_utils.is_camera(obj):
                 transformProp.prop(obj, "bfu_additional_location_for_export")
 
-            AxisProperty = layout.column()
+            AxisProperty = panel.column()
             
             AxisProperty.prop(obj, 'bfu_override_procedure_preset')
             if obj.bfu_override_procedure_preset:
@@ -68,11 +69,11 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 AxisProperty.prop(obj, 'bfu_export_axis_up')
                 bbpl.blender_layout.layout_doc_button.add_doc_page_operator(AxisProperty, text="About axis Transforms", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Axis-Transforms")
                 if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                    BoneAxisProperty = layout.column()
+                    BoneAxisProperty = panel.column()
                     BoneAxisProperty.prop(obj, 'bfu_export_primary_bone_axis')
                     BoneAxisProperty.prop(obj, 'bfu_export_secondary_bone_axis')
             else:
-                box = layout.box()
+                box = panel.box()
                 if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
                     preset = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_procedure_preset(obj)
                 else:
@@ -81,6 +82,6 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 for key, value in preset.items():
                     display_key = bpl.utils.format_property_name(key)
                     var_lines.label(text=f"{display_key}: {value}\n")
-            export_data = layout.column()
+            export_data = panel.column()
             bfu_custom_property.bfu_custom_property_utils.draw_ui_custom_property(export_data, obj)
             export_data.prop(obj, "bfu_export_with_meta_data")

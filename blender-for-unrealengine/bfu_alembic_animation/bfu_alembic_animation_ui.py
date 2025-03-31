@@ -50,9 +50,10 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):            
         scene = bpy.context.scene 
         if bfu_alembic_animation_utils.is_alembic_animation(obj):
-            scene.bfu_alembic_properties_expanded.draw(layout)
-            if scene.bfu_alembic_properties_expanded.is_expend():
-                AlembicProp = layout.column()
+            accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_alembic_properties_expanded")
+            header, panel = accordion.draw(layout)
+            if accordion.is_expend():
+                AlembicProp = panel.column()
 
                 export_procedure_prop = AlembicProp.column()
                 export_procedure_prop.prop(obj, 'bfu_alembic_export_procedure')

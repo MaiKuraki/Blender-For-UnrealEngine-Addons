@@ -39,15 +39,16 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
-        scene.bfu_animation_advanced_properties_expanded.draw(layout)
-        if scene.bfu_animation_advanced_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_advanced_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # Animation fbx properties
             if bfu_alembic_animation.bfu_alembic_animation_utils.is_not_alembic_animation(obj):
-                propsFbx = layout.row()
+                propsFbx = panel.row()
                 if obj.bfu_skeleton_export_procedure != "auto-rig-pro":
                     propsFbx.prop(obj, 'bfu_sample_anim_for_export')
                 propsFbx.prop(obj, 'bfu_simplify_anim_for_export')
-            propsScaleAnimation = layout.row()
+            propsScaleAnimation = panel.row()
             propsScaleAnimation.prop(obj, "bfu_disable_free_scale_animation")
 
 def draw_animation_tab_foot_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):

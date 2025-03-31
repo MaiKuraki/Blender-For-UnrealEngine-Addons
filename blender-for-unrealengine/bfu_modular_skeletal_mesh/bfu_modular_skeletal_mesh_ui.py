@@ -18,6 +18,7 @@
 
 
 import bpy
+from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_ui
 from .. import bfu_skeletal_mesh
@@ -57,12 +58,12 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
-        scene.bfu_modular_skeletal_mesh_properties_expanded.draw(layout)
-        if scene.bfu_modular_skeletal_mesh_properties_expanded.is_expend():
-
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_modular_skeletal_mesh_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # SkeletalMesh prop
             if not obj.bfu_export_as_lod_mesh:
-                modular_skeletal_mesh = layout.column()
+                modular_skeletal_mesh = panel.column()
                 modular_skeletal_mesh.prop(obj, "bfu_modular_skeletal_mesh_mode")
                 if obj.bfu_modular_skeletal_mesh_mode == "every_meshs":
                     modular_skeletal_mesh.prop(obj, "bfu_modular_skeletal_mesh_every_meshs_separate")

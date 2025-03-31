@@ -46,24 +46,25 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     # Draw UI
-    if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):        
-        scene.bfu_lod_properties_expanded.draw(layout)
-        if scene.bfu_lod_properties_expanded.is_expend():
+    if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):   
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_lod_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
 
             # Wiki page
-            bbpl.blender_layout.layout_doc_button.add_doc_page_operator(layout, text="About Level of details (Lods)", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Level-of-details")
+            bbpl.blender_layout.layout_doc_button.add_doc_page_operator(panel, text="About Level of details (Lods)", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Level-of-details")
 
             # Unreal python no longer support Skeletal mesh LODS import.
             asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
             if asset_class and asset_class.use_lods == True:
-                LodProp = layout.column()
+                LodProp = panel.column()
                 LodProp.prop(obj, 'bfu_export_as_lod_mesh')
 
             #Static only because Unreal python not support Skeletal mesh LODS import.
             if (bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(obj)):
 
                 # Lod Groups
-                bfu_static_mesh_lod_group = layout.row()
+                bfu_static_mesh_lod_group = panel.row()
                 bfu_static_mesh_lod_group.prop(obj, 'bfu_use_static_mesh_lod_group', text="")
                 SMLODGroupChild = bfu_static_mesh_lod_group.column()
                 SMLODGroupChild.enabled = obj.bfu_use_static_mesh_lod_group
@@ -71,7 +72,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 bfu_static_mesh_lod_group.enabled = obj.bfu_export_as_lod_mesh is False
 
                 # Lod Slots 
-                LodList = layout.column()
+                LodList = panel.column()
                 LodList.prop(obj, 'bfu_lod_target1')
                 LodList.prop(obj, 'bfu_lod_target2')
                 LodList.prop(obj, 'bfu_lod_target3')

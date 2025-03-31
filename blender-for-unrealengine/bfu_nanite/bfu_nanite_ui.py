@@ -47,7 +47,8 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return # Check only static and skeletal meshs for the moment.
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
-        header, panel = scene.bfu_object_nanite_properties_expanded.draw(layout)
-        if scene.bfu_object_nanite_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_nanite_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             panel.prop(obj, 'bfu_build_nanite_mode')
 

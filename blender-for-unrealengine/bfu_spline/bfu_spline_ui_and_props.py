@@ -45,11 +45,13 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, obj: bpy.types.Object):
     if obj.type != "CURVE":
         return
 
-    spline_ui = layout.column()
+
     scene = bpy.context.scene 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
-        scene.bfu_spline_properties_expanded.draw(spline_ui)
-        if scene.bfu_spline_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_spline_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
+            spline_ui = panel.column()
             if obj.type == "CURVE":
                 spline_ui_pop = spline_ui.column()
                 spline_ui_as_static_mesh = spline_ui_pop.column()
@@ -72,9 +74,10 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, obj: bpy.types.Object):
 def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
 
-    spline_ui = layout.column()
-    scene.bfu_spline_tools_expanded.draw(spline_ui)
-    if scene.bfu_spline_tools_expanded.is_expend():
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_spline_tools_expanded")
+    header, panel = accordion.draw(layout)
+    if accordion.is_expend():
+        spline_ui = panel.column()
         spline_ui.operator("object.copy_selected_splines_data", icon="COPYDOWN")
     
 

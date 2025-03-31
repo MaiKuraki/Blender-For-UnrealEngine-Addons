@@ -28,11 +28,12 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
 
-    scene.bfu_nomenclature_properties_expanded.draw(layout)
-    if scene.bfu_nomenclature_properties_expanded.is_expend():
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_nomenclature_properties_expanded")
+    header, panel = accordion.draw(layout)
+    if accordion.is_expend():
 
         # Prefix
-        propsPrefix = layout.row()
+        propsPrefix = panel.row()
         propsPrefix = propsPrefix.column()
         propsPrefix.prop(scene, 'bfu_static_mesh_prefix_export_name', icon='OBJECT_DATA')
         propsPrefix.prop(scene, 'bfu_skeletal_mesh_prefix_export_name', icon='OBJECT_DATA')
@@ -45,7 +46,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
         propsPrefix.prop(scene, 'bfu_spline_prefix_export_name', icon='OBJECT_DATA')
 
         # Sub folder
-        propsSub = layout.row()
+        propsSub = panel.row()
         propsSub = propsSub.column()
         propsSub.prop(scene, 'bfu_anim_subfolder_name', icon='FILE_FOLDER')
 
@@ -62,7 +63,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
                 icon='FILE_FOLDER')
 
         # File path
-        filePath = layout.row()
+        filePath = panel.row()
         filePath = filePath.column()
         filePath.prop(scene, 'bfu_export_static_file_path')
         filePath.prop(scene, 'bfu_export_skeletal_file_path')
@@ -73,7 +74,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
         filePath.prop(scene, 'bfu_export_other_file_path')
 
         # File name
-        fileName = layout.row()
+        fileName = panel.row()
         fileName = fileName.column()
         fileName.prop(scene, 'bfu_file_export_log_name', icon='FILE')
         if addon_prefs.useGeneratedScripts:

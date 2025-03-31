@@ -38,9 +38,10 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
-        scene.bfu_animation_action_advanced_properties_expanded.draw(layout)
-        if scene.bfu_animation_action_advanced_properties_expanded.is_expend():
-            transformProp = layout.column()
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_action_advanced_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
+            transformProp = panel.column()
             transformProp.enabled = obj.bfu_anim_action_export_enum != 'dont_export'
             transformProp.prop(obj, "bfu_move_action_to_center_for_export")
             transformProp.prop(obj, "bfu_rotate_action_to_zero_for_export")

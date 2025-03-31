@@ -45,17 +45,18 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
-        scene.bfu_object_collision_properties_expanded.draw(layout)
-        if scene.bfu_object_collision_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_collision_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # StaticMesh prop
             if is_static_mesh:
                 if not obj.bfu_export_as_lod_mesh:
-                    auto_generate_collision = layout.row()
+                    auto_generate_collision = panel.row()
                     auto_generate_collision.prop(
                         obj,
                         'bfu_auto_generate_collision'
                         )
-                    collision_trace_flag = layout.row()
+                    collision_trace_flag = panel.row()
                     collision_trace_flag.prop(
                         obj,
                         'bfu_collision_trace_flag'
@@ -63,38 +64,38 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
             # SkeletalMesh prop
             if is_skeletal_mesh:
                 if not obj.bfu_export_as_lod_mesh:
-                    create_physics_asset = layout.row()
+                    create_physics_asset = panel.row()
                     create_physics_asset.prop(obj, "bfu_create_physics_asset")
-                    enable_skeletal_mesh_per_poly_collision = layout.row()
+                    enable_skeletal_mesh_per_poly_collision = panel.row()
                     enable_skeletal_mesh_per_poly_collision.prop(obj, 'bfu_enable_skeletal_mesh_per_poly_collision')
 
 
 def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     
-    scene.bfu_tools_collision_properties_expanded.draw(layout)
-    if scene.bfu_tools_collision_properties_expanded.is_expend():
-
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_collision_properties_expanded")
+    header, panel = accordion.draw(layout)
+    if accordion.is_expend():
         # Draw user tips and check can use buttons
         ready_for_convert_collider = False
         if not bbpl.utils.active_mode_is("OBJECT"):
-            layout.label(text="Switch to Object Mode.", icon='INFO')
+            panel.label(text="Switch to Object Mode.", icon='INFO')
         else:
             if bbpl.utils.found_type_in_selection("MESH", False):
                 if bbpl.utils.active_type_is_not("ARMATURE") and len(bpy.context.selected_objects) > 1:
-                    layout.label(text="Click on button for convert to collider.", icon='INFO')
+                    panel.label(text="Click on button for convert to collider.", icon='INFO')
                     ready_for_convert_collider = True
                 else:
-                    layout.label(text="Select with [SHIFT] the collider owner.", icon='INFO')
+                    panel.label(text="Select with [SHIFT] the collider owner.", icon='INFO')
             else:
-                layout.label(text="Please select your collider Object(s). Active should be the owner.", icon='INFO')
+                panel.label(text="Please select your collider Object(s). Active should be the owner.", icon='INFO')
             
         # Draw buttons
-        convertButtons = layout.row().split(factor=0.80)
+        convertButtons = panel.row().split(factor=0.80)
         convertStaticCollisionButtons = convertButtons.column()
         convertStaticCollisionButtons.enabled = ready_for_convert_collider
         convertStaticCollisionButtons.operator("object.converttoboxcollision", icon='MESH_CUBE')
         convertStaticCollisionButtons.operator("object.converttoconvexcollision", icon='MESH_ICOSPHERE')
         convertStaticCollisionButtons.operator("object.converttocapsulecollision", icon='MESH_CAPSULE')
         convertStaticCollisionButtons.operator("object.converttospherecollision", icon='MESH_UVSPHERE')
-        layout.operator("object.toggle_collision_visibility", text="Toggle Collision Visibility", icon='HIDE_OFF')
+        panel.operator("object.toggle_collision_visibility", text="Toggle Collision Visibility", icon='HIDE_OFF')

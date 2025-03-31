@@ -43,10 +43,11 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
 
-        scene.bfu_object_vertex_color_properties_expanded.draw(layout)
-        if scene.bfu_object_vertex_color_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_vertex_color_properties_expanded")
+        header, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # Vertex color
-            bfu_vertex_color_settings = layout.column()
+            bfu_vertex_color_settings = panel.column()
             bbpl.blender_layout.layout_doc_button.add_doc_page_operator(bfu_vertex_color_settings, text="About Vertex Color", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Vertex-Color")
             bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_import_option')
             if obj.bfu_vertex_color_import_option == "OVERRIDE":
