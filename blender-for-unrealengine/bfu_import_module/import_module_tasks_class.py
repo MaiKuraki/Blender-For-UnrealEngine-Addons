@@ -120,18 +120,34 @@ class ImportTaks():
             if search_asset:
                 assets.append(search_asset)
         return assets
+    
+    def get_imported_assets_of_class(self, search_class) -> List[unreal.Object]:
+        assets = []
+        for path in self.task.imported_object_paths:
+            search_asset = import_module_unreal_utils.load_asset(path)
+            if search_asset:
+                if isinstance(search_asset, search_class):
+                    assets.append(search_asset)
+        return assets
+    
+    def get_imported_asset_of_class(self, search_class) -> unreal.Object:
+        for path in self.task.imported_object_paths:
+            search_asset = import_module_unreal_utils.load_asset(path)
+            if search_asset:
+                if isinstance(search_asset, search_class):
+                    return search_asset
 
-    def get_imported_static_mesh(self) -> Optional[unreal.StaticMesh]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.StaticMesh)), None)
+    def get_imported_static_mesh(self) -> unreal.StaticMesh:
+        return self.get_imported_asset_of_class(unreal.StaticMesh)
 
-    def get_imported_skeleton(self) -> Optional[unreal.Skeleton]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.Skeleton)), None)
+    def get_imported_skeleton(self) -> unreal.Skeleton:
+        return self.get_imported_asset_of_class(unreal.Skeleton)
 
-    def get_imported_skeletal_mesh(self) -> Optional[unreal.SkeletalMesh]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.SkeletalMesh)), None)
+    def get_imported_skeletal_mesh(self) -> unreal.SkeletalMesh:
+        return self.get_imported_asset_of_class(unreal.SkeletalMesh)
 
-    def get_imported_anim_sequence(self) -> Optional[unreal.AnimSequence]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.AnimSequence)), None)
+    def get_imported_anim_sequence(self) -> unreal.AnimSequence:
+        return self.get_imported_asset_of_class(unreal.AnimSequence)
     
     def import_asset_task(self):
         if self.use_interchange:
