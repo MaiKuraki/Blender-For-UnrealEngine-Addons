@@ -61,8 +61,8 @@ def ImportTask(asset_data):
 
 
     if asset_type == "StaticMesh" or asset_type == "SkeletalMesh":
-        if "lod" in asset_data:
-            if asset_data["lod"] > 0:  # Lod should not be imported here so return if lod is not 0.
+        if "import_as_lod_mesh" in asset_data:
+            if asset_data["import_as_lod_mesh"] == True:  # Lod should not be imported here so return if lod is not 0.
                 return "FAIL", None
 
     if asset_type == "Alembic":
