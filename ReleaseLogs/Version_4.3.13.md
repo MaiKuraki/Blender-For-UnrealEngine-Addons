@@ -11,3 +11,5 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: All panel under a accordion contain a small space over it.
 - Fixed: Import counter is wrong when an import fails.
 - Fixed: Static Mesh Lod Groups is set at import but never apply.
+- Fixed: Script when try to replace a read only file. (Happens when Unreal use it at the same time)
+- Fixed: Asset number is None in the export logs.
