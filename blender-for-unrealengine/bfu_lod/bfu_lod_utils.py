@@ -27,6 +27,13 @@ from .. import bfu_assets_manager
 
 def get_lod_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
     asset_data = {}
+
+    if asset.asset_type in ["StaticMesh", "SkeletalMesh"]:
+        if asset.object.bfu_export_as_lod_mesh:
+            asset_data["import_as_lod_mesh"] = True
+        else:
+            asset_data["import_as_lod_mesh"] = False
+
     return asset_data
 
 def get_lod_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):

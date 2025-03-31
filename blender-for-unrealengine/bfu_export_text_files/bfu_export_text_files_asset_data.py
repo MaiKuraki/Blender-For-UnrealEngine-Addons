@@ -62,11 +62,6 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
         asset_data["asset_type"] = "StaticMesh"
     else:
         asset_data["asset_type"] = unreal_exported_asset.asset_type
-    if unreal_exported_asset.asset_type in ["StaticMesh", "SkeletalMesh"]:
-        if unreal_exported_asset.object.bfu_export_as_lod_mesh:
-            asset_data["import_as_lod_mesh"] = True
-        else:
-            asset_data["import_as_lod_mesh"] = False
 
     if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type):
         relative_import_path = os.path.join(unreal_exported_asset.folder_name, scene.bfu_anim_subfolder_name)
