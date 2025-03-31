@@ -30,10 +30,10 @@ def import_static_lod(asset, asset_options, asset_data, asset_additional_data, l
 
     import_module_utils.print_debug_step(f"Start Import Lod_{str(lod_number)} ({lod_name})")
 
-    if "LevelOfDetail" in asset_additional_data:
-        if lod_name in asset_additional_data["LevelOfDetail"]:
+    if "level_of_details" in asset_additional_data:
+        if lod_name in asset_additional_data["level_of_details"]:
             lodTask = unreal.AssetImportTask()
-            lodTask.filename = asset_additional_data["LevelOfDetail"][lod_name]
+            lodTask.filename = asset_additional_data["level_of_details"][lod_name]
             destination_path = os.path.normpath(asset_data["full_import_path"]).replace('\\', '/')
             lodTask.destination_path = destination_path
             lodTask.automated = True
@@ -53,8 +53,8 @@ def import_static_lod(asset, asset_options, asset_data, asset_additional_data, l
                 unreal.EditorAssetLibrary.delete_asset(lodTask.imported_object_paths[0])
 
 def import_skeletal_lod(asset, asset_options, asset_data, asset_additional_data, lod_name, lod_number):
-    if "LevelOfDetail" in asset_additional_data:
-        if lod_name in asset_additional_data["LevelOfDetail"]:
+    if "level_of_details" in asset_additional_data:
+        if lod_name in asset_additional_data["level_of_details"]:
             # Unreal python no longer support Skeletal mesh LODS import.
             pass
 

@@ -38,7 +38,7 @@ def get_lod_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_Unrea
 def get_lod_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
     asset_data = {}
     if asset.object:
-        asset_data['LevelOfDetail'] = {}
+        asset_data['level_of_details'] = {}
 
         def GetLodPath(lod_obj):
             asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(lod_obj)
@@ -48,14 +48,14 @@ def get_lod_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_
             return os.path.join(directory_path, file_name)
 
         if asset.object.bfu_lod_target1 is not None:
-            asset_data['LevelOfDetail']['lod_1'] = GetLodPath(asset.object.bfu_lod_target1)
+            asset_data['level_of_details']['lod_1'] = GetLodPath(asset.object.bfu_lod_target1)
         if asset.object.bfu_lod_target2 is not None:
-            asset_data['LevelOfDetail']['lod_2'] = GetLodPath(asset.object.bfu_lod_target2)
+            asset_data['level_of_details']['lod_2'] = GetLodPath(asset.object.bfu_lod_target2)
         if asset.object.bfu_lod_target3 is not None:
-            asset_data['LevelOfDetail']['lod_3'] = GetLodPath(asset.object.bfu_lod_target3)
+            asset_data['level_of_details']['lod_3'] = GetLodPath(asset.object.bfu_lod_target3)
         if asset.object.bfu_lod_target4 is not None:
-            asset_data['LevelOfDetail']['lod_4'] = GetLodPath(asset.object.bfu_lod_target4)
+            asset_data['level_of_details']['lod_4'] = GetLodPath(asset.object.bfu_lod_target4)
         if asset.object.bfu_lod_target5 is not None:
-            asset_data['LevelOfDetail']['lod_5'] = GetLodPath(asset.object.bfu_lod_target5)
+            asset_data['level_of_details']['lod_5'] = GetLodPath(asset.object.bfu_lod_target5)
 
     return asset_data
