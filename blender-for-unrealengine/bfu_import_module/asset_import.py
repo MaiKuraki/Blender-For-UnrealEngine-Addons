@@ -456,6 +456,7 @@ def ImportTask(asset_data):
     return "SUCCESS", itask.get_imported_assets()
 
 def ImportAllAssets(assets_data, show_finished_popup=True):
+    import_counter = 0
     ImportedList = []
     ImportFailList = []
 
@@ -467,8 +468,9 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
         return target_assets
 
     def PrepareImportTask(asset_data):
+        nonlocal import_counter
         bpl.advprint.print_separator()
-        counter = str(len(ImportedList)+1) + "/" + str(len(assets_data["assets"]))
+        counter = str(import_counter + 1) + "/" + str(len(assets_data["assets"]))
         asset_name = asset_data["asset_name"]
         import_task_message = f"Import asset {counter}: '{asset_name}'"
         print("###", import_task_message)
@@ -479,7 +481,7 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
             ImportedList.append([assets, asset_data["asset_type"]])
         else:
             ImportFailList.append(result)
-        
+        import_counter += 1
 
         bpl.advprint.print_separator()
 
