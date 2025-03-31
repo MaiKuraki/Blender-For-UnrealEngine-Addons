@@ -121,7 +121,7 @@ def ImportTask(asset_data):
         itask.get_task().filename = asset_data["fbx_path"]
     itask.get_task().destination_path = os.path.normpath(asset_data["full_import_path"]).replace('\\', '/')
     itask.get_task().automated = config.automated_import_tasks
-    itask.get_task().save = True
+    itask.get_task().save = False
     itask.get_task().replace_existing = True
 
     TaskOption = import_module_tasks_helper.init_options_data(asset_type, itask.use_interchange)
@@ -521,14 +521,21 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
     for error in ImportFailList:
         print(error)
 
-    # Select asset(s) in content browser
-    PathList = []
+    asset_paths = []
     for assets in (StaticMesh_ImportedList + SkeletalMesh_ImportedList + Alembic_ImportedList + Animation_ImportedList):
         for asset in assets:
-            PathList.append(asset.get_path_name())
-    unreal.EditorAssetLibrary.sync_browser_to_objects(PathList)
-    bpl.advprint.print_separator()
+            asset_paths.append(asset.get_path_name())
 
+    if config.save_assets_after_import:
+        # Save asset(s) after import
+        for path in asset_paths:
+            unreal.EditorAssetLibrary.save_asset(path)
+
+    if config.select_assets_after_import:
+        # Select asset(s) in content browser
+        unreal.EditorAssetLibrary.sync_browser_to_objects(asset_paths)
+    
+    title = "Import finished!"
     if show_finished_popup:
         if len(ImportFailList) > 0:
             message = 'Some asset(s) could not be imported.' + "\n"
@@ -545,7 +552,9 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
             for error in ImportFailList:
                 message += error + "\n"
 
-        title = "Import finished!"
         import_module_unreal_utils.show_simple_message(title, message)
+    else:
+        bpl.advprint.print_simple_title(title)
+    bpl.advprint.print_separator()
 
     return True

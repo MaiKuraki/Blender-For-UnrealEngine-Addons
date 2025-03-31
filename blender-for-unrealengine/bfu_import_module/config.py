@@ -16,7 +16,10 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+select_assets_after_import = True 
+save_assets_after_import = True
 
-automated_import_tasks = True #False when debug only, used to show import dialog.
-force_use_interchange = "Auto" #"Auto" by default, you can use "Auto", "Interchange" or "FBX"
-print_debug_steps = False
+# DEBUG
+automated_import_tasks = True # "True" by default. You can use "False" for debug.
+force_use_interchange = "Auto" # "Auto" by default. You can use "Auto", "Interchange" or "FBX" for debug.
+print_debug_steps = False # "False" by default. You can use "True" for debug.
