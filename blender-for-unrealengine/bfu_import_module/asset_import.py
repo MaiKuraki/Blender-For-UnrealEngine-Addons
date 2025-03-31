@@ -267,7 +267,7 @@ def ImportTask(asset_data):
             itask.get_igap_mesh().set_editor_property('combine_skeletal_meshes', True)
             # @TODO auto_generate_collision Removed with InterchangeGenericAssetsPipeline? 
             # I yes need also remove auto_generate_collision from the addon propertys.
-            if "static_mesh_lod_group" in asset_data:
+            if "static_mesh_lod_group" in asset_additional_data:
                 lod_group = asset_data["static_mesh_lod_group"]
                 if lod_group:
                     itask.get_igap_mesh().set_editor_property('lod_group', lod_group)
@@ -282,7 +282,7 @@ def ImportTask(asset_data):
                 itask.get_static_mesh_import_data().set_editor_property('combine_meshes', True)
                 if "auto_generate_collision" in asset_data:
                     itask.get_static_mesh_import_data().set_editor_property('auto_generate_collision', asset_data["auto_generate_collision"])
-                if "static_mesh_lod_group" in asset_data:
+                if "static_mesh_lod_group" in asset_additional_data:
                     lod_group = asset_data["static_mesh_lod_group"]
                     if lod_group:
                         itask.get_static_mesh_import_data().set_editor_property('static_mesh_lod_group', lod_group)
