@@ -152,7 +152,7 @@ def register():
         name="Unreal import location",
         description="Unreal assets import location inside the module",
         maxlen=512,
-        default='ImportedFbx')
+        default='ImportedBlenderAssets')
 
     # File path
     bpy.types.Scene.bfu_export_static_file_path = bpy.props.StringProperty(
