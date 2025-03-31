@@ -25,6 +25,7 @@ from . import import_module_post_treatment
 from . import import_module_tasks_class
 from . import import_module_tasks_helper
 from . import bfu_import_animations
+from . import bfu_import_lods
 from . import bfu_import_materials
 from . import bfu_import_vertex_color
 from . import bfu_import_light_map
@@ -253,6 +254,9 @@ def ImportTask(asset_data):
         # Vertex color
         bfu_import_vertex_color.bfu_import_vertex_color_utils.apply_import_settings(itask, asset_data, asset_additional_data)
 
+        # Lods
+        bfu_import_lods.bfu_import_lods_utils.apply_import_settings(itask, asset_data, asset_additional_data)
+
         # Materials
         bfu_import_materials.bfu_import_materials_utils.apply_import_settings(itask, asset_data, asset_additional_data)
 
@@ -410,13 +414,6 @@ def ImportTask(asset_data):
                 # NEED UNREAL ENGINE IMPLEMENTATION IN PYTHON API.
                 # skeleton.add_socket(new_socket)
 
-    # Lod
-    if asset_type == "StaticMesh":
-        import_module_post_treatment.set_static_mesh_lods(itask.get_imported_static_mesh(), itask.get_task_options(), asset_data, asset_additional_data)
-
-    if asset_type == "SkeletalMesh":
-        import_module_post_treatment.set_skeletal_mesh_lods(itask.get_imported_skeletal_mesh(), itask.get_task_options(), asset_data, asset_additional_data)
-
     # Preview mesh
     if asset_type == "Animation":
         import_module_post_treatment.set_sequence_preview_skeletal_mesh(itask.get_imported_anim_sequence(), origin_skeletal_mesh)
@@ -424,6 +421,9 @@ def ImportTask(asset_data):
     import_module_utils.print_debug_step("Process per-modules apply asset settings")
     # Vertex color
     bfu_import_vertex_color.bfu_import_vertex_color_utils.apply_asset_settings(itask, asset_additional_data)
+
+    # Lods
+    bfu_import_lods.bfu_import_lods_utils.apply_asset_settings(itask, asset_additional_data)
 
     # Materials
     bfu_import_materials.bfu_import_materials_utils.apply_asset_settings(itask, asset_additional_data)
