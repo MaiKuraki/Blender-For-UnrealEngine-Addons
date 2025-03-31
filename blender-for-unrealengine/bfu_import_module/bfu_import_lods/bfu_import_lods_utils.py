@@ -87,17 +87,21 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
     
     # Set lod group in import settings before import.
     asset_type = asset_data.get("asset_type")
+
     if asset_type == "StaticMesh":
-        if itask.use_interchange:
-            if "static_mesh_lod_group" in asset_additional_data:
-                lod_group = asset_additional_data["static_mesh_lod_group"]
-                if lod_group:
-                    itask.get_igap_mesh().set_editor_property('lod_group', lod_group)
-        else:
-            if "static_mesh_lod_group" in asset_additional_data:
-                lod_group = asset_additional_data["static_mesh_lod_group"]
-                if lod_group:
-                    itask.get_static_mesh_import_data().set_editor_property('static_mesh_lod_group', lod_group)
+
+        if "static_mesh_lod_group" in asset_additional_data:
+            desired_lod_group = asset_additional_data["static_mesh_lod_group"]
+            # Bug ? Unreal never apply the lod_group that set in import settings!
+            # And if I set lod_group after the import it not apply because that the same name.
+            # So I set a None group name set the correct one after import.
+            # desired_lod_group = asset_additional_data["static_mesh_lod_group"]
+            desired_lod_group = "None"
+
+            if itask.use_interchange:
+                itask.get_igap_mesh().set_editor_property('lod_group', desired_lod_group)
+            else:
+                itask.get_static_mesh_import_data().set_editor_property('static_mesh_lod_group', desired_lod_group)
 
 def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
     """Applies lods and lod group import settings to StaticMesh and SkeletalMesh assets."""
@@ -114,8 +118,8 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_addi
         if static_mesh is not None:
             if "static_mesh_lod_group" in asset_additional_data:
                 if asset_additional_data["static_mesh_lod_group"]:
-                    itask.get_imported_static_mesh().set_editor_property('lod_group', asset_additional_data["static_mesh_lod_group"])
-
+                    desired_lod_group = asset_additional_data["static_mesh_lod_group"]
+                    static_mesh.set_editor_property('lod_group', desired_lod_group)
 
     elif skeletal_mesh is not None:
         # Import custom skeletal mesh lods

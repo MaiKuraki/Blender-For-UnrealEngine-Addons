@@ -10,3 +10,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: Import script do not use the the correct name for search and apply pre import setting.
 - Fixed: All panel under a accordion contain a small space over it.
 - Fixed: Import counter is wrong when an import fails.
+- Fixed: Static Mesh Lod Groups is set at import but never apply.
