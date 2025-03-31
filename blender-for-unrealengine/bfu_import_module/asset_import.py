@@ -271,10 +271,6 @@ def ImportTask(asset_data):
             itask.get_igap_mesh().set_editor_property('combine_skeletal_meshes', True)
             # @TODO auto_generate_collision Removed with InterchangeGenericAssetsPipeline? 
             # I yes need also remove auto_generate_collision from the addon propertys.
-            if "static_mesh_lod_group" in asset_additional_data:
-                lod_group = asset_additional_data["static_mesh_lod_group"]
-                if lod_group:
-                    itask.get_igap_mesh().set_editor_property('lod_group', lod_group)
             itask.get_igap_mesh().set_editor_property('import_morph_targets', True)
 
             itask.get_igap_common_mesh().set_editor_property('recompute_normals', False)
@@ -286,10 +282,6 @@ def ImportTask(asset_data):
                 itask.get_static_mesh_import_data().set_editor_property('combine_meshes', True)
                 if "auto_generate_collision" in asset_data:
                     itask.get_static_mesh_import_data().set_editor_property('auto_generate_collision', asset_data["auto_generate_collision"])
-                if "static_mesh_lod_group" in asset_additional_data:
-                    lod_group = asset_additional_data["static_mesh_lod_group"]
-                    if lod_group:
-                        itask.get_static_mesh_import_data().set_editor_property('static_mesh_lod_group', lod_group)
 
             if asset_type == "SkeletalMesh" or asset_type == "Animation":
                 # unreal.FbxSkeletalMeshImportData
@@ -336,9 +328,6 @@ def ImportTask(asset_data):
         bfu_import_animations.bfu_import_animations_utils.apply_post_import_assets_changes(itask, asset_data)
 
     if asset_type == "StaticMesh":
-        if "static_mesh_lod_group" in asset_data:
-            if asset_data["static_mesh_lod_group"]:
-                itask.get_imported_static_mesh().set_editor_property('lod_group', asset_data["static_mesh_lod_group"])
 
         if "collision_trace_flag" in asset_data:
             collision_data = itask.get_imported_static_mesh().get_editor_property('body_setup')
@@ -353,9 +342,7 @@ def ImportTask(asset_data):
                     collision_data.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
 
     if asset_type == "SkeletalMesh":
-        print("S13.1")
         if origin_skeleton is None:
-            print("S13.2")
             # Unreal create a new skeleton when no skeleton was selected, so addon rename it.
             skeleton = itask.get_imported_skeleton()
             if skeleton:

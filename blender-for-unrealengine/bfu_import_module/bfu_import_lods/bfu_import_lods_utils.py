@@ -85,18 +85,38 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
     """Applies lods and lod group import settings to StaticMesh and SkeletalMesh assets."""
     import_module_utils.print_debug_step("Set Lods import settings.")
     
-
+    # Set lod group in import settings before import.
+    asset_type = asset_data.get("asset_type")
+    if asset_type == "StaticMesh":
+        if itask.use_interchange:
+            if "static_mesh_lod_group" in asset_additional_data:
+                lod_group = asset_additional_data["static_mesh_lod_group"]
+                if lod_group:
+                    itask.get_igap_mesh().set_editor_property('lod_group', lod_group)
+        else:
+            if "static_mesh_lod_group" in asset_additional_data:
+                lod_group = asset_additional_data["static_mesh_lod_group"]
+                if lod_group:
+                    itask.get_static_mesh_import_data().set_editor_property('static_mesh_lod_group', lod_group)
 
 def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
     """Applies lods and lod group import settings to StaticMesh and SkeletalMesh assets."""
     import_module_utils.print_debug_step("Set Lods import settings.")
-
-    # Check   
     static_mesh = itask.get_imported_static_mesh()
+    skeletal_mesh = itask.get_imported_skeletal_mesh()
+
+     
     if static_mesh is not None:
+        # Import custom static mesh lods
         set_static_mesh_lods(static_mesh, itask.get_task_options(), asset_additional_data)
 
-    skeletal_mesh = itask.get_imported_skeletal_mesh()
-    if skeletal_mesh is not None:
-        set_skeletal_mesh_lods(skeletal_mesh, itask.get_task_options(), asset_additional_data)
+        # Set Lod Group mesh   
+        if static_mesh is not None:
+            if "static_mesh_lod_group" in asset_additional_data:
+                if asset_additional_data["static_mesh_lod_group"]:
+                    itask.get_imported_static_mesh().set_editor_property('lod_group', asset_additional_data["static_mesh_lod_group"])
 
+
+    elif skeletal_mesh is not None:
+        # Import custom skeletal mesh lods
+        set_skeletal_mesh_lods(skeletal_mesh, itask.get_task_options(), asset_additional_data)
