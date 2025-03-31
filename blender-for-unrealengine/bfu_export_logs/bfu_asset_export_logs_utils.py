@@ -20,7 +20,7 @@ def clear_asset_logs():
 def get_exported_asset_number():
     # TODO Need add a check to know how many asset is realy exported
     scene = bpy.context.scene
-    len(scene.bfu_unreal_exported_assets_logs)
+    return len(scene.bfu_unreal_exported_assets_logs)
 
 def get_export_asset_logs_details():
     """
