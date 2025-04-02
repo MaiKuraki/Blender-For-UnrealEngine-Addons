@@ -14,3 +14,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: Script when try to replace a read only file. (Happens when Unreal use it at the same time)
 - Fixed: Asset number is None in the export logs.
 - Fixed: Animation export may stay idle (NLA export fail, fixed with BBPL update)
+- Fixed: Modifiers distances not updated wihe the rescale when the Unit Scale is not set to 0.01.

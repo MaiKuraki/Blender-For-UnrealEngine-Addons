@@ -143,6 +143,8 @@ def ExportSingleSkeletalMesh(
         my_scene_unit_settings.SetUnitForUnrealEngineExport()
         my_skeletal_export_scale = bfu_utils.SkeletalExportScale(active)
         my_skeletal_export_scale.ApplySkeletalExportScale(rrf, is_a_proxy=export_as_proxy)
+        my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf, is_a_proxy=export_as_proxy)
+        my_modifiers_data_scale.ResacleForUnrealEngine()
 
     # Set rename temporarily the Armature as "Armature"
     bfu_utils.disable_all_bones_consraints(active)
@@ -243,6 +245,7 @@ def ExportSingleSkeletalMesh(
     if ShouldRescaleRig:
         # Reset Curve an unit
         my_scene_unit_settings.ResetUnit()
+        my_modifiers_data_scale.ResetScaleAfterExport()
 
     # Reset Transform
     saved_base_transforms.reset_object_transforms()

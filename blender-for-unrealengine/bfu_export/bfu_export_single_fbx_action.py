@@ -137,6 +137,8 @@ def ExportSingleFbxAction(
             action_curve_scale.ResacleForUnrealEngine()
         my_shape_keys_curve_scale = bfu_utils.ShapeKeysCurveScale(rrf, is_a_proxy=export_as_proxy)
         my_shape_keys_curve_scale.ResacleForUnrealEngine()
+        my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf, is_a_proxy=export_as_proxy)
+        my_modifiers_data_scale.ResacleForUnrealEngine()
 
         bfu_utils.RescaleSelectCurveHook(1/rrf)
         bbpl.anim_utils.reset_armature_pose(active)
@@ -259,6 +261,7 @@ def ExportSingleFbxAction(
         my_skeletal_export_scale.ResetSkeletalExportScale()
         my_scene_unit_settings.ResetUnit()
         my_shape_keys_curve_scale.ResetScaleAfterExport()
+        my_modifiers_data_scale.ResetScaleAfterExport()
 
     # Reset Transform
     saved_base_transforms.reset_object_transforms()

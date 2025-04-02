@@ -432,6 +432,38 @@ class ShapeKeysCurveScale():
         return drivers
 
 
+class ModifiersDataScale():
+
+    def __init__(self, rescale_rig_factor, is_a_proxy=False):
+        self.export_as_proxy = is_a_proxy
+        self.rescale_rig_factor = rescale_rig_factor  # rigRescaleFactor
+        self.modifiers = self.ModifiersRefs()  # Save driver data as proxy
+        self.saved_data = {}
+
+
+    def ResacleForUnrealEngine(self):
+        for x, mod in enumerate(self.modifiers):
+            if mod.type == "MIRROR":
+                self.saved_data[x] = mod.merge_threshold
+                mod.merge_threshold *= self.rescale_rig_factor
+
+
+    def ResetScaleAfterExport(self):
+        for x, mod in enumerate(self.modifiers):
+            if mod.type == "MIRROR":
+                mod.merge_threshold = self.saved_data[x]
+
+    def ModifiersRefs(self):
+        modifiers = []
+        obj_list = bpy.context.selected_objects
+        if self.export_as_proxy is False:
+            for obj in obj_list:
+                if obj.type == "MESH":
+                    for mod in obj.modifiers:
+                        modifiers.append(mod)
+        return modifiers
+
+
 def GetAllCollisionObj():
     # Get any object that can be understood
     # as a collision or a socket by unreal
