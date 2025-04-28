@@ -30,6 +30,7 @@ from .. import bfu_cached_asset_list
 def get_preset_values():
     preset_values = [
         'obj.bfu_disable_free_scale_animation',
+        'obj.bfu_export_animation_without_mesh',
         'obj.bfu_sample_anim_for_export',
         'obj.bfu_simplify_anim_for_export',
     ]
@@ -141,10 +142,20 @@ def register():
         default=False
     )
 
+    bpy.types.Object.bfu_export_animation_without_mesh = bpy.props.BoolProperty(
+        name="Export animation without mesh",
+        description=(
+            "If checked, When exporting animation, do not include mesh data in the FBX file."
+            ),
+        override={'LIBRARY_OVERRIDABLE'},
+        default=False
+        )
+
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
+    del bpy.types.Object.bfu_export_animation_without_mesh
     del bpy.types.Object.bfu_disable_free_scale_animation
     del bpy.types.Object.bfu_simplify_anim_for_export
     del bpy.types.Object.bfu_sample_anim_for_export

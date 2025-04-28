@@ -77,7 +77,6 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
             ue_standard_skeleton.label(text="(ue-standard)")
             ue_standard_skeleton_props = ue_standard_skeleton.column()
             ue_standard_skeleton_props.enabled = obj.bfu_skeleton_export_procedure == "ue-standard"
-            ue_standard_skeleton_props.prop(obj, "bfu_export_animation_without_mesh")
             ue_standard_skeleton_props.prop(obj, "bfu_mirror_symmetry_right_side_bones")
             mirror_symmetry_right_side_bones = ue_standard_skeleton_props.row()
             mirror_symmetry_right_side_bones.enabled = obj.bfu_mirror_symmetry_right_side_bones

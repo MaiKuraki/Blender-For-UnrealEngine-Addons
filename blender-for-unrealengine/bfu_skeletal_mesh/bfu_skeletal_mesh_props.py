@@ -30,7 +30,6 @@ def get_preset_values():
         'obj.bfu_export_deform_only',
         'obj.bfu_export_skeletal_mesh_as_static_mesh',
         'obj.bfu_create_sub_folder_with_skeletal_mesh_name',
-        'obj.bfu_export_animation_without_mesh',
         'obj.bfu_mirror_symmetry_right_side_bones',
         'obj.bfu_use_ue_mannequin_bone_alignment',
     ]
@@ -74,15 +73,6 @@ def register():
         default=True
         )
 
-    bpy.types.Object.bfu_export_animation_without_mesh = bpy.props.BoolProperty(
-        name="Export animation without mesh",
-        description=(
-            "If checked, When exporting animation, do not include mesh data in the FBX file."
-            ),
-        override={'LIBRARY_OVERRIDABLE'},
-        default=False
-        )
-
     bpy.types.Object.bfu_mirror_symmetry_right_side_bones = bpy.props.BoolProperty(
         name="Revert direction of symmetry right side bones",
         description=(
@@ -108,7 +98,6 @@ def unregister():
 
     del bpy.types.Object.bfu_use_ue_mannequin_bone_alignment
     del bpy.types.Object.bfu_mirror_symmetry_right_side_bones
-    del bpy.types.Object.bfu_export_animation_without_mesh
     
     del bpy.types.Object.bfu_create_sub_folder_with_skeletal_mesh_name
     del bpy.types.Object.bfu_export_skeletal_mesh_as_static_mesh

@@ -50,6 +50,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 propsFbx.prop(obj, 'bfu_simplify_anim_for_export')
             propsScaleAnimation = panel.row()
             propsScaleAnimation.prop(obj, "bfu_disable_free_scale_animation")
+            propsScaleAnimation.prop(obj, "bfu_export_animation_without_mesh")
 
 def draw_animation_tab_foot_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
 
