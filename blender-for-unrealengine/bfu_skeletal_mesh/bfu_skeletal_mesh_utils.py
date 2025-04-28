@@ -39,6 +39,8 @@ def SelectArmatureParentAndDesiredChilds(active: bpy.types.Object, inclide_meshs
         elif select_obj.type != "MESH":
             new_select_list.append(select_obj)
 
+        # @TODO -> inclide_sockets
+
     # Select active at end to move a list end
     new_select_list.append(active)
 
