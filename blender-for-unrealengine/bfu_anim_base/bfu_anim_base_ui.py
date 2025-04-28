@@ -48,7 +48,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 if obj.bfu_skeleton_export_procedure != "auto-rig-pro":
                     propsFbx.prop(obj, 'bfu_sample_anim_for_export')
                 propsFbx.prop(obj, 'bfu_simplify_anim_for_export')
-            propsScaleAnimation = panel.row()
+            propsScaleAnimation = panel.column()
             propsScaleAnimation.prop(obj, "bfu_disable_free_scale_animation")
             propsScaleAnimation.prop(obj, "bfu_export_animation_without_mesh")
 
