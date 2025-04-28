@@ -80,7 +80,7 @@ def register():
             "If checked, When exporting animation, do not include mesh data in the FBX file."
             ),
         override={'LIBRARY_OVERRIDABLE'},
-        default=True
+        default=False
         )
 
     bpy.types.Object.bfu_mirror_symmetry_right_side_bones = bpy.props.BoolProperty(
