@@ -235,7 +235,7 @@ def GetAllCollisionAndSocketsObj(objs_list=None):
     return colObjs
 
 
-def GetExportDesiredChilds(obj):
+def GetExportDesiredChilds(obj: bpy.types.Object) -> List[bpy.types.Object]:
     # Get only all child objects that must be exported with parent object
 
     DesiredObj = []
@@ -657,51 +657,51 @@ def GetExportProxyChild(obj):
                                 return child_obj
     return None
 
-
-def SelectParentAndDesiredChilds(obj):
+def SelectParentAndDesiredChilds(active: bpy.types.Object):
     # Selects only auto desired child objects that must be exported with parent object
-    selectedObjs = []
+    if active.name not in bpy.context.view_layer.objects:
+        print(f"The active object {active.name} not found in bpy.context.view_layer.objects!")
+        return
+
+    new_select_list = []
     bpy.ops.object.select_all(action='DESELECT')
-    for selectObj in GetExportDesiredChilds(obj):
-        if selectObj.name in bpy.context.view_layer.objects:
-            selectObj.select_set(True)
-            selectedObjs.append(selectObj)
+    for obj in GetExportDesiredChilds(active):
+        if obj.name in bpy.context.view_layer.objects:
+            new_select_list.append(obj)
 
-    if obj.name in bpy.context.view_layer.objects:
-        obj.select_set(True)
+    # Select active at end to move a list end
+    new_select_list.append(active)
 
-    if GetExportAsProxy(obj):
-        proxy_child = GetExportProxyChild(obj)
+    # Select proxy at end to move a list end
+    if GetExportAsProxy(active):
+        proxy_child = GetExportProxyChild(active)
         if proxy_child is not None:
-            proxy_child.select_set(True)
+            new_select_list.append(proxy_child)
 
-    selectedObjs.append(obj)
-    if obj.name in bpy.context.view_layer.objects:
-        bpy.context.view_layer.objects.active = obj
-    return selectedObjs
+    return bbpl.utils.select_specific_object_list(active, new_select_list)
 
 
-def SelectParentAndSpecificChilds(active, objects):
+def SelectParentAndSpecificChilds(active: bpy.types.Object, objects: List[bpy.types.Object]):
     # Selects specific child objects that must be exported with parent object
-    selectedObjs = []
+    if active.name not in bpy.context.view_layer.objects:
+        print(f"The active object {active.name} not found in bpy.context.view_layer.objects!")
+        return
+
+    new_select_list = []
     bpy.ops.object.select_all(action='DESELECT')
     for obj in objects:
         if obj.name in bpy.context.view_layer.objects:
-            obj.select_set(True)
-            selectedObjs.append(obj)
+            new_select_list.append(obj)
 
-    if active.name in bpy.context.view_layer.objects:
-        active.select_set(True)
+    # Select active at end to move a list end
+    new_select_list.append(active)
 
     if GetExportAsProxy(active):
         proxy_child = GetExportProxyChild(active)
         if proxy_child is not None:
-            proxy_child.select_set(True)
+            new_select_list.append(proxy_child)
 
-    selectedObjs.append(active)
-    if active.name in bpy.context.view_layer.objects:
-        bpy.context.view_layer.objects.active = active
-    return selectedObjs
+    return bbpl.utils.select_specific_object_list(active, new_select_list)
 
 
 def RemoveSocketFromSelectForProxyArmature():

@@ -89,7 +89,11 @@ def ExportSingleFbxAction(
 
     bbpl.utils.safe_mode_set('OBJECT')
 
-    bfu_utils.SelectParentAndDesiredChilds(armature)
+    if armature.bfu_export_animation_without_mesh:
+        bfu_skeletal_mesh.bfu_skeletal_mesh_utils.SelectArmatureParentAndDesiredChilds(armature, False, False)
+    else:
+        bfu_skeletal_mesh.bfu_skeletal_mesh_utils.SelectArmatureParentAndDesiredChilds(armature, True, False)
+
     bfu_skeletal_mesh.bfu_skeletal_mesh_utils.deselect_socket(armature) 
 
     asset_name = bfu_export_utils.PrepareExportName(armature, True)
