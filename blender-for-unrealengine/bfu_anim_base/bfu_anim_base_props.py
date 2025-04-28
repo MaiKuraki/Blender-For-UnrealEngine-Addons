@@ -144,9 +144,7 @@ def register():
 
     bpy.types.Object.bfu_export_animation_without_mesh = bpy.props.BoolProperty(
         name="Export animation without mesh",
-        description=(
-            "If checked, When exporting animation, do not include mesh data in the FBX file."
-            ),
+        description=("If checked, When exporting animation, do not include mesh data in the exported files. (This may destroy shape keys)"),
         override={'LIBRARY_OVERRIDABLE'},
         default=False
         )
