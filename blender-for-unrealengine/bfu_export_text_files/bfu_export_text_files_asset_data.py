@@ -74,7 +74,7 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
         else:
             relative_import_path = unreal_exported_asset.folder_name
 
-        full_import_path = "/" + scene.bfu_unreal_import_module + "/" + os.path.join(scene.bfu_unreal_import_location, relative_import_path)
+        full_import_path = scene.bfu_unreal_import_module + "/" + os.path.join(scene.bfu_unreal_import_location, relative_import_path)
         full_import_path = full_import_path.replace('\\', '/').rstrip('/')
         asset_data["full_import_path"] = full_import_path
 
