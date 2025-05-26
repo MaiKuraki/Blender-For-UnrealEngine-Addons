@@ -3,6 +3,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 
 ### Version 4.3.13
 
+- New: Sub folder support for modular skeletal meshs.
 - Changed: New wiki button for open Lods page.
 - Changed: The default export folder "ExportedFbx" is now "ExportedAssets".
 - Changed: The default export folder "ImportedFbx" is now "ImportedBlenderAssets".
