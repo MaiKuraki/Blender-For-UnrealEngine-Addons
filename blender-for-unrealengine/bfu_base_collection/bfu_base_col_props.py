@@ -22,6 +22,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
+from .. import bfu_cached_assets
 
 
 
@@ -95,7 +96,7 @@ class BFU_OT_ShowCollectionToExport(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        collection_asset_cache = bfu_cached_asset_list.GetCollectionAssetCache()
+        collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetCollectionAssetCache()
         collection_export_asset_list = collection_asset_cache.GetCollectionAssetList()
         popup_title = "Collection list"
         if len(collection_export_asset_list) > 0:

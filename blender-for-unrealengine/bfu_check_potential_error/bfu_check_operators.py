@@ -18,7 +18,7 @@
 
 
 import bpy
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 from .. import bfu_check_potential_error
 
 
@@ -32,11 +32,11 @@ class BFU_OT_ShowAssetToExport(bpy.types.Operator):
         obj = context.object
         if obj:
             if obj.type == "ARMATURE":
-                animation_asset_cache = bfu_cached_asset_list.GetAnimationAssetCache(obj)
+                animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
                 animation_asset_cache.UpdateActionCache()
                 
 
-        final_asset_cache = bfu_cached_asset_list.GetfinalAssetCache()
+        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
         final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
         popup_title = "Assets list"
         if len(final_asset_list_to_export) > 0:
@@ -47,7 +47,7 @@ class BFU_OT_ShowAssetToExport(bpy.types.Operator):
         def draw(self, context: bpy.types.Context):
             col = self.layout.column()
             for asset in final_asset_list_to_export:
-                asset :bfu_cached_asset_list.AssetToExport
+                asset :bfu_cached_assets.bfu_cached_assets_types.AssetToExport
                 row = col.row()
                 if asset.obj is not None:
                     if asset.action is not None:

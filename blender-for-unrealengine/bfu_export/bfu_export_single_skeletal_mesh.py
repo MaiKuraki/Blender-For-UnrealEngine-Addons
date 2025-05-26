@@ -31,13 +31,17 @@ from .. import bfu_vertex_color
 from .. import bfu_assets_manager
 
 
-def ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name=""):
+def ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name="", desired_dirpath=""):
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
 
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(armature)
     asset_type = asset_class.get_asset_type_name(armature)
-    dirpath = asset_class.get_obj_export_directory_path(armature, True)
+
+    if desired_dirpath:
+        dirpath = desired_dirpath
+    else:
+        dirpath = asset_class.get_obj_export_directory_path(armature, "", True)
 
     if desired_name:
         final_name = desired_name

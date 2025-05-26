@@ -24,7 +24,7 @@ from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_skeletal_mesh
 from .. import bfu_alembic_animation
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 
 
 def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
@@ -75,7 +75,7 @@ def draw_animation_tab_foot_ui(layout: bpy.types.UILayout, obj: bpy.types.Object
         ArmaturePropertyInfo = (
             layout.row().box().split(factor=0.75)
             )
-        animation_asset_cache = bfu_cached_asset_list.GetAnimationAssetCache(obj)
+        animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
         animation_to_export = animation_asset_cache.GetAnimationAssetList()
         ActionNum = len(animation_to_export)
         if obj.bfu_anim_nla_use:

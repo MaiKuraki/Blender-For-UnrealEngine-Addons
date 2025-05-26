@@ -54,7 +54,7 @@ def get_lod_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_
         def GetLodPath(lod_obj):
             asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(lod_obj)
             if asset_class:
-                directory_path = asset_class.get_obj_export_directory_path(lod_obj, True)
+                directory_path = asset_class.get_obj_export_directory_path(lod_obj, "", True)
                 file_name = asset_class.get_obj_file_name(lod_obj)
             return os.path.join(directory_path, file_name)
 

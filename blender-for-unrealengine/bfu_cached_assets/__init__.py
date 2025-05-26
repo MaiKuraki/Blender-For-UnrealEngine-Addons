@@ -16,35 +16,29 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os
 import bpy
-from .. import bfu_utils
-from .. import bfu_basics
+import importlib
 
-class BFU_BaseAssetClass:
-    def __init__(self):
-        self.use_lods = False
-        self.use_materials = False
-        self.use_sockets = False
+from . import bfu_cached_assets_types
+from . import bfu_cached_assets_blender_class
 
-    def support_asset_type(self, obj, details = None):
-        return False
+if "bfu_cached_assets_types" in locals():
+    importlib.reload(bfu_cached_assets_types)
+if "bfu_cached_assets_blender_class" in locals():
+    importlib.reload(bfu_cached_assets_blender_class)
 
-    def get_asset_type_name(self, obj):
-        return None
+classes = (
+)
 
-    def get_obj_export_name(self, obj):
-        return bfu_basics.ValidFilename(obj.name)
-    
-    def get_obj_file_name(self, obj, desired_name="", fileType=".fbx"):
-        return ""
-    
-    def get_obj_export_directory_path(self, obj, extra_path = "", absolute = True):
-        return ""
 
-    def can_export_asset(self):
-        return False
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
-    def can_export_obj_asset(self, obj):
-        return False
-    
+    bfu_cached_assets_blender_class.register()
+
+def unregister():
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+
+    bfu_cached_assets_blender_class.unregister()

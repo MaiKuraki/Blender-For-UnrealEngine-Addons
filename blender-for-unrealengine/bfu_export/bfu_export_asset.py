@@ -27,7 +27,7 @@ from . import bfu_export_single_skeletal_mesh
 from . import bfu_export_single_static_mesh
 from . import bfu_export_single_static_mesh_collection
 from . import bfu_export_single_groom_simulation
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 from .. import bbpl
 from .. import bfu_assets_manager
 from .. import bfu_basics
@@ -118,14 +118,13 @@ def process_export(op):
     
     if export_filter == "default":
         PrepareSceneForExport()
-        final_asset_cache = bfu_cached_asset_list.GetfinalAssetCache()
+        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
         final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
 
     elif export_filter == "only_object" or export_filter == "only_object_action":
-        final_asset_cache = bfu_cached_asset_list.GetfinalAssetCache()
+        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
         final_asset_list_to_export = final_asset_cache.GetFinalAssetList() #Get finial assets visible only
         PrepareSceneForExport()
-
 
     bbpl.utils.safe_mode_set('OBJECT', user_scene_save.user_select_class.user_active)
 
@@ -143,7 +142,6 @@ def process_export(op):
     col_list = []  # Do a simple list of Collection to export
 
     prepare_all_export_time_log.end_time_log()
-
     export_all_from_asset_list(op, final_asset_list_to_export)
 
     post_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("Clean after all export")
@@ -174,7 +172,7 @@ def process_export(op):
     post_export_time_log.end_time_log()
 
 
-def export_all_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_all_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("TOTAL EXPORT")
     export_collection_from_asset_list(op, asset_list)
     export_camera_from_asset_list(op, asset_list)
@@ -187,14 +185,14 @@ def export_all_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExpo
     export_nonlinear_animation_from_asset_list(op, asset_list)
     export_time_log.end_time_log()
 
-def export_collection_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_collection_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
 
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
     print("Start Export collection(s)")
 
     if scene.bfu_use_static_collection_export:
-        collection_asset_cache = bfu_cached_asset_list.GetCollectionAssetCache()
+        collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetCollectionAssetCache()
         collection_export_asset_list = collection_asset_cache.GetCollectionAssetList()
         for col in collection_export_asset_list:
             # Save current start/end frame
@@ -208,7 +206,7 @@ def export_collection_from_asset_list(op, asset_list: bfu_cached_asset_list.Asse
 
 
 
-def export_camera_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_camera_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
     print("Start Export camera(s)")
@@ -222,7 +220,7 @@ def export_camera_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToE
     
     # Preparre asset to export
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == bfu_camera.bfu_camera_config.asset_type_name:
             obj = asset.obj
             if obj.bfu_export_type == "export_recursive":
@@ -249,7 +247,7 @@ def export_camera_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToE
         scene.frame_start = UserStartFrame
         scene.frame_end = UserEndFrame
 
-def export_spline_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_spline_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
     print("Start Export spline(s)")
@@ -262,7 +260,7 @@ def export_spline_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToE
     
     # Preparre asset to export
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == bfu_spline.bfu_spline_config.asset_type_name:
             obj = asset.obj
             if obj.bfu_export_type == "export_recursive":
@@ -283,12 +281,12 @@ def export_spline_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToE
         bfu_export_single_spline.ProcessSplineExport(op, obj, spline_tracks)
 
 
-def export_static_mesh_from_asset_list(op, asset_list: [bfu_cached_asset_list.AssetToExport]):
+def export_static_mesh_from_asset_list(op, asset_list: [bfu_cached_assets.bfu_cached_assets_types.AssetToExport]):
     scene = bpy.context.scene
 
     print("Start Export StaticMesh(s)")
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == bfu_static_mesh.bfu_static_mesh_config.asset_type_name:
             obj = asset.obj
             if obj.bfu_export_type == "export_recursive":
@@ -306,34 +304,35 @@ def export_static_mesh_from_asset_list(op, asset_list: [bfu_cached_asset_list.As
 
                     export_time_log.end_time_log()
 
-def export_skeletal_mesh_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_skeletal_mesh_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     scene = bpy.context.scene
 
     print("Start Export SkeletalMesh(s)")
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == bfu_skeletal_mesh.bfu_skeletal_mesh_config.mesh_asset_type_name:
             armature = asset.obj
             mesh_parts = asset.obj_list
             desired_name = asset.name
+            dirpath = asset.dirpath
             if armature.bfu_export_type == "export_recursive":
                 if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(armature) and IsValidObjectForExport(scene, armature):
                     # Save current start/end frame
                     UserStartFrame = scene.frame_start
                     UserEndFrame = scene.frame_end
-                    bfu_export_single_skeletal_mesh.ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name)
+                    bfu_export_single_skeletal_mesh.ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name, dirpath)
 
                     # Resets previous start/end frame
                     scene.frame_start = UserStartFrame
                     scene.frame_end = UserEndFrame
 
-def export_alembic_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_alembic_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     scene = bpy.context.scene
 
     print("Start Export Alembic Animation(s)")
     
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == bfu_alembic_animation.bfu_alembic_animation_config.asset_type_name:
             obj = asset.obj
             if obj.bfu_export_type == "export_recursive":        
@@ -347,12 +346,12 @@ def export_alembic_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetTo
                     scene.frame_start = UserStartFrame
                     scene.frame_end = UserEndFrame
 
-def export_groom_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_groom_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     scene = bpy.context.scene
 
     print("Start Export Groom Simulation(s)")
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == bfu_groom.bfu_groom_config.asset_type_name:
             obj = asset.obj
             if obj.bfu_export_type == "export_recursive":        
@@ -366,11 +365,11 @@ def export_groom_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToEx
                     scene.frame_start = UserStartFrame
                     scene.frame_end = UserEndFrame
 
-def export_animation_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_animation_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     scene = bpy.context.scene
 
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == "Action" or asset.asset_type == "Pose":
             obj = asset.obj
             if obj.bfu_export_type == "export_recursive":    
@@ -378,7 +377,7 @@ def export_animation_from_asset_list(op, asset_list: bfu_cached_asset_list.Asset
                     # Action animation
                     print("Start Export Action(s)")
                     action_curve_scale = None
-                    animation_asset_cache = bfu_cached_asset_list.GetAnimationAssetCache(obj)
+                    animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
                     animation_to_export = animation_asset_cache.GetAnimationAssetList()
                     for action in animation_to_export:
                         if action.name == asset.action.name:
@@ -399,11 +398,11 @@ def export_animation_from_asset_list(op, asset_list: bfu_cached_asset_list.Asset
                     if action_curve_scale:
                         action_curve_scale.ResetScaleAfterExport()
 
-def export_nonlinear_animation_from_asset_list(op, asset_list: bfu_cached_asset_list.AssetToExport):
+def export_nonlinear_animation_from_asset_list(op, asset_list: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
     scene = bpy.context.scene
 
     for asset in asset_list:
-        asset: bfu_cached_asset_list.AssetToExport
+        asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == "NlAnim":
             obj = asset.obj
             if obj.bfu_export_type == "export_recursive":    

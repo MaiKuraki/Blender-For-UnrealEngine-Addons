@@ -78,7 +78,7 @@ from . import bfu_naming
 from . import fbxio
 from . import bfu_export
 from . import bfu_backward_compatibility
-from . import bfu_cached_asset_list
+from . import bfu_cached_assets
 
 
 
@@ -174,8 +174,8 @@ if "bfu_export" in locals():
     importlib.reload(bfu_export)
 if "bfu_backward_compatibility" in locals():
     importlib.reload(bfu_backward_compatibility)
-if "bfu_cached_asset_list" in locals():
-    importlib.reload(bfu_cached_asset_list)
+if "bfu_cached_assets" in locals():
+    importlib.reload(bfu_cached_assets)
 
 class BFUCachedAction(bpy.types.PropertyGroup):
     """
@@ -229,10 +229,10 @@ def register():
     bfu_ui.register()
     bfu_check_potential_error.register()
     bfu_backward_compatibility.register()
-    bfu_cached_asset_list.register()
+    bfu_cached_assets.register()
 
 def unregister():
-    bfu_cached_asset_list.unregister()
+    bfu_cached_assets.unregister()
     bfu_backward_compatibility.unregister()
     bfu_check_potential_error.unregister()
     bfu_ui.unregister()

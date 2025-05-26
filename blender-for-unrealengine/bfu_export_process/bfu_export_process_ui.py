@@ -22,7 +22,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
@@ -34,7 +34,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     if accordion.is_expend():
 
         # Feedback info :
-        final_asset_cache = bfu_cached_asset_list.GetfinalAssetCache()
+        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
         final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
         AssetNum = len(final_asset_list_to_export)
         AssetInfo = panel.row().box().split(factor=0.75)

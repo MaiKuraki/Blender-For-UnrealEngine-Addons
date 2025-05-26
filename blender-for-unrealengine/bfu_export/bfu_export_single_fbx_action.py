@@ -33,7 +33,7 @@ def ProcessActionExport(op, obj, action, action_curve_scale):
     scene = bpy.context.scene
 
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj, "SkeletalAnimation")
-    dirpath = asset_class.get_obj_export_directory_path(obj, True)
+    dirpath = asset_class.get_obj_export_directory_path(obj, "", True)
 
     my_asset_log = bfu_export_logs.bfu_asset_export_logs_utils.create_new_asset_log()
     my_asset_log.object = obj

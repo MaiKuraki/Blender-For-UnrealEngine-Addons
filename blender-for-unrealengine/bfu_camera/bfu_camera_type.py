@@ -48,15 +48,22 @@ class BFU_Camera(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
             return bfu_basics.ValidFilename(scene.bfu_camera_prefix_export_name+desired_name+fileType)
         return bfu_basics.ValidFilename(scene.bfu_camera_prefix_export_name+obj.name+fileType)
     
-    def get_obj_export_directory_path(self, obj, absolute = True):
-        folder_name = bfu_utils.get_export_folder_name(obj)
+    def get_obj_export_directory_path(self, obj, extra_path = "", absolute = True):
         scene = bpy.context.scene
-        if(absolute):
+
+        # Get root path
+        if absolute:
             root_path = bpy.path.abspath(scene.bfu_export_camera_file_path)
         else:
             root_path = scene.bfu_export_camera_file_path
 
+        # Add obj folder path
+        folder_name = bfu_utils.get_export_folder_name(obj)
         dirpath = os.path.join(root_path, folder_name)
+
+        # Add extra path if provided
+        dirpath = os.path.join(dirpath, extra_path)
+
         return dirpath
     
     def can_export_asset(self):

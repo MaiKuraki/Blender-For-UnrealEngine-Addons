@@ -25,7 +25,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bfu_assets_manager
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 from .. import bfu_check_potential_error
 from .. import bfu_export
 from .. import bfu_export_text_files
@@ -69,7 +69,7 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
                     "No asset type is checked.")
                 return False
 
-            final_asset_cache = bfu_cached_asset_list.GetfinalAssetCache()
+            final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
             final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
             if not len(final_asset_list_to_export) > 0:
                 self.report(

@@ -27,7 +27,7 @@ from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_assets_manager
 from .. import bfu_utils
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 
 from .. import bfu_collision
 from .. import bfu_socket
@@ -121,7 +121,7 @@ def update_unreal_potential_error():
 
     # prepares the data to avoid unnecessary loops
     obj_to_check = []
-    final_asset_cache = bfu_cached_asset_list.GetfinalAssetCache()
+    final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
     final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
     for Asset in final_asset_list_to_export:
         if Asset.obj in bfu_utils.GetAllobjectsByExportType("export_recursive"):
@@ -501,7 +501,7 @@ def update_unreal_potential_error():
         # Check that animations do not use an invalid scale value
         for obj in obj_to_check:
             if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                animation_asset_cache = bfu_cached_asset_list.GetAnimationAssetCache(obj)
+                animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
                 animations_to_export = animation_asset_cache.GetAnimationAssetList()
                 for action in animations_to_export:
                     for fcurve in action.fcurves:

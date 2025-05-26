@@ -23,7 +23,7 @@ from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_export_procedure
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
@@ -60,7 +60,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
                     bfu_export_procedure.bfu_export_procedure_ui.draw_collection_export_procedure(panel, col)
 
             collectionPropertyInfo = panel.row().box().split(factor=0.75)
-            collection_asset_cache = bfu_cached_asset_list.GetCollectionAssetCache()
+            collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetCollectionAssetCache()
             collection_export_asset_list = collection_asset_cache.GetCollectionAssetList()
             collectionNum = len(collection_export_asset_list)
             collectionFeedback = (

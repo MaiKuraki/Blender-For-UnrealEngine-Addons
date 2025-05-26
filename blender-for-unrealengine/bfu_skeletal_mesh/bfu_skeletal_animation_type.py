@@ -56,18 +56,28 @@ class BFU_SkeletalAnimation(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAs
             return bfu_basics.ValidFilename(scene.bfu_skeletal_mesh_prefix_export_name+desired_name+fileType)
         return bfu_basics.ValidFilename(scene.bfu_skeletal_mesh_prefix_export_name+obj.name+fileType)
             
-    def get_obj_export_directory_path(self, obj, absolute = True):
-        folder_name = bfu_utils.get_export_folder_name(obj)
+    def get_obj_export_directory_path(self, obj, extra_path = "", absolute = True):
         scene = bpy.context.scene
-        if(absolute):
+
+        # Get root path
+        if absolute:
             root_path = bpy.path.abspath(scene.bfu_export_skeletal_file_path)
         else:
             root_path = scene.bfu_export_skeletal_file_path
-    
+
+        # Add obj folder path
+        folder_name = bfu_utils.get_export_folder_name(obj)
+        dirpath = os.path.join(root_path, folder_name)
+
+        # Add skeletal subfolder and animation subfolder
         if obj.bfu_create_sub_folder_with_skeletal_mesh_name:
-            dirpath = os.path.join(root_path, folder_name, self.get_obj_export_name(obj), scene.bfu_anim_subfolder_name)
+            dirpath = os.path.join(dirpath, self.get_obj_export_name(obj), scene.bfu_anim_subfolder_name)
         else:
-            dirpath = os.path.join(root_path, folder_name, scene.bfu_anim_subfolder_name)
+            dirpath = os.path.join(dirpath, scene.bfu_anim_subfolder_name)
+
+        # Add extra path if provided
+        dirpath = os.path.join(dirpath, extra_path)
+
         return dirpath
     
     def get_meshs_object_for_skeletal_mesh(self, obj):

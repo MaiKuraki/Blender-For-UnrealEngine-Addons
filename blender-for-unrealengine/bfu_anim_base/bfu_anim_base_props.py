@@ -22,7 +22,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
-from .. import bfu_cached_asset_list
+from .. import bfu_cached_assets
 
 
 
@@ -46,7 +46,7 @@ class BFU_OT_ShowActionToExport(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.object
-        animation_asset_cache = bfu_cached_asset_list.GetAnimationAssetCache(obj)
+        animation_asset_cache = bfu_cached_assets.bfu_cached_assets.GetAnimationAssetCache(obj)
         animation_asset_cache.UpdateActionCache()
         animation_to_export = animation_asset_cache.GetAnimationAssetList()
 
