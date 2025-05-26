@@ -39,7 +39,7 @@ def write_main_assets_data():
     bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_all'))
     bfu_export_text_files_utils.add_generated_json_meta_data(data)
 
-    data['unreal_import_location'] = '/' + scene.bfu_unreal_import_module + '/' + scene.bfu_unreal_import_location
+    data['unreal_import_location'] = bfu_utils.get_unreal_import_location()
 
     # Import assets
     data['assets'] = []

@@ -20,6 +20,7 @@ import bpy
 from . import bfu_export_text_files_utils
 from .. import languages
 from .. import bfu_export_logs
+from .. import bfu_utils
 
 
 def write_sequencer_tracks_data():
@@ -39,7 +40,7 @@ def write_sequencer_tracks_data():
     data['render_resolution_x'] = bpy.context.scene.render.resolution_x
     data['render_resolution_y'] = bpy.context.scene.render.resolution_y
     data['secure_crop'] = 0.0001  # add end crop for avoid section overlay
-    data['unreal_import_location'] = "/" + scene.bfu_unreal_import_module + "/" + scene.bfu_unreal_import_location
+    data['unreal_import_location'] = bfu_utils.get_unreal_import_location()
 
     # Import camera
     data['cameras'] = []

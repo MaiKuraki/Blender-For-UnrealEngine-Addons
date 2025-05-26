@@ -1126,6 +1126,15 @@ def get_export_folder_name(obj):
     folder_name = bfu_basics.ValidDirName(obj.bfu_export_folder_name)
     return folder_name
 
+def get_unreal_import_location():
+    scene = bpy.context.scene
+
+    dirpath = os.path.join(scene.bfu_unreal_import_module,scene.bfu_unreal_import_location)
+
+    # Clean path
+    dirpath = os.path.normpath(dirpath)
+    return dirpath
+
 def GetImportAssetScriptCommand():
     scene = bpy.context.scene
     fileName = scene.bfu_file_import_asset_script_name
