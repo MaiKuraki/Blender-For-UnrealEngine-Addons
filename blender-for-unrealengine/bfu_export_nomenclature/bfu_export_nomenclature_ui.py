@@ -52,15 +52,9 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
 
         if addon_prefs.useGeneratedScripts:
             bfu_unreal_import_module = propsSub.column()
-            bfu_unreal_import_module.prop(
-                scene,
-                'bfu_unreal_import_module',
-                icon='FILE_FOLDER')
+            bfu_unreal_import_module.prop(scene, 'bfu_unreal_import_module', icon='FILE_FOLDER')
             bfu_unreal_import_location = propsSub.column()
-            bfu_unreal_import_location.prop(
-                scene,
-                'bfu_unreal_import_location',
-                icon='FILE_FOLDER')
+            bfu_unreal_import_location.prop(scene, 'bfu_unreal_import_location', icon='FILE_FOLDER')
 
         # File path
         filePath = panel.row()

@@ -29,9 +29,21 @@ from .. import bfu_export_logs
 from .. import bfu_skeletal_mesh
 from .. import bfu_vertex_color
 from .. import bfu_assets_manager
+from .. import bfu_cached_assets
 
+# @TODO "ImportX" and "ImportXFromAsset" is nice, ne to redo that with all assets
 
-def ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name="", desired_dirpath=""):
+def ProcessSkeletalMeshExportFromAsset(op, asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport):
+    armature = asset.obj
+    mesh_parts = asset.obj_list
+    desired_name = asset.name
+    desired_dirpath = asset.dirpath
+
+    my_asset_log = ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name, desired_dirpath)
+    my_asset_log.unreal_target_import_path = asset.import_dirpath
+    return my_asset_log
+
+def ProcessSkeletalMeshExport(op, armature: bpy.types.Object, mesh_parts, desired_name="", desired_dirpath=""):
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
 
@@ -56,7 +68,6 @@ def ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name="", desired
     my_asset_log.skeleton_name = armature.name
     my_asset_log.asset_name = armature.name
     my_asset_log.asset_global_scale = armature.bfu_export_global_scale
-    my_asset_log.folder_name = armature.bfu_export_folder_name
     my_asset_log.asset_type = asset_type
 
     file = my_asset_log.add_new_file()

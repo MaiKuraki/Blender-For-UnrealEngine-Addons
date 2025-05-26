@@ -64,7 +64,13 @@ class BFU_Spline(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
         # Add extra path if provided
         dirpath = os.path.join(dirpath, extra_path)
 
+        # Clean path
+        dirpath = os.path.normpath(dirpath)
         return dirpath
+    
+    def get_obj_import_directory_path(self, obj, extra_path = ""):
+        # @TODO
+        return super().get_obj_import_directory_path()
     
     def can_export_asset(self):
         scene = bpy.context.scene

@@ -39,7 +39,7 @@ def write_main_assets_data():
     bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_all'))
     bfu_export_text_files_utils.add_generated_json_meta_data(data)
 
-    data['bfu_unreal_import_location'] = '/' + scene.bfu_unreal_import_module + '/' + scene.bfu_unreal_import_location
+    data['unreal_import_location'] = '/' + scene.bfu_unreal_import_module + '/' + scene.bfu_unreal_import_location
 
     # Import assets
     data['assets'] = []
@@ -63,14 +63,20 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
     else:
         asset_data["asset_type"] = unreal_exported_asset.asset_type
 
-    if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type):
-        relative_import_path = os.path.join(unreal_exported_asset.folder_name, scene.bfu_anim_subfolder_name)
-    else:
-        relative_import_path = unreal_exported_asset.folder_name
 
-    full_import_path = "/" + scene.bfu_unreal_import_module + "/" + os.path.join(scene.bfu_unreal_import_location, relative_import_path)
-    full_import_path = full_import_path.replace('\\', '/').rstrip('/')
-    asset_data["full_import_path"] = full_import_path
+
+    if unreal_exported_asset.unreal_target_import_path:
+        asset_data["full_import_path"] = unreal_exported_asset.unreal_target_import_path
+    else:
+        # @TODO "folder_name" is old now use "unreal_desired_import_path"
+        if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type):
+            relative_import_path = os.path.join(unreal_exported_asset.folder_name, scene.bfu_anim_subfolder_name)
+        else:
+            relative_import_path = unreal_exported_asset.folder_name
+
+        full_import_path = "/" + scene.bfu_unreal_import_module + "/" + os.path.join(scene.bfu_unreal_import_location, relative_import_path)
+        full_import_path = full_import_path.replace('\\', '/').rstrip('/')
+        asset_data["full_import_path"] = full_import_path
 
     if unreal_exported_asset.GetFileByType("FBX"):
         asset_data["fbx_path"] = unreal_exported_asset.GetFileByType("FBX").GetAbsolutePath()

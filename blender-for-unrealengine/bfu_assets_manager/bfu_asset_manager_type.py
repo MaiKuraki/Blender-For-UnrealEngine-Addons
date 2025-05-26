@@ -41,6 +41,9 @@ class BFU_BaseAssetClass:
     
     def get_obj_export_directory_path(self, obj, extra_path = "", absolute = True):
         return ""
+    
+    def get_obj_import_directory_path(self, obj, extra_path = ""):
+        return ""
 
     def can_export_asset(self):
         return False

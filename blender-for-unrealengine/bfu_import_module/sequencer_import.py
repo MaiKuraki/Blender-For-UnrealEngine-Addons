@@ -53,8 +53,7 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
     render_resolution_y = sequence_data['render_resolution_y']
     sequencer_frame_rate_denominator = sequence_data['sequencer_frame_rate_denominator']
     sequencer_frame_rate_numerator = sequence_data['sequencer_frame_rate_numerator']
-    secureCrop = sequence_data['secureCrop']  # add end crop for avoid section overlay
-    bfu_unreal_import_location = sequence_data['bfu_unreal_import_location']
+    secure_crop = sequence_data['secure_crop']  # add end crop for avoid section overlay
     ImportedCamera = []  # (CameraName, CameraGuid)
 
     seq = sequencer_utils.create_new_sequence()
@@ -72,7 +71,7 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
     seq.set_display_rate(myFFrameRate)
 
     # Set playback range
-    seq.set_playback_end_seconds((sequencer_frame_end-secureCrop)/float(sequencer_frame_rate_numerator))
+    seq.set_playback_end_seconds((sequencer_frame_end-secure_crop)/float(sequencer_frame_rate_numerator))
     seq.set_playback_start_seconds(sequencer_frame_start/float(sequencer_frame_rate_numerator))  # set_playback_end_seconds
     if import_module_unreal_utils.is_unreal_version_greater_or_equal(5,2):
         camera_cut_track = seq.add_track(unreal.MovieSceneCameraCutTrack)
@@ -124,7 +123,7 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
                         camera_binding_id = seq.make_binding_id(camera[1])
                     camera_cut_section.set_camera_binding_id(camera_binding_id)
 
-        camera_cut_section.set_end_frame_seconds((section["end_time"]-secureCrop)/float(sequencer_frame_rate_numerator))
+        camera_cut_section.set_end_frame_seconds((section["end_time"]-secure_crop)/float(sequencer_frame_rate_numerator))
         camera_cut_section.set_start_frame_seconds(section["start_time"]/float(sequencer_frame_rate_numerator))
     # Import result
 

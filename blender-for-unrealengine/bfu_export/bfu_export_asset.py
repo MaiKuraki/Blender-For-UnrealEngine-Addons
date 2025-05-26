@@ -312,15 +312,13 @@ def export_skeletal_mesh_from_asset_list(op, asset_list: bfu_cached_assets.bfu_c
         asset: bfu_cached_assets.bfu_cached_assets_types.AssetToExport
         if asset.asset_type == bfu_skeletal_mesh.bfu_skeletal_mesh_config.mesh_asset_type_name:
             armature = asset.obj
-            mesh_parts = asset.obj_list
-            desired_name = asset.name
-            dirpath = asset.dirpath
+
             if armature.bfu_export_type == "export_recursive":
                 if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(armature) and IsValidObjectForExport(scene, armature):
                     # Save current start/end frame
                     UserStartFrame = scene.frame_start
                     UserEndFrame = scene.frame_end
-                    bfu_export_single_skeletal_mesh.ProcessSkeletalMeshExport(op, armature, mesh_parts, desired_name, dirpath)
+                    bfu_export_single_skeletal_mesh.ProcessSkeletalMeshExportFromAsset(op, asset)
 
                     # Resets previous start/end frame
                     scene.frame_start = UserStartFrame

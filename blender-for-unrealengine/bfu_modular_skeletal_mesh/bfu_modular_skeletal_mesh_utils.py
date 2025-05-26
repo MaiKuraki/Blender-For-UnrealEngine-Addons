@@ -47,6 +47,7 @@ def get_assets_to_export_for_modular_skeletal_mesh(obj):
             
             dirpath = asset_class.get_obj_export_directory_path(obj, part.sub_folder, True)
             asset.set_dirpath(dirpath)
-
+            import_dirpath = asset_class.get_obj_import_directory_path(obj, part.sub_folder)
+            asset.set_import_dirpath(import_dirpath)
             asset_list.append(asset)
     return asset_list

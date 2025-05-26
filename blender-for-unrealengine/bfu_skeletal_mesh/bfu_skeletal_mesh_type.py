@@ -76,6 +76,24 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
         # Add extra path if provided
         dirpath = os.path.join(dirpath, extra_path)
 
+        # Clean path
+        dirpath = os.path.normpath(dirpath)
+        return dirpath
+    
+    def get_obj_import_directory_path(self, obj, extra_path = ""):
+        scene = bpy.context.scene
+
+        # Get root path
+        root_path = scene.bfu_unreal_import_module
+
+        # Add skeletal subfolder path
+        dirpath = os.path.join(root_path, scene.bfu_unreal_import_location, obj.bfu_export_folder_name)
+
+        # Add extra path if provided
+        dirpath = os.path.join(dirpath, extra_path)
+
+        # Clean path
+        dirpath = os.path.normpath(dirpath)
         return dirpath
     
     def get_meshs_object_for_skeletal_mesh(self, obj):

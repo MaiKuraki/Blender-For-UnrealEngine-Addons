@@ -33,11 +33,12 @@ from .. import bfu_modular_skeletal_mesh
 
 
 class AssetToExport:
-    def __init__(self, obj, action, asset_type):
+    def __init__(self, obj: bpy.types.Object, action, asset_type):
         # Base info
         self.name = obj.name
         self.asset_type = asset_type
         self.dirpath = ""
+        self.import_dirpath = ""
 
         # Mesh Info
         self.obj = obj
@@ -48,6 +49,9 @@ class AssetToExport:
 
     def set_dirpath(self, new_dirpath):
         self.dirpath = new_dirpath
+
+    def set_import_dirpath(self, new_import_dirpath):
+        self.import_dirpath = new_import_dirpath
 
     def add_obj(self, new_obj):
         self.obj_list.append(new_obj)

@@ -27,7 +27,9 @@ class BFU_OT_UnrealExportedAssetLog(bpy.types.PropertyGroup):
     skeleton_name: bpy.props.StringProperty(default="None")
     # return from bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass.get_asset_type_name()
     asset_type: bpy.props.StringProperty(default="None")  
+    # @TODO @DEPRECATED "folder_name" is old now use "unreal_desired_import_path"
     folder_name: bpy.props.StringProperty(default="")
+    unreal_target_import_path: bpy.props.StringProperty(default="")
     files: bpy.props.CollectionProperty(type=BFU_OT_FileExport)
     object: bpy.props.PointerProperty(type=bpy.types.Object)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)

@@ -119,7 +119,7 @@ def ImportTask(asset_data):
         itask.get_task().filename = asset_data["abc_path"]
     else:
         itask.get_task().filename = asset_data["fbx_path"]
-    itask.get_task().destination_path = os.path.normpath(asset_data["full_import_path"]).replace('\\', '/')
+    itask.get_task().destination_path = "/" + os.path.normpath(asset_data["full_import_path"])
     itask.get_task().automated = config.automated_import_tasks
     itask.get_task().save = False
     itask.get_task().replace_existing = True
@@ -306,7 +306,8 @@ def ImportTask(asset_data):
         # If the skeletal mesh already exists, try to remove it.
 
         asset_name = import_module_unreal_utils.clean_filename_for_unreal(asset_data["asset_name"])
-        asset_path = f"SkeletalMesh'{asset_data['full_import_path']}/{asset_name}.{asset_name}'"
+        full_import_path = asset_data['full_import_path']
+        asset_path = f"SkeletalMesh'/{full_import_path}/{asset_name}.{asset_name}'"
 
         if unreal.EditorAssetLibrary.does_asset_exist(asset_path):
             old_asset = unreal.EditorAssetLibrary.find_asset_data(asset_path)

@@ -19,11 +19,12 @@
 import os
 import bpy
 import fnmatch
+
 from . import bfu_skeletal_mesh_config
 from .. import bfu_assets_manager
 from .. import bfu_utils
 from .. import bfu_basics
-
+from .. import bbpl
 
 class BFU_SkeletalAnimation(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
     def __init__(self):
@@ -78,6 +79,24 @@ class BFU_SkeletalAnimation(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAs
         # Add extra path if provided
         dirpath = os.path.join(dirpath, extra_path)
 
+        # Clean path
+        dirpath = os.path.normpath(dirpath)
+        return dirpath
+    
+    def get_obj_import_directory_path(self, obj, extra_path = ""):
+        scene = bpy.context.scene
+
+        # Get root path
+        root_path = scene.bfu_unreal_import_module
+
+        # Add skeletal subfolder and animation subfolder
+        dirpath = os.path.join(root_path, scene.bfu_unreal_import_location, obj.bfu_export_folder_name, scene.bfu_anim_subfolder_name)
+
+        # Add extra path if provided
+        dirpath = os.path.join(dirpath, extra_path)
+
+        # Clean path
+        dirpath = os.path.normpath(dirpath)
         return dirpath
     
     def get_meshs_object_for_skeletal_mesh(self, obj):

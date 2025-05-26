@@ -38,8 +38,8 @@ def write_sequencer_tracks_data():
     data['pixel_aspect_y'] = bpy.context.scene.render.pixel_aspect_y
     data['render_resolution_x'] = bpy.context.scene.render.resolution_x
     data['render_resolution_y'] = bpy.context.scene.render.resolution_y
-    data['secureCrop'] = 0.0001  # add end crop for avoid section overlay
-    data['bfu_unreal_import_location'] = "/" + scene.bfu_unreal_import_module + "/" + scene.bfu_unreal_import_location
+    data['secure_crop'] = 0.0001  # add end crop for avoid section overlay
+    data['unreal_import_location'] = "/" + scene.bfu_unreal_import_module + "/" + scene.bfu_unreal_import_location
 
     # Import camera
     data['cameras'] = []
