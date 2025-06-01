@@ -68,7 +68,7 @@ class BFU_Checker_VertexGroupWeight(bfu_checker):
             for mesh in meshes:
                 if mesh.type == "MESH" and self.contains_armature_modifier(mesh):
                     # Get vertices with zero weight
-                    vertices_with_zero_weight = bfu_check_utils.GetVertexWithZeroWeight(obj, mesh)
+                    vertices_with_zero_weight = bfu_check_utils.get_vertices_with_zero_weight(obj, mesh)
                     if vertices_with_zero_weight:
                         my_po_error = self.add_potential_error()
                         my_po_error.name = mesh.name

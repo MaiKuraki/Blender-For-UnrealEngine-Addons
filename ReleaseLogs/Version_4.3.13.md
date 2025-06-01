@@ -5,6 +5,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 
 - New: Sub folder support for modular skeletal meshs.
 - New: Better and more checks for potential issue checker.
+- Changed: "Check Potential Errors" renamed "Check Potential Issues".
 - Changed: New wiki button for open Lods page.
 - Changed: The default export folder "ExportedFbx" is now "ExportedAssets".
 - Changed: The default export folder "ImportedFbx" is now "ImportedBlenderAssets".
