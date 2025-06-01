@@ -44,7 +44,6 @@ def update_old_variables():
         update_variable(obj, ["bfu_target_skeleton_custom_name"], "bfu_engine_ref_skeleton_custom_name")
         update_variable(obj, ["bfu_target_skeleton_custom_ref"], "bfu_engine_ref_skeleton_custom_ref")
         
-        update_variable(obj, ["exportWithCustomProps"], "bfu_export_with_custom_props")
         update_variable(obj, ["exportWithMetaData"], "bfu_export_with_meta_data")
         update_variable(obj, ["bfu_export_procedure"], "bfu_skeleton_export_procedure", enum_callback)
         update_variable(obj, ["ExportEnum"], "bfu_export_type", enum_callback)
@@ -82,10 +81,8 @@ def update_old_variables():
         update_variable(obj, ["SimplifyAnimForExport"], "bfu_simplify_anim_for_export")
 
         update_variable(obj, ["exportGlobalScale"], "bfu_export_global_scale")
-        update_variable(obj, ["exportAxisForward"], "bfu_export_axis_forward")
-        update_variable(obj, ["exportAxisUp"], "bfu_export_axis_up")
-        update_variable(obj, ["exportPrimaryBoneAxis"], "bfu_export_primary_bone_axis")
-        update_variable(obj, ["exportSecondaryBoneAxis"], "bfu_export_secondary_bone_axis")
+        
+
 
         update_variable(obj, ["MoveToCenterForExport"], "bfu_move_to_center_for_export")
         update_variable(obj, ["RotateToZeroForExport"], "bfu_rotate_to_zero_for_export")
@@ -103,6 +100,15 @@ def update_old_variables():
         
         update_variable(obj, ["correct_extrem_uv_scale", "bfu_correct_extrem_uv_scale"], "bfu_use_correct_extrem_uv_scale")
         update_variable(obj, ["bfu_invert_normal_maps"], "bfu_flip_normal_map_green_channel")
+
+        update_variable(obj, ["exportAxisForward", "bfu_export_use_space_transform"], "bfu_fbx_export_use_space_transform")
+        update_variable(obj, ["exportAxisForward", "bfu_export_axis_forward"], "bfu_fbx_export_axis_forward")
+        update_variable(obj, ["exportAxisUp", "bfu_export_axis_up"], "bfu_fbx_export_axis_up")
+        update_variable(obj, ["exportPrimaryBoneAxis", "bfu_export_primary_bone_axis"], "bfu_fbx_export_primary_bone_axis")
+        update_variable(obj, ["exportSecondaryBoneAxis", "bfu_export_secondary_bone_axis"], "bfu_fbx_export_secondary_bone_axis")
+
+        update_variable(obj, ["exportWithCustomProps", "bfu_export_with_custom_props"], "bfu_fbx_export_with_custom_props")
+
 
     for col in bpy.data.collections:
         update_variable(col, ["exportFolderName"], "bfu_export_folder_name")

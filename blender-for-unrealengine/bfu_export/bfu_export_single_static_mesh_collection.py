@@ -102,11 +102,11 @@ def ExportSingleStaticMeshCollection(
         bfu_export_utils.SetSocketsExportTransform(selected_obj)
         bfu_export_utils.SetSocketsExportName(selected_obj)
 
-    static_export_procedure = col.bfu_collection_export_procedure
+    static_collection_export_procedure = col.bfu_collection_export_procedure
 
     save_use_simplify = bbpl.utils.SaveUserRenderSimplify()
     scene.render.use_simplify = False
-    if (static_export_procedure == "ue-standard"):
+    if (static_collection_export_procedure == "ue-standard"):
         bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
@@ -116,7 +116,7 @@ def ExportSingleStaticMeshCollection(
             global_scale=1,
             object_types={'EMPTY', 'CAMERA', 'LIGHT', 'MESH', 'OTHER'},
             colors_type=bfu_vertex_color.bfu_vertex_color_utils.get_export_colors_type(obj),
-            use_custom_props=obj.bfu_export_with_custom_props,
+            use_custom_props=obj.bfu_fbx_export_with_custom_props,
             mesh_smooth_type="FACE",
             add_leaf_bones=False,
             # use_armature_deform_only=active.bfu_export_deform_only,
@@ -130,7 +130,7 @@ def ExportSingleStaticMeshCollection(
             bake_space_transform=False
             )
         
-    elif (static_export_procedure == "blender-standard"):
+    elif (static_collection_export_procedure == "blender-standard"):
         bfu_fbx_export.export_scene_fbx(
             filepath=filepath,
             check_existing=False,
@@ -138,7 +138,7 @@ def ExportSingleStaticMeshCollection(
             global_scale=1,
             object_types={'EMPTY', 'CAMERA', 'LIGHT', 'MESH', 'OTHER'},
             #colors_type=bfu_vertex_color.bfu_vertex_color_utils.get_export_colors_type(obj), @TODO
-            #use_custom_props=obj.bfu_export_with_custom_props, @TODO
+            #use_custom_props=obj.bfu_fbx_export_with_custom_props, @TODO
             mesh_smooth_type="FACE",
             add_leaf_bones=False,
             # use_armature_deform_only=active.bfu_export_deform_only,

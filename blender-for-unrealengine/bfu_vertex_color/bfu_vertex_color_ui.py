@@ -23,6 +23,8 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
+from .. import bfu_skeletal_mesh
+from .. import bfu_export_procedure
 
 
 
@@ -76,8 +78,15 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
             
             # Add 'colors_type' parameter if Blender version is 3.4 or above
             blender_version = bpy.app.version
-            if blender_version >= (3, 4, 0):
-                bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_type')
+
+            if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
+                export_type = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_export_type(obj)
+            else:
+                export_type = bfu_export_procedure.bfu_static_export_procedure.get_obj_export_type(obj)
+
+            if export_type == "FBX":
+                if blender_version >= (3, 4, 0):
+                    bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_type')
                             
 
 def draw_ui_scene_collision(layout: bpy.types.UILayout):

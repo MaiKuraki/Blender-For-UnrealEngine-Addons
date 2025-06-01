@@ -19,6 +19,7 @@
 
 import bpy
 from . import bfu_fbx_export
+from . import bfu_gltf_export
 from . import bfu_export_utils
 from .. import bbpl
 from .. import bfu_basics
@@ -127,8 +128,9 @@ def ExportSingleStaticMesh(
     scene.render.use_simplify = False
     prepare_export_time_log.end_time_log()
 
+    print("s0")
     process_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Process export", 2)
-    if (static_export_procedure == "ue-standard"):
+    if (static_export_procedure == "custom_fbx_export"):
         bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
@@ -141,7 +143,7 @@ def ExportSingleStaticMesh(
             apply_scale_options='FBX_SCALE_NONE',
             object_types={'EMPTY', 'CAMERA', 'LIGHT', 'MESH', 'OTHER'},
             colors_type=bfu_vertex_color.bfu_vertex_color_utils.get_export_colors_type(active),
-            use_custom_props=obj.bfu_export_with_custom_props,
+            use_custom_props=obj.bfu_fbx_export_with_custom_props,
             mesh_smooth_type="FACE",
             add_leaf_bones=False,
             use_armature_deform_only=active.bfu_export_deform_only,
@@ -151,18 +153,18 @@ def ExportSingleStaticMesh(
             batch_mode='OFF',
             use_batch_own_dir=True,
             use_metadata=obj.bfu_export_with_meta_data,
-            primary_bone_axis=bfu_export_utils.get_final_export_primary_bone_axis(active),
-            secondary_bone_axis=bfu_export_utils.get_final_export_secondary_bone_axis(active),
+            primary_bone_axis=bfu_export_utils.get_final_fbx_export_primary_bone_axis(active),
+            secondary_bone_axis=bfu_export_utils.get_final_fbx_export_secondary_bone_axis(active),
             mirror_symmetry_right_side_bones=active.bfu_mirror_symmetry_right_side_bones,
             use_ue_mannequin_bone_alignment=active.bfu_use_ue_mannequin_bone_alignment,
             disable_free_scale_animation=active.bfu_disable_free_scale_animation,
-            use_space_transform=bfu_export_utils.get_static_export_use_space_transform(active),
-            axis_forward=bfu_export_utils.get_static_export_axis_forward(active),
-            axis_up=bfu_export_utils.get_static_export_axis_up(active),
+            use_space_transform=bfu_export_utils.get_static_fbx_export_use_space_transform(active),
+            axis_forward=bfu_export_utils.get_static_fbx_export_axis_forward(active),
+            axis_up=bfu_export_utils.get_static_fbx_export_axis_up(active),
             bake_space_transform=False
             
             )
-    elif (static_export_procedure == "blender-standard"):
+    elif (static_export_procedure == "standard_fbx"):
         bfu_fbx_export.export_scene_fbx(
             filepath=fullpath,
             check_existing=False,
@@ -172,7 +174,7 @@ def ExportSingleStaticMesh(
             apply_scale_options='FBX_SCALE_NONE',
             object_types={'EMPTY', 'CAMERA', 'LIGHT', 'MESH', 'OTHER'},
             colors_type=bfu_vertex_color.bfu_vertex_color_utils.get_export_colors_type(active),
-            use_custom_props=obj.bfu_export_with_custom_props,
+            use_custom_props=obj.bfu_fbx_export_with_custom_props,
             mesh_smooth_type="FACE",
             add_leaf_bones=False,
             use_armature_deform_only=active.bfu_export_deform_only,
@@ -182,11 +184,23 @@ def ExportSingleStaticMesh(
             batch_mode='OFF',
             use_batch_own_dir=True,
             use_metadata=obj.bfu_export_with_meta_data,
-            use_space_transform=bfu_export_utils.get_static_export_use_space_transform(active),
-            axis_forward=bfu_export_utils.get_static_export_axis_forward(active),
-            axis_up=bfu_export_utils.get_static_export_axis_up(active),
+            use_space_transform=bfu_export_utils.get_static_fbx_export_use_space_transform(active),
+            axis_forward=bfu_export_utils.get_static_fbx_export_axis_forward(active),
+            axis_up=bfu_export_utils.get_static_fbx_export_axis_up(active),
             bake_space_transform=False
             )
+    elif (static_export_procedure == "standard_gltf"):
+        print("s1")
+        bfu_gltf_export.export_scene_gltf(
+            filepath=fullpath,
+            check_existing=False,
+            use_selection=True,
+            use_armature_deform_only=active.bfu_export_deform_only
+            )
+    else:
+        print(f"Error: The export procedure '{static_export_procedure}' was not found!")
+
+
     process_export_time_log.end_time_log()
 
     post_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean after export", 2)

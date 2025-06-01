@@ -5,6 +5,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 
 - New: Sub folder support for modular skeletal meshs.
 - New: Better and more checks for potential issue checker.
+- New: Experimental glTF 2.0 export procedure.
 - Changed: "Check Potential Errors" renamed "Check Potential Issues".
 - Changed: New wiki button for open Lods page.
 - Changed: The default export folder "ExportedFbx" is now "ExportedAssets".
@@ -21,3 +22,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: Asset number is None in the export logs.
 - Fixed: Animation export may stay idle (NLA export fail, fixed with BBPL update)
 - Fixed: Modifiers distances not updated wihe the rescale when the Unit Scale is not set to 0.01.
+- Fixed: bfu_do_not_import_curve_with_zero not updated with presets

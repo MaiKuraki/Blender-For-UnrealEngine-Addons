@@ -6,7 +6,8 @@ classes = (
 
 def get_preset_values():
     preset_values = [
-        'obj.bfu_export_with_custom_props'
+        'obj.bfu_fbx_export_with_custom_props',
+        'obj.bfu_do_not_import_curve_with_zero'
         ]
     return preset_values
 
@@ -14,7 +15,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Object.bfu_export_with_custom_props = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_fbx_export_with_custom_props = bpy.props.BoolProperty(
         name=(languages.ti('export_with_custom_props_name')),
         description=(languages.tt('export_with_custom_props_desc')),
         override={'LIBRARY_OVERRIDABLE'},

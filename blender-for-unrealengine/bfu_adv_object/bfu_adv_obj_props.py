@@ -35,11 +35,11 @@ def get_preset_values():
         'obj.bfu_additional_rotation_for_export',
         'obj.bfu_export_global_scale',
         'obj.bfu_override_procedure_preset',
-        'obj.bfu_export_use_space_transform',
-        'obj.bfu_export_axis_forward',
-        'obj.bfu_export_axis_up',
-        'obj.bfu_export_primary_bone_axis',
-        'obj.bfu_export_secondary_bone_axis',
+        'obj.bfu_fbx_export_use_space_transform',
+        'obj.bfu_fbx_export_axis_forward',
+        'obj.bfu_fbx_export_axis_up',
+        'obj.bfu_fbx_export_primary_bone_axis',
+        'obj.bfu_fbx_export_secondary_bone_axis',
         'obj.bfu_export_with_meta_data',
     ]
     return preset_values
@@ -115,12 +115,12 @@ def register():
         default=False,
         )
 
-    bpy.types.Object.bfu_export_use_space_transform = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_fbx_export_use_space_transform = bpy.props.BoolProperty(
         name="Use Space Transform",
         default=True,
         )
 
-    bpy.types.Object.bfu_export_axis_forward = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_fbx_export_axis_forward = bpy.props.EnumProperty(
         name="Axis Forward",
         override={'LIBRARY_OVERRIDABLE'},
         items=[
@@ -134,7 +134,7 @@ def register():
         default='-Z',
         )
 
-    bpy.types.Object.bfu_export_axis_up = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_fbx_export_axis_up = bpy.props.EnumProperty(
         name="Axis Up",
         override={'LIBRARY_OVERRIDABLE'},
         items=[
@@ -148,7 +148,7 @@ def register():
         default='Y',
         )
 
-    bpy.types.Object.bfu_export_primary_bone_axis = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_fbx_export_primary_bone_axis = bpy.props.EnumProperty(
         name="Primary Axis Bone",
         override={'LIBRARY_OVERRIDABLE'},
         items=[
@@ -162,7 +162,7 @@ def register():
         default='Y',
         )
 
-    bpy.types.Object.bfu_export_secondary_bone_axis = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_fbx_export_secondary_bone_axis = bpy.props.EnumProperty(
         name="Secondary Axis Bone",
         override={'LIBRARY_OVERRIDABLE'},
         items=[
@@ -194,11 +194,11 @@ def unregister():
 
     del bpy.types.Object.bfu_export_with_meta_data
 
-    del bpy.types.Object.bfu_export_secondary_bone_axis
-    del bpy.types.Object.bfu_export_primary_bone_axis
-    del bpy.types.Object.bfu_export_axis_up
-    del bpy.types.Object.bfu_export_axis_forward
-    del bpy.types.Object.bfu_export_use_space_transform
+    del bpy.types.Object.bfu_fbx_export_secondary_bone_axis
+    del bpy.types.Object.bfu_fbx_export_primary_bone_axis
+    del bpy.types.Object.bfu_fbx_export_axis_up
+    del bpy.types.Object.bfu_fbx_export_axis_forward
+    del bpy.types.Object.bfu_fbx_export_use_space_transform
     del bpy.types.Object.bfu_override_procedure_preset
 
     del bpy.types.Object.bfu_export_global_scale

@@ -18,7 +18,13 @@ def get_skeleton_export_procedure_enum_property_list():
 def get_default_skeleton_export_procedure():
     return "blender-standard"
 
-def get_obj_skeleton_procedure_preset(obj: bpy.types.Object):
+def get_obj_export_type(obj: bpy.types.Object):
+    return get_export_type(obj.bfu_static_export_procedure)
+
+def get_export_type(procedure: str): # Object.bfu_static_export_procedure
+    return "FBX"
+
+def get_obj_skeleton_fbx_procedure_preset(obj: bpy.types.Object):
     return get_skeleton_procedure_preset(obj.bfu_skeleton_export_procedure)
 
 def get_skeleton_procedure_preset(procedure: str): # Object.bfu_skeleton_export_procedure

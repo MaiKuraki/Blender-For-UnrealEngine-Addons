@@ -55,33 +55,45 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 transformProp.prop(obj, "bfu_rotate_to_zero_for_export")
                 transformProp.prop(obj, "bfu_additional_location_for_export")
                 transformProp.prop(obj, "bfu_additional_rotation_for_export")
-                
-            transformProp.prop(obj, 'bfu_export_global_scale')
+
+            transformProp_scale = transformProp.row()
+            transformProp_scale.prop(obj, 'bfu_export_global_scale')
+            if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_not_skeletal_mesh(obj):
+                preset = bfu_export_procedure.bfu_static_export_procedure.get_obj_static_fbx_procedure_preset(obj)
+                if(bfu_export_procedure.bfu_static_export_procedure.get_obj_can_edit_scale(obj) == False):
+                    transformProp_scale.enabled = False
+            
             if bfu_camera.bfu_camera_utils.is_camera(obj):
                 transformProp.prop(obj, "bfu_additional_location_for_export")
 
             AxisProperty = panel.column()
             
-            AxisProperty.prop(obj, 'bfu_override_procedure_preset')
-            if obj.bfu_override_procedure_preset:
-                AxisProperty.prop(obj, 'bfu_export_use_space_transform')
-                AxisProperty.prop(obj, 'bfu_export_axis_forward')
-                AxisProperty.prop(obj, 'bfu_export_axis_up')
-                bbpl.blender_layout.layout_doc_button.add_doc_page_operator(AxisProperty, text="About axis Transforms", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Axis-Transforms")
-                if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                    BoneAxisProperty = panel.column()
-                    BoneAxisProperty.prop(obj, 'bfu_export_primary_bone_axis')
-                    BoneAxisProperty.prop(obj, 'bfu_export_secondary_bone_axis')
+            if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
+                export_type = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_export_type(obj)
             else:
-                box = panel.box()
-                if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                    preset = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_procedure_preset(obj)
+                export_type = bfu_export_procedure.bfu_static_export_procedure.get_obj_export_type(obj)
+
+            if export_type == "FBX":
+                AxisProperty.prop(obj, 'bfu_override_procedure_preset')
+                if obj.bfu_override_procedure_preset:
+                    AxisProperty.prop(obj, 'bfu_fbx_export_use_space_transform')
+                    AxisProperty.prop(obj, 'bfu_fbx_export_axis_forward')
+                    AxisProperty.prop(obj, 'bfu_fbx_export_axis_up')
+                    bbpl.blender_layout.layout_doc_button.add_doc_page_operator(AxisProperty, text="About axis Transforms", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Axis-Transforms")
+                    if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
+                        BoneAxisProperty = panel.column()
+                        BoneAxisProperty.prop(obj, 'bfu_fbx_export_primary_bone_axis')
+                        BoneAxisProperty.prop(obj, 'bfu_fbx_export_secondary_bone_axis')
                 else:
-                    preset = bfu_export_procedure.bfu_static_export_procedure.get_obj_static_procedure_preset(obj)
-                var_lines = box.column()
-                for key, value in preset.items():
-                    display_key = bpl.utils.format_property_name(key)
-                    var_lines.label(text=f"{display_key}: {value}\n")
+                    box = panel.box()
+                    if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
+                        preset = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)
+                    else:
+                        preset = bfu_export_procedure.bfu_static_export_procedure.get_obj_static_fbx_procedure_preset(obj)
+                    var_lines = box.column()
+                    for key, value in preset.items():
+                        display_key = bpl.utils.format_property_name(key)
+                        var_lines.label(text=f"{display_key}: {value}\n")
             export_data = panel.column()
-            bfu_custom_property.bfu_custom_property_utils.draw_ui_custom_property(export_data, obj)
+            bfu_custom_property.bfu_custom_property_ui.draw_ui_custom_property(export_data, obj)
             export_data.prop(obj, "bfu_export_with_meta_data")

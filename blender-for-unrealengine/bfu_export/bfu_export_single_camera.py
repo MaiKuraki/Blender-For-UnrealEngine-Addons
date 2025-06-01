@@ -117,7 +117,7 @@ def ExportSingleFbxCamera(
             global_scale=bfu_utils.GetObjExportScale(obj),
             apply_scale_options='FBX_SCALE_NONE',
             object_types={'CAMERA'},
-            use_custom_props=obj.bfu_export_with_custom_props,
+            use_custom_props=obj.bfu_fbx_export_with_custom_props,
             add_leaf_bones=False,
             use_armature_deform_only=obj.bfu_export_deform_only,
             bake_anim=True,
@@ -134,9 +134,9 @@ def ExportSingleFbxCamera(
             mirror_symmetry_right_side_bones=obj.bfu_mirror_symmetry_right_side_bones,
             use_ue_mannequin_bone_alignment=obj.bfu_use_ue_mannequin_bone_alignment,
             disable_free_scale_animation=obj.bfu_disable_free_scale_animation,
-            use_space_transform=bfu_export_utils.get_static_export_use_space_transform(obj),
-            axis_forward=bfu_export_utils.get_static_export_axis_forward(obj),
-            axis_up=bfu_export_utils.get_static_export_axis_up(obj),
+            use_space_transform=bfu_export_utils.get_static_fbx_export_use_space_transform(obj),
+            axis_forward=bfu_export_utils.get_static_fbx_export_axis_forward(obj),
+            axis_up=bfu_export_utils.get_static_fbx_export_axis_up(obj),
             bake_space_transform=False
             )
     elif (camera_export_procedure == "blender-standard") and export_fbx_camera:
@@ -148,7 +148,7 @@ def ExportSingleFbxCamera(
             global_scale=bfu_utils.GetObjExportScale(obj),
             apply_scale_options='FBX_SCALE_NONE',
             object_types={'CAMERA'},
-            use_custom_props=obj.bfu_export_with_custom_props,
+            use_custom_props=obj.bfu_fbx_export_with_custom_props,
             add_leaf_bones=False,
             use_armature_deform_only=obj.bfu_export_deform_only,
             bake_anim=True,
@@ -162,11 +162,11 @@ def ExportSingleFbxCamera(
             batch_mode='OFF',
             use_batch_own_dir=True,
             use_metadata=obj.bfu_export_with_meta_data,
-            primary_bone_axis=bfu_export_utils.get_final_export_primary_bone_axis(obj),
-            secondary_bone_axis=bfu_export_utils.get_final_export_secondary_bone_axis(obj),
-            use_space_transform=bfu_export_utils.get_static_export_use_space_transform(obj),
-            axis_forward=bfu_export_utils.get_static_export_axis_forward(obj),
-            axis_up=bfu_export_utils.get_static_export_axis_up(obj),
+            primary_bone_axis=bfu_export_utils.get_final_fbx_export_primary_bone_axis(obj),
+            secondary_bone_axis=bfu_export_utils.get_final_fbx_export_secondary_bone_axis(obj),
+            use_space_transform=bfu_export_utils.get_static_fbx_export_use_space_transform(obj),
+            axis_forward=bfu_export_utils.get_static_fbx_export_axis_forward(obj),
+            axis_up=bfu_export_utils.get_static_fbx_export_axis_up(obj),
             bake_space_transform=False
             )
 

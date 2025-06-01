@@ -2,12 +2,12 @@ import bpy
 import importlib
 
 from . import bfu_custom_property_props
-from . import bfu_custom_property_utils
+from . import bfu_custom_property_ui
 
 if "bfu_custom_property_props" in locals():
     importlib.reload(bfu_custom_property_props)
-if "bfu_custom_property_utils" in locals():
-    importlib.reload(bfu_custom_property_utils)
+if "bfu_custom_property_ui" in locals():
+    importlib.reload(bfu_custom_property_ui)
 
 classes = (
 )
