@@ -29,7 +29,7 @@ from .. import bfu_vertex_color
 from .. import bfu_check_potential_error
 from .. import bfu_export_logs
 from .. import bfu_assets_manager
-
+from .. import bfu_export_procedure
 
 
 def ProcessStaticMeshExport(op, obj: bpy.types.Object, desired_name=""):
@@ -57,11 +57,20 @@ def ProcessStaticMeshExport(op, obj: bpy.types.Object, desired_name=""):
     my_asset_log.folder_name = obj.bfu_export_folder_name
     my_asset_log.asset_type = asset_type
 
-    file = my_asset_log.add_new_file()
-    file.file_name = file_name
-    file.file_extension = "fbx"
-    file.file_path = dirpath
-    file.file_type = "FBX"
+    export_type = bfu_export_procedure.bfu_static_export_procedure.get_obj_export_type(obj)
+
+    if export_type == "FBX":
+        file = my_asset_log.add_new_file()
+        file.file_name = file_name
+        file.file_extension = "fbx"
+        file.file_path = dirpath
+        file.file_type = "FBX"
+    elif export_type == "GLTF":
+        file = my_asset_log.add_new_file()
+        file.file_name = file_name
+        file.file_extension = "glb"
+        file.file_path = dirpath
+        file.file_type = "GLTF"
 
     fullpath = bfu_export_utils.check_and_make_export_path(dirpath, file.GetFileWithExtension())
     init_export_time_log.end_time_log()

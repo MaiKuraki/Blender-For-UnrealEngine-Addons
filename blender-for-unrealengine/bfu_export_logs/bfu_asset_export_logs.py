@@ -1,7 +1,8 @@
 import bpy
 import os
 import time
-from .. import bfu_export_logs
+from typing import TYPE_CHECKING, List
+
 
 class BFU_OT_FileExport(bpy.types.PropertyGroup):
     file_name: bpy.props.StringProperty()
@@ -39,6 +40,10 @@ class BFU_OT_UnrealExportedAssetLog(bpy.types.PropertyGroup):
     animation_start_frame: bpy.props.IntProperty(default=0)
     animation_end_frame: bpy.props.IntProperty(default=0)
 
+    if TYPE_CHECKING:
+        files: List[BFU_OT_FileExport]
+
+
     def add_new_file(self)-> BFU_OT_FileExport:
         return self.files.add()
 
@@ -52,9 +57,8 @@ class BFU_OT_UnrealExportedAssetLog(bpy.types.PropertyGroup):
     def GetExportTime(self):
         return self.export_end_time - self.export_start_time
 
-    def GetFileByType(self, file_type: str):
+    def GetFileByType(self, file_type: str) -> BFU_OT_FileExport:
         for file in self.files:
-            file: bfu_export_logs.bfu_asset_export_logs.BFU_OT_FileExport
             if file.file_type == file_type:
                 return file
 

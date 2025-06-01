@@ -78,20 +78,12 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
         full_import_path = full_import_path.replace('\\', '/').rstrip('/')
         asset_data["full_import_path"] = full_import_path
 
-    if unreal_exported_asset.GetFileByType("FBX"):
-        asset_data["fbx_path"] = unreal_exported_asset.GetFileByType("FBX").GetAbsolutePath()
-    else:
-        asset_data["fbx_path"] = None
-
-    if unreal_exported_asset.GetFileByType("ABC"):
-        asset_data["abc_path"] = unreal_exported_asset.GetFileByType("ABC").GetAbsolutePath()
-    else:
-        asset_data["abc_path"] = None
-
-    if unreal_exported_asset.GetFileByType("AdditionalTrack"):
-        asset_data["additional_tracks_path"] = unreal_exported_asset.GetFileByType("AdditionalTrack").GetAbsolutePath()
-    else:
-        asset_data["additional_tracks_path"] = None
+    asset_data["files"] = []
+    for file in unreal_exported_asset.files:
+        file_data = {}
+        file_data["type"] = file.file_type
+        file_data["file_path"] = file.GetAbsolutePath()
+        asset_data["files"].append(file_data)
 
     if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type) or unreal_exported_asset.asset_type == "SkeletalMesh":
         

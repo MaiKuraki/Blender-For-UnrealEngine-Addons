@@ -3,7 +3,7 @@ import bpy
 def get_static_export_procedure_enum_property_list():
     items=[
         ("custom_fbx_export",
-            "UE Standard",
+            "UE Standard (FBX)",
             "Modified fbx I/O for Unreal Engine",
             "OUTLINER_OB_GROUP_INSTANCE",
             1),

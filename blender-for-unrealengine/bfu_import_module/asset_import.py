@@ -60,7 +60,6 @@ def ready_for_asset_import():
 def ImportTask(asset_data):
     asset_type = asset_data["asset_type"]
 
-
     if asset_type == "StaticMesh" or asset_type == "SkeletalMesh":
         if "import_as_lod_mesh" in asset_data:
             if asset_data["import_as_lod_mesh"] == True:  # Lod should not be imported here so return if lod is not 0.
@@ -71,13 +70,14 @@ def ImportTask(asset_data):
     else:
         FileType = "FBX"
 
-    def GetAdditionalData():
-        if "additional_tracks_path" in asset_data:
-            if asset_data["additional_tracks_path"] is not None:
-                return import_module_utils.JsonLoadFile(asset_data["additional_tracks_path"])
+    def found_additional_data():
+        files = asset_data["files"]
+        for file in files:
+            if file["type"] == "AdditionalTrack":
+                return import_module_utils.JsonLoadFile(file["file_path"])
         return None
 
-    asset_additional_data = GetAdditionalData()
+    asset_additional_data = found_additional_data()
 
     if asset_type in ["Animation", "SkeletalMesh"]:
         origin_skeleton = None
@@ -115,10 +115,15 @@ def ImportTask(asset_data):
 
     itask = import_module_tasks_class.ImportTaks()
 
-    if asset_type == "Alembic":
-        itask.get_task().filename = asset_data["abc_path"]
-    else:
-        itask.get_task().filename = asset_data["fbx_path"]
+    files = asset_data["files"]
+    for file in files:
+        if asset_type == "Alembic":
+            if file["type"] == "ABC":
+                itask.get_task().filename = file["file_path"]
+        else:
+            if file["type"] in ["FBX", "GLTF"]:
+                itask.get_task().filename = file["file_path"]
+    
     itask.get_task().destination_path = "/" + os.path.normpath(asset_data["full_import_path"])
     itask.get_task().automated = config.automated_import_tasks
     itask.get_task().save = False
