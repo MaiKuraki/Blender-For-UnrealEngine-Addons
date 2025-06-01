@@ -19,9 +19,6 @@
 
 import bpy
 from typing import TYPE_CHECKING
-from . import bfu_check_operators
-
-
 
 
 def get_preset_values():

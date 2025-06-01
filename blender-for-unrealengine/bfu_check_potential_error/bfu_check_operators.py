@@ -18,8 +18,10 @@
 
 
 import bpy
+from . import bfu_check_list
 from .. import bfu_cached_assets
 from .. import bfu_check_potential_error
+from .. import bbpl
 
 
 class BFU_OT_ShowAssetToExport(bpy.types.Operator):
@@ -95,8 +97,8 @@ class BFU_OT_CheckPotentialErrorPopup(bpy.types.Operator):
             if x < len(fix_info)-1:
                 invoke_info += "\n"
 
-        
-        bfu_check_potential_error.bfu_check_utils.update_unreal_potential_error()
+        bfu_check_list.run_all_check()
+        #bfu_check_potential_error.bfu_check_utils.update_unreal_potential_error()
         bpy.ops.object.openpotentialerror(
             "INVOKE_DEFAULT", 
             invoke_info=invoke_info,
@@ -157,6 +159,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         octicon: bpy.props.StringProperty(default="")
 
         def execute(self, context):
+            bbpl
             os.system(
                 "start \"\" " +
                 "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/How-avoid-potential-errors" +
@@ -216,14 +219,12 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
             for text, Line in enumerate(splitedText):
                 if (text < 1):
 
-                    FisrtTextLine = TextLine.row()
                     if (error.docsOcticon != "None"):  # Doc button
-                        props = FisrtTextLine.operator(
-                            "object.open_potential_error_docs",
-                            icon="HELP",
-                            text="")
-                        props.octicon = error.docsOcticon
-
+                        
+                        url = "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/How-avoid-potential-errors" + "#" + error.docsOcticon
+                        bbpl.blender_layout.layout_doc_button.add_left_doc_page_operator(TextLine, text="More Info", url=url)
+                    
+                    FisrtTextLine = TextLine.row()
                     FisrtTextLine.label(text=Line, icon=msgIcon)
                 else:
                     TextLine.label(text=Line)

@@ -25,7 +25,6 @@ from typing import List, TYPE_CHECKING
 from . import bfu_check_props
 from .. import bbpl
 from .. import bfu_basics
-from .. import bfu_assets_manager
 from .. import bfu_utils
 from .. import bfu_cached_assets
 
@@ -113,6 +112,8 @@ def GetSkeletonMeshs(obj):
                 meshs.append(child)
     return meshs
 
+# OLD @TODO To Remove
+# Now replaced by bfu_check_list.run_all_check()
 def update_unreal_potential_error():
     # Find and reset list of all potential error in scene
 
@@ -518,6 +519,7 @@ def update_unreal_potential_error():
                                         'transform. This is invalid in Unreal.'
                                     )
 
+    '''
     check_unit_scale()
     check_scene_frame_rate()
     check_obj_type()
@@ -536,6 +538,8 @@ def update_unreal_potential_error():
     check_marker_overlay()
     check_vertex_group_weight()
     check_zero_scale_keyframe()
+    '''
+    
 
 def select_potential_error_object(errorIndex):
     # Select potential error
