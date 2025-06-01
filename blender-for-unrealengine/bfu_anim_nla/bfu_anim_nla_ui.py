@@ -50,12 +50,9 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 NLAAnimChild = NLAAnim.column()
                 NLAAnimChild.enabled = obj.bfu_anim_nla_use
                 NLAAnimChild.prop(obj, 'bfu_anim_nla_export_name')
-                if obj.bfu_skeleton_export_procedure == "auto-rig-pro":
-                    NLAAnim.enabled = False
-                    NLAAnimChild.enabled = False
 
             # NLA Time
-            if obj.type != "CAMERA" and obj.bfu_skeleton_export_procedure != "auto-rig-pro":
+            if obj.type != "CAMERA":
                 NLATimeProperty = panel.column()
                 NLATimeProperty.enabled = obj.bfu_anim_nla_use
                 NLATimeProperty.prop(obj, 'bfu_anim_nla_start_end_time_enum')

@@ -563,9 +563,6 @@ def ResetArmatureConstraintToModifiers(armature):
 def GetShouldRescaleRig(obj):
     # This will return if the rig should be rescale.
 
-    if obj.bfu_skeleton_export_procedure == "auto-rig-pro":
-        return False
-
     addon_prefs = bfu_basics.GetAddonPrefs()
     if addon_prefs.rescaleFullRigAtExport == "auto":
 

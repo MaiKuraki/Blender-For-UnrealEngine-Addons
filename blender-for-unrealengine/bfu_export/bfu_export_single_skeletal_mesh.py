@@ -248,13 +248,6 @@ def ExportSingleSkeletalMesh(
             axis_up=bfu_export_utils.get_skeleton_export_axis_up(active),
             bake_space_transform=False
             )
-    elif (skeleton_export_procedure == "auto-rig-pro"):
-        bfu_fbx_export.export_scene_fbx(
-            filepath=fullpath,
-            # export_rig_name=GetDesiredExportArmatureName(active),
-            bake_anim=False,
-            mesh_smooth_type="FACE"
-            )
 
     # This will rescale the rig and unit scale to get a root bone egal to 1
     if ShouldRescaleRig:

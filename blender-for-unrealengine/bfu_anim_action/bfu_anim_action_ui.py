@@ -69,7 +69,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                     ActionListProperty.prop(obj, 'bfu_prefix_name_to_export')
 
             # Action Time
-            if obj.type != "CAMERA" and obj.bfu_skeleton_export_procedure != "auto-rig-pro":
+            if obj.type != "CAMERA":
                 ActionTimeProperty = panel.column()
                 ActionTimeProperty.enabled = obj.bfu_anim_action_export_enum != 'dont_export'
                 ActionTimeProperty.prop(obj, 'bfu_anim_action_start_end_time_enum')

@@ -110,14 +110,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
         return scene.bfu_use_skeletal_export
 
     def can_export_obj_asset(self, obj):
-        if self.can_export_asset():
-            if obj.bfu_skeleton_export_procedure == 'auto-rig-pro':
-                if bbpl.basics.check_plugin_is_activated('auto_rig_pro-master'):
-                    return True
-            else:
-                return True
-        else:
-            False
+        return self.can_export_asset()
 
 def register():
     bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_SkeletalMesh())

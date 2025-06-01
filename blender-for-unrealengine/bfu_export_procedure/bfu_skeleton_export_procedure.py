@@ -11,12 +11,7 @@ def get_skeleton_export_procedure_enum_property_list():
             "Blender Standard",
             "Standard fbx I/O.",
             "ARMATURE_DATA",
-            2),
-        ("auto-rig-pro",
-            "AutoRigPro",
-            "Export using AutoRigPro.",
-            "ARMATURE_DATA",
-            3),
+            2)
         ]
     return items
 
@@ -37,13 +32,6 @@ def get_skeleton_procedure_preset(procedure: str): # Object.bfu_skeleton_export_
 
     # Use Default FBX values
     if procedure == "blender-standard":
-        preset["use_space_transform"]=True
-        preset["axis_forward"]='-Z'
-        preset["axis_up"]='Y'
-        preset["primary_bone_axis"]='Y'
-        preset["secondary_bone_axis"]='X'
-
-    if procedure == "auto-rig-pro":
         preset["use_space_transform"]=True
         preset["axis_forward"]='-Z'
         preset["axis_up"]='Y'

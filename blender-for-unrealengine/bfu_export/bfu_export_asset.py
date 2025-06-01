@@ -46,28 +46,17 @@ from .. import bfu_export_logs
 def IsValidActionForExport(scene, obj, animType):
     if animType == "Action":
         if scene.bfu_use_anin_export:
-            if obj.bfu_skeleton_export_procedure == 'auto-rig-pro':
-                if bbpl.basics.check_plugin_is_activated('auto_rig_pro-master'):
-                    return True
-            else:
-                return True
+            return True
         else:
             return False
     elif animType == "Pose":
         if scene.bfu_use_anin_export:
-            if obj.bfu_skeleton_export_procedure == 'auto-rig-pro':
-                if bbpl.basics.check_plugin_is_activated('auto_rig_pro-master'):
-                    return True
-            else:
-                return True
+            return True
         else:
             return False
     elif animType == "NLA":
         if scene.bfu_use_anin_export:
-            if obj.bfu_skeleton_export_procedure == 'auto-rig-pro':
-                return False
-            else:
-                return True
+            return True
         else:
             False
     else:

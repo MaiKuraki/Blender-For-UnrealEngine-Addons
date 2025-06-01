@@ -45,8 +45,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             # Animation fbx properties
             if bfu_alembic_animation.bfu_alembic_animation_utils.is_not_alembic_animation(obj):
                 propsFbx = panel.row()
-                if obj.bfu_skeleton_export_procedure != "auto-rig-pro":
-                    propsFbx.prop(obj, 'bfu_sample_anim_for_export')
+                propsFbx.prop(obj, 'bfu_sample_anim_for_export')
                 propsFbx.prop(obj, 'bfu_simplify_anim_for_export')
             propsScaleAnimation = panel.column()
             propsScaleAnimation.prop(obj, "bfu_disable_free_scale_animation")

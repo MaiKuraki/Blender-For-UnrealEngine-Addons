@@ -212,15 +212,6 @@ def ExportSingleFbxNLAAnim(
             axis_up=bfu_export_utils.get_skeleton_export_axis_up(armature),
             bake_space_transform=False
             )
-    elif (skeleton_export_procedure == "auto-rig-pro"):
-        bfu_fbx_export.export_scene_fbx(
-            filepath=fullpath,
-            # export_rig_name=GetDesiredExportArmatureName(active),
-            bake_anim=True,
-            anim_export_name_string=active.animation_data.action.name,
-            mesh_smooth_type="FACE",
-            arp_simplify_fac=active.bfu_simplify_anim_for_export
-            )
 
     bbpl.anim_utils.reset_armature_pose(active)
     # scene.frame_start -= active.bfu_anim_action_start_frame_offset
