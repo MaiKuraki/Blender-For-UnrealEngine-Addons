@@ -32,11 +32,11 @@ class BFU_Checker_ArmatureBoneData(bfu_checker):
     # Prepare list of skeletal objects to check
     def get_armatures_to_check(self) -> List[bpy.types.Object]:
         final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
+        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
 
         obj_to_check = []
         for asset in final_asset_list_to_export:
-            if asset.obj in bfu_utils.GetAllobjectsByExportType("export_recursive"):
+            if asset.obj in bfu_utils.get_all_objects_by_export_type("export_recursive"):
                 if asset.obj not in obj_to_check:
                     obj_to_check.append(asset.obj)
                 for child in bfu_utils.GetExportDesiredChilds(asset.obj):

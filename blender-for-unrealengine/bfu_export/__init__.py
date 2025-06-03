@@ -2,6 +2,7 @@ import bpy
 from . import bfu_fbx_export
 from . import bfu_export_asset
 from . import bfu_export_get_info
+from . import bfu_export_single_generic
 from . import bfu_export_single_static_mesh
 from . import bfu_export_single_static_mesh_collection
 from . import bfu_export_single_skeletal_mesh
@@ -22,6 +23,8 @@ if "bpy" in locals():
         importlib.reload(bfu_export_asset)
     if "bfu_export_get_info" in locals():
         importlib.reload(bfu_export_get_info)
+    if "bfu_export_single_generic" in locals():
+        importlib.reload(bfu_export_single_generic)
     if "bfu_export_single_static_mesh" in locals():
         importlib.reload(bfu_export_single_static_mesh)
     if "bfu_export_single_static_mesh_collection" in locals():

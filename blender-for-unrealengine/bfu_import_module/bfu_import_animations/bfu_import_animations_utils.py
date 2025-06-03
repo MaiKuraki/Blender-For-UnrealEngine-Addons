@@ -16,6 +16,7 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+from typing import List
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 
@@ -34,6 +35,8 @@ def apply_post_import_assets_changes(itask: import_module_tasks_class.ImportTaks
         apply_fbxui_post_import(itask, asset_data)
 
 def apply_interchange_post_import(itask: import_module_tasks_class.ImportTaks, asset_data):
+
+
     # When Import FBX animation using the Interchange it create Anim_0_Root and Root_MorphAnim_0. 
     # I'm not sure if that a bug... So remove I Root_MorphAnim_0 or other animations and I rename Anim_0_Root.
     asset_paths_to_remove = []
@@ -53,9 +56,10 @@ def apply_interchange_post_import(itask: import_module_tasks_class.ImportTaks, a
     
     # Rename correct animation asset
     if main_anim_path:
+
         anim_asset_path = imported_asset.get_path_name()
         path, name = anim_asset_path.rsplit('/', 1)
-        new_anim_path = path + "/" + asset_data["asset_name"] + "." + asset_data["asset_name"]
+        new_anim_path = path + "/" + asset_data["asset_import_name"] + "." + asset_data["asset_import_name"]
         if main_anim_path != new_anim_path:
             unreal.EditorAssetLibrary.rename_asset(main_anim_path, new_anim_path)
     else:

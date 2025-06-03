@@ -18,6 +18,7 @@
 
 
 import bpy
+from typing import List
 from . import bfu_export_process_utils
 from .. import bpl
 from .. import bbpl
@@ -25,6 +26,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode
 from .. import bfu_cached_assets
 from .. import bfu_check_potential_error
 from .. import bfu_export
@@ -41,17 +43,17 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
     def execute(self, context):
         scene = bpy.context.scene
 
-        def isReadyForExport():
+        def is_ready_for_export(final_asset_list_to_export: List[AssetToExport]) -> bool:
 
             def GetIfOneTypeCheck():
                 all_assets = bfu_assets_manager.bfu_asset_manager_utils.get_all_asset_class()
                 for assets in all_assets:
                     assets: bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass
-                    if assets.can_export_asset():
+                    if assets.can_export_asset_type():
                         return True
 
                 if (scene.bfu_use_static_collection_export
-                        or scene.bfu_use_anin_export):
+                        or scene.bfu_use_anim_export):
                     return True
                 else:
                     return False
@@ -69,8 +71,7 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
                     "No asset type is checked.")
                 return False
 
-            final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-            final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
+
             if not len(final_asset_list_to_export) > 0:
                 self.report(
                     {'WARNING'},
@@ -96,7 +97,10 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
 
             return True
 
-        if not isReadyForExport():
+        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
+        final_asset_list_to_export = final_asset_cache.get_final_asset_list(search_mode=AssetDataSearchMode.FULL)
+
+        if not is_ready_for_export(final_asset_list_to_export):
             return {'FINISHED'}
 
         # Clear logs before export
@@ -104,15 +108,16 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
 
         counter = bpl.utils.CounterTimer()
         bfu_check_potential_error.bfu_check_utils.process_general_fix()
-        bfu_export.bfu_export_asset.process_export(self)
-        bfu_export_text_files.bfu_export_text_files_process.write_all_data_files()
+        exported_asset_log = bfu_export.bfu_export_asset.process_export(self, final_asset_list_to_export)
+        bfu_export_text_files.bfu_export_text_files_process.write_all_data_files(exported_asset_log)
         
+
         
-        asset_list = str(bfu_export_logs.bfu_asset_export_logs_utils.get_exported_asset_number())
+        asset_list = str(len(exported_asset_log))
         report_text = f"Export of {asset_list} asset(s) has been finalized in " + counter.get_str_time() + " Look in console for more info."
         self.report({'INFO'}, report_text)
 
-        bfu_export_process_utils.print_exported_asset_detail()
+        bfu_export_process_utils.print_exported_asset_detail(exported_asset_log)
 
         # Clear logs after export
         bfu_export_logs.clear_all_logs()

@@ -1,4 +1,11 @@
 import bpy
+from enum import Enum
+
+class static_export_procedure(Enum):
+    custom_fbx_export = 1
+    standard_fbx = 2
+    standard_gltf = 3
+
 
 def get_static_export_procedure_enum_property_list():
     items=[

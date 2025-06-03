@@ -155,16 +155,13 @@ def zip_addon_folder(src, addon_path, addon_manifest_data, target_build_name, bl
 
     # Run addon zip process based on the specified generation method
     if generate_method == "EXTENTION_COMMAND":
-        print("Start build with extension command")
+        print("Start build and validate with extension command")
         result = blender_exec.build_extension(src, output_filepath, blender_executable_path)
-        print(result.stdout)
-        print(result.stderr, file=sys.stderr)
 
         created_filename = blender_exec.get_build_file(result)
         if created_filename:
-            print("Start Validate")
             blender_exec.validate_extension(created_filename, blender_executable_path)
-            print("End Validate")
+
 
         return created_filename
     

@@ -24,6 +24,7 @@ from . import bfu_static_mesh_ui
 from . import bfu_static_mesh_utils
 from . import bfu_static_mesh_type
 from . import bfu_static_mesh_config
+from . import bfu_export_static_mesh_package
 
 if "bfu_static_mesh_props" in locals():
     importlib.reload(bfu_static_mesh_props)
@@ -35,6 +36,8 @@ if "bfu_static_mesh_type" in locals():
     importlib.reload(bfu_static_mesh_type)
 if "bfu_static_mesh_config" in locals():
     importlib.reload(bfu_static_mesh_config)
+if "bfu_export_static_mesh_package" in locals():
+    importlib.reload(bfu_export_static_mesh_package)
 
 
 classes = (

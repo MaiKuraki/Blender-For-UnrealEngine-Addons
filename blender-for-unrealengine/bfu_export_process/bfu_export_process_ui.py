@@ -23,6 +23,7 @@ from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_cached_assets
+from .. import bfu_asset_preview
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
@@ -34,13 +35,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     if accordion.is_expend():
 
         # Feedback info :
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
-        AssetNum = len(final_asset_list_to_export)
-        AssetInfo = panel.row().box().split(factor=0.75)
-        AssetFeedback = str(AssetNum) + " Asset(s) will be exported."
-        AssetInfo.label(text=AssetFeedback, icon='INFO')
-        AssetInfo.operator("object.showasset")
+        bfu_asset_preview.bfu_asset_preview_ui.draw_asset_preview_bar(panel, context)
 
         # Export button :
         checkButton = panel.row(align=True)

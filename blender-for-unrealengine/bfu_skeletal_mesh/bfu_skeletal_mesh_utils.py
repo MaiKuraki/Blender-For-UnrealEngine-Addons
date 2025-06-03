@@ -24,6 +24,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_unreal_utils
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 def SelectArmatureParentAndDesiredChilds(active: bpy.types.Object, inclide_meshs=True, inclide_sockets=True):
     # Selects only auto desired child objects that must be exported with armature object
@@ -69,9 +70,9 @@ def deselect_socket(obj: bpy.types.Object):
 
 
 def is_skeletal_mesh(obj: bpy.types.Object):
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     if asset_class:
-        if asset_class.get_asset_type_name(obj) == bfu_skeletal_mesh_config.mesh_asset_type_name:
+        if asset_class.get_asset_type(obj) == AssetType.SKELETAL_MESH:
             return True
     return False
 

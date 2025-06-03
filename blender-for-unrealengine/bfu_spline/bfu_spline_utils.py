@@ -21,6 +21,7 @@ import json
 from . import bfu_spline_config
 from .. import bbpl
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 def get_enum_splines_list():
     spline_types = [
@@ -163,8 +164,8 @@ def contain_nurbs_spline(obj: bpy.types.Object):
 
 
 def is_spline(obj):
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     if asset_class:
-        if asset_class.get_asset_type_name(obj) == bfu_spline_config.asset_type_name:
+        if asset_class.get_asset_type(obj) == AssetType.SPLINE:
             return True
     return False

@@ -18,7 +18,13 @@ def get_collection_export_procedure_enum_property_list():
 def get_default_collection_export_procedure():
     return "blender-standard"
 
-def get_collection_procedure_preset(procedure: str): # Object.bfu_static_export_procedure
+def get_col_export_type(obj: bpy.types.Object):
+    return get_export_type(obj.bfu_collection_export_procedure)
+
+def get_export_type(procedure: str): # Object.bfu_collection_export_procedure
+    return "FBX"
+
+def get_col_procedure_preset(procedure: str): # Object.bfu_collection_export_procedure
     preset = {}
     return preset
 

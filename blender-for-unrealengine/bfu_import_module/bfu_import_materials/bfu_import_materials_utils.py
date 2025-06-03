@@ -19,6 +19,7 @@
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 from .. import import_module_utils
+from ..asset_types import ExportAssetType 
 
 try:
     import unreal
@@ -29,8 +30,8 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
     """Applies material and texture import settings to StaticMesh and SkeletalMesh assets."""
     import_module_utils.print_debug_step("Set Materials import settings.")
     
-    asset_type = asset_data.get("asset_type")
-    if asset_type not in ["StaticMesh", "SkeletalMesh"]:
+    asset_type = ExportAssetType.get_asset_type_from_string(asset_data.get("asset_type"))
+    if asset_type not in [ExportAssetType.STATIC_MESH, ExportAssetType.SKELETAL_MESH]:
         # Only apply settings for StaticMesh and SkeletalMesh
         return
 
@@ -88,11 +89,11 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
         pass
 
     else:
-        if asset_type =="StaticMesh":
+        if asset_type == ExportAssetType.STATIC_MESH:
             if "reorder_material_to_fbx_order" in asset_additional_data:
                 itask.get_static_mesh_import_data().set_editor_property('reorder_material_to_fbx_order', asset_additional_data["reorder_material_to_fbx_order"])
 
-        elif asset_type == "SkeletalMesh":
+        elif asset_type == ExportAssetType.SKELETAL_MESH:
             if "reorder_material_to_fbx_order" in asset_additional_data:
                 itask.get_skeletal_mesh_import_data().set_editor_property('reorder_material_to_fbx_order', asset_additional_data["reorder_material_to_fbx_order"])
 

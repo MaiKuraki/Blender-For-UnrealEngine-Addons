@@ -24,7 +24,7 @@ import fnmatch
 import mathutils
 import math
 import os
-from typing import List
+from typing import List, Tuple
 from . import bbpl
 from . import bfu_basics
 
@@ -206,7 +206,7 @@ def CleanDeleteObjects(objs):
     return removed_objects
 
 
-def GetAllobjectsByExportType(exportType):
+def get_all_objects_by_export_type(exportType) -> List[bpy.types.Object]:
     # Find all objects with a specific bfu_export_type property
     targetObj = []
     for obj in bpy.context.scene.objects:
@@ -215,8 +215,16 @@ def GetAllobjectsByExportType(exportType):
             targetObj.append(obj)
     return (targetObj)
 
+def get_all_armatures_by_export_type(exportType) -> List[bpy.types.Object]:
+    # Find all armature objects with a specific bfu_export_type property
+    targetObj = []
+    for obj in bpy.context.scene.objects:
+        prop = obj.bfu_export_type
+        if prop == exportType and obj.type == 'ARMATURE':
+            targetObj.append(obj)
+    return (targetObj)
 
-def GetAllCollisionAndSocketsObj(objs_list=None):
+def get_all_collision_and_sockets_obj(objs_list=None):
     # Get any object that can be understood
     # as a collision or a socket by unreal
 
@@ -511,10 +519,8 @@ def EvaluateCameraRotationForBlender(transform):
     return euler
 
 
-def GetDesiredActionStartEndTime(obj, action):
+def get_desired_action_start_end_range(obj: bpy.types.Object, action: bpy.types.Action)-> Tuple[float, float]:
     # Returns desired action or camera anim start/end time
-    # Return start with index 0 and end with index 1
-    # EndTime should be a less one frame bigger than StartTime
 
     scene = bpy.context.scene
     if obj.type == "CAMERA":
@@ -548,10 +554,8 @@ def GetDesiredActionStartEndTime(obj, action):
         return (startTime, endTime)
 
 
-def GetDesiredNLAStartEndTime(obj):
+def get_desired_nla_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
     # Returns desired nla anim start/end time
-    # Return start with index 0 and end with index 1
-    # EndTime should be a less one frame bigger than StartTime
 
     scene = bpy.context.scene
 
@@ -559,7 +563,7 @@ def GetDesiredNLAStartEndTime(obj):
         startTime = scene.frame_start + obj.bfu_anim_nla_start_frame_offset
         endTime = scene.frame_end + obj.bfu_anim_nla_end_frame_offset
         if endTime <= startTime:
-            endTime = startTime+1
+            endTime = startTime
 
         return (startTime, endTime)
 
@@ -567,19 +571,26 @@ def GetDesiredNLAStartEndTime(obj):
         startTime = obj.bfu_anim_nla_custom_start_frame
         endTime = obj.bfu_anim_nla_custom_end_frame
         if endTime <= startTime:
-            endTime = startTime+1
+            endTime = startTime
 
         return (startTime, endTime)
 
-
-def GetActionType(action):
+# @TODO: @Deprecated use action_is_one_frame instead
+def GetActionType(action: bpy.types.Action):
     # return action type
 
     if action.frame_range.y - action.frame_range.x == 1:
         return "Pose"
     return "Action"
 
+def action_is_one_frame(action: bpy.types.Action) -> bool:
+    # return True if action is one frame
 
+    if action.frame_range.y - action.frame_range.x == 0:
+        return True
+    return False
+
+# @TODO: @Deprecated use BFU_BaseAssetClass.get_asset_type() 
 def GetCollectionType(collection):
     # return collection type
     if(collection):

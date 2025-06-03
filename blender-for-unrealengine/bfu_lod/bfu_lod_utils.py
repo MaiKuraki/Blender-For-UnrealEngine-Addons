@@ -23,50 +23,51 @@ from .. import bbpl
 from .. import bfu_export_logs
 from .. import bfu_static_mesh
 from .. import bfu_assets_manager
+from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
-def get_lod_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_lod_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
 
-    if asset.asset_type in ["StaticMesh", "SkeletalMesh"]:
-        if asset.object.bfu_export_as_lod_mesh:
+    if asset_type in [AssetType.STATIC_MESH, AssetType.SKELETAL_MESH]:
+        if obj.bfu_export_as_lod_mesh:
             asset_data["import_as_lod_mesh"] = True
         else:
             asset_data["import_as_lod_mesh"] = False
 
     return asset_data
 
-def get_lod_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_lod_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
 
     # Add lod group name
-    if asset.object:
-        if asset.asset_type in ["StaticMesh"]:
-            if (asset.object.bfu_use_static_mesh_lod_group):
-                asset_data["static_mesh_lod_group"] = asset.object.bfu_static_mesh_lod_group
+    if obj:
+        if asset_type in [AssetType.STATIC_MESH]:
+            if (obj.bfu_use_static_mesh_lod_group):
+                asset_data["static_mesh_lod_group"] = obj.bfu_static_mesh_lod_group
             else:
                 asset_data["static_mesh_lod_group"] = None
 
     # Add lod slots
-    if asset.object:
+    if obj:
         asset_data['level_of_details'] = {}
 
         def GetLodPath(lod_obj):
-            asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(lod_obj)
+            asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(lod_obj)
             if asset_class:
-                directory_path = asset_class.get_obj_export_directory_path(lod_obj, "", True)
-                file_name = asset_class.get_obj_file_name(lod_obj)
+                directory_path = asset_class.get_asset_export_directory_path(lod_obj, "", True)
+                file_name = asset_class.get_asset_file_name(lod_obj)
             return os.path.join(directory_path, file_name)
 
-        if asset.object.bfu_lod_target1 is not None:
-            asset_data['level_of_details']['lod_1'] = GetLodPath(asset.object.bfu_lod_target1)
-        if asset.object.bfu_lod_target2 is not None:
-            asset_data['level_of_details']['lod_2'] = GetLodPath(asset.object.bfu_lod_target2)
-        if asset.object.bfu_lod_target3 is not None:
-            asset_data['level_of_details']['lod_3'] = GetLodPath(asset.object.bfu_lod_target3)
-        if asset.object.bfu_lod_target4 is not None:
-            asset_data['level_of_details']['lod_4'] = GetLodPath(asset.object.bfu_lod_target4)
-        if asset.object.bfu_lod_target5 is not None:
-            asset_data['level_of_details']['lod_5'] = GetLodPath(asset.object.bfu_lod_target5)
+        if obj.bfu_lod_target1 is not None:
+            asset_data['level_of_details']['lod_1'] = GetLodPath(obj.bfu_lod_target1)
+        if obj.bfu_lod_target2 is not None:
+            asset_data['level_of_details']['lod_2'] = GetLodPath(obj.bfu_lod_target2)
+        if obj.bfu_lod_target3 is not None:
+            asset_data['level_of_details']['lod_3'] = GetLodPath(obj.bfu_lod_target3)
+        if obj.bfu_lod_target4 is not None:
+            asset_data['level_of_details']['lod_4'] = GetLodPath(obj.bfu_lod_target4)
+        if obj.bfu_lod_target5 is not None:
+            asset_data['level_of_details']['lod_5'] = GetLodPath(obj.bfu_lod_target5)
 
     return asset_data

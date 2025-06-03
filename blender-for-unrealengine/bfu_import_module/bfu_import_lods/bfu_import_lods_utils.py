@@ -20,6 +20,7 @@ import os
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 from .. import import_module_utils
+from ..asset_types import ExportAssetType
 
 try:
     import unreal
@@ -86,9 +87,9 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
     import_module_utils.print_debug_step("Set Lods import settings.")
     
     # Set lod group in import settings before import.
-    asset_type = asset_data.get("asset_type")
+    asset_type = ExportAssetType.get_asset_type_from_string(asset_data.get("asset_type"))
 
-    if asset_type == "StaticMesh":
+    if asset_type == ExportAssetType.STATIC_MESH:
 
         if "static_mesh_lod_group" in asset_additional_data:
             desired_lod_group = asset_additional_data["static_mesh_lod_group"]

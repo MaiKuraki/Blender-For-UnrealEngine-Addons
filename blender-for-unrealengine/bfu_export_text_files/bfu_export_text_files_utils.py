@@ -68,13 +68,7 @@ def add_generated_json_meta_data(json_data):
 def is_read_only(filepath):
     return os.path.exists(filepath) and not os.access(filepath, os.W_OK)
 
-def export_single_text_file(text, dirpath, filename):
-    # Export single text
-    counter = bpl.utils.CounterTimer()
-
-    absdirpath = bpy.path.abspath(dirpath)
-    bfu_basics.verifi_dirs(absdirpath)
-    fullpath = os.path.join(absdirpath, filename)
+def export_single_text_file(text, fullpath: str,):
 
     if is_read_only(fullpath):
         print(f"Cannot write to '{fullpath}': File is read-only.")
@@ -82,19 +76,9 @@ def export_single_text_file(text, dirpath, filename):
 
     with open(fullpath, "w") as file:
         file.write(text)
+        
 
-    exportTime = counter.get_time()
-    # This return [AssetName , AssetType , ExportPath, ExportTime]
-    return([filename, "TextFile", absdirpath, exportTime])
-
-def export_single_json_file(json_data, dirpath, filename):
-    # Export single Json
-
-    counter = bpl.utils.CounterTimer()
-
-    absdirpath = bpy.path.abspath(dirpath)
-    bfu_basics.verifi_dirs(absdirpath)
-    fullpath = os.path.join(absdirpath, filename)
+def export_single_json_file(json_data, fullpath: str,):
 
     if is_read_only(fullpath):
         print(f"Cannot write to '{fullpath}': File is read-only.")
@@ -102,7 +86,3 @@ def export_single_json_file(json_data, dirpath, filename):
 
     with open(fullpath, 'w') as json_file:
         json.dump(json_data, json_file, ensure_ascii=False, sort_keys=False, indent=4)
-
-    exportTime = counter.get_time()
-    # This return [AssetName , AssetType , ExportPath, ExportTime]
-    return([filename, "TextFile", absdirpath, exportTime])

@@ -27,9 +27,9 @@ from .. import bfu_unreal_utils
 
 
 def is_alembic_animation(obj):
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     if asset_class:
-        if asset_class.get_asset_type_name(obj) == bfu_alembic_animation_config.asset_type_name:
+        if asset_class.get_asset_type(obj) == bfu_assets_manager.bfu_asset_manager_type.AssetType.ANIM_ALEMBIC:
             return True
     return False
 

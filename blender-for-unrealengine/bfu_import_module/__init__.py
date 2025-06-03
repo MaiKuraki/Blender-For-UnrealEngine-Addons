@@ -37,6 +37,7 @@ from . import bfu_import_nanite
 from . import bfu_import_sequencer
 from . import import_module_tasks_class
 from . import import_module_tasks_helper
+from . import asset_types
 
 if "bpl" in locals():
     importlib.reload(bpl)
@@ -72,6 +73,8 @@ if "import_module_tasks_class" in locals():
     importlib.reload(import_module_tasks_class)
 if "import_module_tasks_helper" in locals():
     importlib.reload(import_module_tasks_helper)
+if "asset_types" in locals():
+    importlib.reload(asset_types)
 
 def run_asset_import(assets_data, show_finished_popup=False):
     try:

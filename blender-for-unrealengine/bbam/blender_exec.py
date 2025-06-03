@@ -46,7 +46,21 @@ def build_extension(src, dst, blender_executable_path):
         '--source-dir', src,
         '--output-filepath', dst,
     ]
+
+    print("#" * 20)
+    print("START BUILD...")
+    print("")
     result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode == 0:
+        print("Build successful.")
+    else:
+        print(f"Build failed with return code {result.returncode}.", file=sys.stderr)
+        print(result.stdout, file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+    print("")
+    print("END BUILD...")
+    print("#" * 20)
+
     return result
 
 def get_build_file(build_result):
@@ -78,10 +92,21 @@ def validate_extension(path, blender_executable_path):
         '--command', 'extension', 'validate', 
         path,
     ]
-    result = subprocess.run(validate_command, capture_output=True, text=True)
 
-    # Output results for debugging purposes
+    print("#" * 20)
+    print("START VALIDATION...")
+    print("")
+    result = subprocess.run(validate_command, capture_output=True, text=True)
     if result.returncode == 0:
         print("Validation successful.")
     else:
-        print(f"Validation failed. Error: {result.stderr}", file=sys.stderr)
+        print(f"Validation failed with return code {result.returncode}.", file=sys.stderr)
+        print(result.stdout, file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+    print("")
+    print("END VALIDATION...")
+    print("#" * 20)
+
+
+
+    return result

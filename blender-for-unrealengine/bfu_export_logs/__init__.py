@@ -17,7 +17,6 @@ if "bfu_process_time_logs_utils" in locals():
 
 
 def clear_all_logs():
-    bfu_asset_export_logs_utils.clear_asset_logs()
     bfu_process_time_logs_utils.clear_process_time_logs()
 
 classes = (

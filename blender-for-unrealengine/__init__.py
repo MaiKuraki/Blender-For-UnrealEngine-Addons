@@ -16,6 +16,8 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+
+
 '''
 This addons allows to easily export several objects, animation, cameras, [...] at the same time for use in game engines
 like Unreal Engine of Unity by removing the usual constraints while respecting engine naming conventions
@@ -30,56 +32,67 @@ xavierloux.com
 xavierloux.loux@gmail.com
 '''
 
-import bpy
-import importlib
-from . import bpl
-from . import bbpl
-from . import bfu_assets_manager
-from . import bfu_propertys
-from . import bfu_base_object
-from . import bfu_adv_object
-from . import bfu_base_collection
-from . import bfu_static_mesh
-from . import bfu_skeletal_mesh
-from . import bfu_modular_skeletal_mesh
-from . import bfu_alembic_animation
-from . import bfu_anim_base
-from . import bfu_anim_action
-from . import bfu_anim_action_adv
-from . import bfu_anim_nla
-from . import bfu_anim_nla_adv
-from . import bfu_groom
-from . import bfu_camera
-from . import bfu_spline
-from . import bfu_collision
-from . import bfu_socket
-from . import bfu_material
-from . import bfu_vertex_color
-from . import bfu_lod
-from . import bfu_uv_map
-from . import bfu_light_map
-from . import bfu_nanite
-from . import bfu_assets_references
-from . import bfu_custom_property
-from . import bfu_addon_parts
-from . import bfu_export_nomenclature
-from . import bfu_export_filter
-from . import bfu_export_process
-from . import bfu_export_procedure
-from . import bfu_addon_pref
-from . import bfu_export_logs
-from . import bfu_ui
-from . import bfu_check_potential_error
-from . import bfu_export_text_files
-from . import bfu_basics
-from . import bfu_utils
-from . import bfu_unreal_utils
-from . import bfu_naming
-from . import fbxio
-from . import bfu_export
-from . import bfu_backward_compatibility
-from . import bfu_cached_assets
+try:
+    import bpy
+    import importlib
+    from . import bpl
+    from . import bbpl
 
+
+    from . import bfu_assets_manager
+    from . import bfu_asset_preview
+    from . import bfu_propertys
+    from . import bfu_base_object
+    from . import bfu_adv_object
+    from . import bfu_base_collection
+    from . import bfu_static_mesh
+    from . import bfu_skeletal_mesh
+    from . import bfu_modular_skeletal_mesh
+    from . import bfu_alembic_animation
+    from . import bfu_anim_base
+    from . import bfu_anim_action
+    from . import bfu_anim_action_adv
+    from . import bfu_anim_nla
+    from . import bfu_anim_nla_adv
+    from . import bfu_groom
+    from . import bfu_camera
+    from . import bfu_spline
+    from . import bfu_collision
+    from . import bfu_socket
+    from . import bfu_material
+    from . import bfu_vertex_color
+    from . import bfu_lod
+    from . import bfu_uv_map
+    from . import bfu_light_map
+    from . import bfu_nanite
+    from . import bfu_assets_references
+    from . import bfu_custom_property
+    from . import bfu_addon_parts
+    from . import bfu_export_nomenclature
+    from . import bfu_export_filter
+    from . import bfu_export_process
+    from . import bfu_export_procedure
+    from . import bfu_addon_pref
+    from . import bfu_export_logs
+    from . import bfu_ui
+    from . import bfu_check_potential_error
+    from . import bfu_export_text_files
+    from . import bfu_basics
+    from . import bfu_utils
+    from . import bfu_unreal_utils
+    from . import bfu_naming
+    from . import fbxio
+    from . import bfu_export
+    from . import bfu_backward_compatibility
+    from . import bfu_cached_assets
+
+# Try/Execpt is useful for dev, need to make BBAM automatically add at build time in dev mode.
+except Exception as e:
+    import traceback
+    print("Failed to import addon modules:")
+    print("\033[91m" + "---------------------------------" + "\033[0m")
+    traceback.print_exc()
+    print("\033[91m" + "---------------------------------" + "\033[0m")
 
 
 if "bpl" in locals():
@@ -88,6 +101,8 @@ if "bbpl" in locals():
     importlib.reload(bbpl)
 if "bfu_assets_manager" in locals():
     importlib.reload(bfu_assets_manager)
+if "bfu_asset_preview" in locals():
+    importlib.reload(bfu_asset_preview)
 if "bfu_propertys" in locals():
     importlib.reload(bfu_propertys)
 if "bfu_base_object" in locals():
@@ -177,6 +192,7 @@ if "bfu_backward_compatibility" in locals():
 if "bfu_cached_assets" in locals():
     importlib.reload(bfu_cached_assets)
 
+    
 class BFUCachedAction(bpy.types.PropertyGroup):
     """
     Represents a cached action for Blender File Utils (BFU).
@@ -193,6 +209,7 @@ def register():
 
     bbpl.register()
     bfu_assets_manager.register()
+    bfu_asset_preview.register()
     bfu_propertys.register()
     bfu_base_object.register()
     bfu_adv_object.register()
@@ -231,7 +248,10 @@ def register():
     bfu_backward_compatibility.register()
     bfu_cached_assets.register()
 
+
 def unregister():
+
+
     bfu_cached_assets.unregister()
     bfu_backward_compatibility.unregister()
     bfu_check_potential_error.unregister()
@@ -269,6 +289,7 @@ def unregister():
     bfu_adv_object.unregister()
     bfu_base_object.unregister()
     bfu_propertys.unregister()
+    bfu_asset_preview.unregister()
     bfu_assets_manager.unregister()
     bbpl.unregister()
 

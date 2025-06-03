@@ -40,7 +40,6 @@ def export_scene_gltf(
         use_mesh_edges=False, 
         bake_anim=True,
     ):
-    print("s2")
     # Base parameters for all versions
     params = {
         'filepath': filepath,
@@ -56,11 +55,9 @@ def export_scene_gltf(
 
     try:
         # Call the FBX export operator with the appropriate parameters
-        print("s3")
         if (debug_show_arguments):
             print("(Blender) EXPORT PARMS:", params)
         bpy.ops.export_scene.gltf(**params)
-        print("s4")
     except Exception as e:
         # Capture and print the detailed error information
         error_message = traceback.format_exc()

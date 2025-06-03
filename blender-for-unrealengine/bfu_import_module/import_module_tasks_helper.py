@@ -20,6 +20,7 @@
 from typing import Union
 from . import import_module_unreal_utils
 from . import import_module_tasks_class
+from .asset_types import ExportAssetType 
 
 try:
     import unreal
@@ -85,20 +86,20 @@ if import_module_unreal_utils.alembic_importer_active():
         return options
 
 if support_interchange:
-    def init_options_data(asset_type: str, use_interchange: bool = True):
+    def init_options_data(asset_type: ExportAssetType, use_interchange: bool = True):
         """Initializes task options based on asset type and interchange usage."""
         
         # Add the function only if alembic importer is active
-        if asset_type == "Alembic" and import_module_unreal_utils.alembic_importer_active():
+        if asset_type == ExportAssetType.ANIM_ALEMBIC and import_module_unreal_utils.alembic_importer_active():
             options = task_options_alembic_preset(use_interchange)
-        
-        elif asset_type == "StaticMesh":
+
+        elif asset_type == ExportAssetType.STATIC_MESH:
             options = task_options_static_mesh_preset(use_interchange)
 
-        elif asset_type == "SkeletalMesh":
+        elif asset_type == ExportAssetType.SKELETAL_MESH:
             options = task_options_skeletal_mesh_preset(use_interchange)
 
-        elif asset_type == "Animation":
+        elif asset_type.is_skeletal_animation():
             options = task_options_animation_preset(use_interchange)
             
         else:
@@ -106,20 +107,20 @@ if support_interchange:
         
         return options
 else:
-    def init_options_data(asset_type: str, use_interchange: bool = True):
+    def init_options_data(asset_type: ExportAssetType, use_interchange: bool = True):
         """Initializes task options based on asset type and interchange usage."""
         
         # Add the function only if alembic importer is active
-        if asset_type == "Alembic" and import_module_unreal_utils.alembic_importer_active():
+        if asset_type == ExportAssetType.ANIM_ALEMBIC and import_module_unreal_utils.alembic_importer_active():
             options = task_options_alembic_preset(use_interchange)
-        
-        elif asset_type == "StaticMesh":
+
+        elif asset_type == ExportAssetType.STATIC_MESH:
             options = task_options_static_mesh_preset(use_interchange)
 
-        elif asset_type == "SkeletalMesh":
+        elif asset_type == ExportAssetType.SKELETAL_MESH:
             options = task_options_skeletal_mesh_preset(use_interchange)
 
-        elif asset_type == "Animation":
+        elif asset_type.is_skeletal_animation():
             options = task_options_animation_preset(use_interchange)
             
         else:

@@ -46,7 +46,7 @@ class BFU_OT_ShowActionToExport(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.object
-        animation_asset_cache = bfu_cached_assets.bfu_cached_assets.GetAnimationAssetCache(obj)
+        animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
         animation_asset_cache.UpdateActionCache()
         animation_to_export = animation_asset_cache.GetAnimationAssetList()
 
@@ -80,9 +80,9 @@ class BFU_OT_ShowActionToExport(bpy.types.Operator):
                     )
 
             for action in animation_to_export:
-                Frames = bfu_utils.GetDesiredActionStartEndTime(obj, action)
-                frame_start = str(Frames[0])
-                frame_end = str(Frames[1])
+                frame_range = bfu_utils.get_desired_action_start_end_range(obj, action)
+                frame_start = str(frame_range[0])
+                frame_end = str(frame_range[1])
                 addAnimRow(action.name, bfu_utils.GetActionType(action), frame_start, frame_end)
             if obj.bfu_anim_nla_use:
                 scene = context.scene

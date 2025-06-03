@@ -20,6 +20,7 @@ from typing import Optional
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 from .. import import_module_utils
+from ..asset_types import ExportAssetType
 
 try:
     import unreal
@@ -32,17 +33,17 @@ support_interchange = import_module_unreal_utils.get_support_interchange()
 def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
     import_module_utils.print_debug_step("Set Light Map import settings.")
 
-    asset_type = asset_data.get("asset_type")
-    if asset_type not in ["StaticMesh"]:
+    asset_type = ExportAssetType.get_asset_type_from_string(asset_data.get("asset_type"))
+    if asset_type not in [ExportAssetType.STATIC_MESH]:
         # Only apply settings for StaticMesh and SkeletalMesh
         return
 
     if itask.use_interchange:
-        if asset_type == "StaticMesh":
+        if asset_type == ExportAssetType.STATIC_MESH:
             if "generate_lightmap_u_vs" in asset_additional_data:
                 itask.get_igap_mesh().set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_lightmap_u_vs"])
     else:
-        if asset_type == "StaticMesh":
+        if asset_type == ExportAssetType.STATIC_MESH:
             if "generate_lightmap_u_vs" in asset_additional_data:
                 itask.get_static_mesh_import_data().set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_lightmap_u_vs"])
 

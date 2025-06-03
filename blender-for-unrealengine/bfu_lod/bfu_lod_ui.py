@@ -55,7 +55,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             bbpl.blender_layout.layout_doc_button.add_doc_page_operator(panel, text="About Level of details (Lods)", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Level-of-details")
 
             # Unreal python no longer support Skeletal mesh LODS import.
-            asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
+            asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
             if asset_class and asset_class.use_lods == True:
                 LodProp = panel.column()
                 LodProp.prop(obj, 'bfu_export_as_lod_mesh')

@@ -16,7 +16,6 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os
 import bpy
 from . import bfu_fbx_export
 from . import bfu_export_utils
@@ -27,47 +26,67 @@ from .. import bfu_naming
 from .. import bfu_export_logs
 from .. import bfu_skeletal_mesh
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
+from .. import bfu_cached_assets
+
+def process_nla_anim_export_from_asset(
+    op: bpy.types.Operator,
+    asset: AssetToExport
+) -> bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog:
+
+    armature = asset.obj
+    my_asset_log = process_nla_anim_export(op, armature)
+    my_asset_log.unreal_target_import_path = asset.import_dirpath
+    return my_asset_log
 
 
+def process_nla_anim_export(
+    op: bpy.types.Operator,
+    armature: bpy.types.Object
+) -> bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog:
 
-
-def ProcessNLAAnimExport(op, obj):
+    init_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Init export", 2)
+    init_export_time_log.should_print_log = True
     scene = bpy.context.scene
+    addon_prefs = bfu_basics.GetAddonPrefs()
 
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj, "SkeletalAnimation")
-    dirpath = asset_class.get_obj_export_directory_path(obj, "", True)
+
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(armature, "SkeletalAnimation")
+    asset_type = asset_class.get_asset_type(armature)
+    dirpath = asset_class.get_asset_export_directory_path(armature, "", True)
 
     scene.frame_end += 1  # Why ?
 
     my_asset_log = bfu_export_logs.bfu_asset_export_logs_utils.create_new_asset_log()
-    my_asset_log.object = obj
-    my_asset_log.skeleton_name = obj.name
-    my_asset_log.asset_name = bfu_naming.get_nonlinear_animation_file_name(obj)
-    my_asset_log.asset_global_scale = obj.bfu_export_global_scale
-    my_asset_log.folder_name = obj.bfu_export_folder_name
-    my_asset_log.asset_type = "NlAnim"
-    my_asset_log.animation_start_frame = bfu_utils.GetDesiredNLAStartEndTime(obj)[0]
-    my_asset_log.animation_end_frame = bfu_utils.GetDesiredNLAStartEndTime(obj)[1]
+    my_asset_log.object = armature
+    my_asset_log.skeleton_name = armature.name
+    my_asset_log.asset_name = bfu_naming.get_nonlinear_animation_file_name(armature)
+    my_asset_log.asset_global_scale = armature.bfu_export_global_scale
+    my_asset_log.asset_type = asset_type.get_type_as_string()
+    frame_range = bfu_utils.get_desired_nla_start_end_range(armature)
+    my_asset_log.animation_start_frame = frame_range[0]
+    my_asset_log.animation_end_frame = frame_range[1]
 
     file = my_asset_log.add_new_file()
-    file.file_name = bfu_naming.get_nonlinear_animation_file_name(obj, "")
+    file.file_name = bfu_naming.get_nonlinear_animation_file_name(armature, "")
     file.file_extension = "fbx"
     file.file_path = dirpath
     file.file_type = "FBX"
 
     fullpath = bfu_export_utils.check_and_make_export_path(dirpath, file.GetFileWithExtension())
+    init_export_time_log.end_time_log()
     if fullpath:
         my_asset_log.StartAssetExport()
-        ExportSingleFbxNLAAnim(op, fullpath, obj)
+        export_single_fbx_nla_anim(op, fullpath, armature)
         my_asset_log.EndAssetExport(True)
     return my_asset_log
 
 
-def ExportSingleFbxNLAAnim(
-        op,
-        fullpath,
-        armature
-        ):
+def export_single_fbx_nla_anim(
+    op: bpy.types.Operator,
+    fullpath: str,
+    armature: bpy.types.Object
+) -> None:
 
     '''
     #####################################################
@@ -140,8 +159,9 @@ def ExportSingleFbxNLAAnim(
         my_rig_consraints_scale.RescaleRigConsraintForUnrealEngine()
         bbpl.anim_utils.copy_drivers(armature, active)
 
-    scene.frame_start = bfu_utils.GetDesiredNLAStartEndTime(active)[0]
-    scene.frame_end = bfu_utils.GetDesiredNLAStartEndTime(active)[1]
+    frame_range = bfu_utils.get_desired_nla_start_end_range(active)
+    scene.frame_start = frame_range[0]
+    scene.frame_end = frame_range[1] + 1
 
     asset_name.SetExportName()
 

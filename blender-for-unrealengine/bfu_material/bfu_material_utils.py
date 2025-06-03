@@ -23,18 +23,19 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_unreal_utils
 from .. import bfu_export_logs
+from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
-def get_material_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_material_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
     return asset_data
 
-def get_material_asset_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_material_asset_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
-    if asset.object:
-        if asset.asset_type in ["StaticMesh", "SkeletalMesh"]:
-            asset_data["import_materials"] = asset.object.bfu_import_materials
-            asset_data["import_textures"] = asset.object.bfu_import_textures
-            asset_data["flip_normal_map_green_channel"] = asset.object.bfu_flip_normal_map_green_channel
-            asset_data["reorder_material_to_fbx_order"] = asset.object.bfu_reorder_material_to_fbx_order
-            asset_data["material_search_location"] = asset.object.bfu_material_search_location
+    if obj:
+        if asset_type in [AssetType.STATIC_MESH, AssetType.SKELETAL_MESH]:
+            asset_data["import_materials"] = obj.bfu_import_materials
+            asset_data["import_textures"] = obj.bfu_import_textures
+            asset_data["flip_normal_map_green_channel"] = obj.bfu_flip_normal_map_green_channel
+            asset_data["reorder_material_to_fbx_order"] = obj.bfu_reorder_material_to_fbx_order
+            asset_data["material_search_location"] = obj.bfu_material_search_location
     return asset_data

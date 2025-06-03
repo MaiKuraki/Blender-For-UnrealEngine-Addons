@@ -16,7 +16,6 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os
 import bpy
 from . import bfu_fbx_export
 from . import bfu_export_utils
@@ -27,46 +26,74 @@ from .. import bfu_export_logs
 from .. import bbpl
 from .. import bfu_skeletal_mesh
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
+from .. import bfu_cached_assets
 
+def process_fbx_action_export_from_asset(
+    op: bpy.types.Operator,
+    asset: AssetToExport,
+    action_curve_scale=None
+) -> bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog:
+    
+    obj = asset.obj
+    action = asset.action
+    desired_name = asset.name
+    desired_dirpath = asset.dirpath
 
-def ProcessActionExport(op, obj, action, action_curve_scale):
+    my_asset_log = process_fbx_action_export(op, obj, action, action_curve_scale, desired_name, desired_dirpath)
+    my_asset_log.unreal_target_import_path = asset.import_dirpath
+    return my_asset_log
+
+def process_fbx_action_export(
+    op: bpy.types.Operator,
+    armature: bpy.types.Object,
+    action: bpy.types.Action,
+    action_curve_scale=None,
+    desired_name: str = "",
+    desired_dirpath: str = ""
+) -> bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog:
+    
+    init_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Init export", 2)
+    init_export_time_log.should_print_log = True
     scene = bpy.context.scene
 
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj, "SkeletalAnimation")
-    dirpath = asset_class.get_obj_export_directory_path(obj, "", True)
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(armature, "SkeletalAnimation")
+    asset_type = asset_class.get_asset_type(action)
+
+    dirpath = asset_class.get_asset_export_directory_path(armature, "", True)
 
     my_asset_log = bfu_export_logs.bfu_asset_export_logs_utils.create_new_asset_log()
-    my_asset_log.object = obj
-    my_asset_log.skeleton_name = obj.name
-    my_asset_log.asset_name = bfu_naming.get_animation_file_name(obj, action, "")
-    my_asset_log.asset_global_scale = obj.bfu_export_global_scale
-    my_asset_log.folder_name = obj.bfu_export_folder_name
-    my_asset_log.asset_type = bfu_utils.GetActionType(action)
-    my_asset_log.animation_start_frame = bfu_utils.GetDesiredActionStartEndTime(obj, action)[0]
-    my_asset_log.animation_end_frame = bfu_utils.GetDesiredActionStartEndTime(obj, action)[1]
+    my_asset_log.object = armature
+    my_asset_log.skeleton_name = armature.name
+    my_asset_log.asset_name = bfu_naming.get_animation_file_name(armature, action, "")
+    my_asset_log.asset_global_scale = armature.bfu_export_global_scale
+    my_asset_log.asset_type = asset_type.get_type_as_string()
+    frame_range = bfu_utils.get_desired_action_start_end_range(armature, action)
+    my_asset_log.animation_start_frame = frame_range[0]
+    my_asset_log.animation_end_frame = frame_range[1]
 
     file = my_asset_log.add_new_file()
-    file.file_name = bfu_naming.get_animation_file_name(obj, action, "")
+    file.file_name = bfu_naming.get_animation_file_name(armature, action, "")
     file.file_extension = "fbx"
     file.file_path = dirpath
     file.file_type = "FBX"
 
     fullpath = bfu_export_utils.check_and_make_export_path(dirpath, file.GetFileWithExtension())
+    init_export_time_log.end_time_log()
     if fullpath:
         my_asset_log.StartAssetExport()
-        action_curve_scale = ExportSingleFbxAction(op, scene, fullpath, obj, action, action_curve_scale)
+        export_single_fbx_action(op, scene, fullpath, armature, action)
         my_asset_log.EndAssetExport(True)
-    return action_curve_scale
+    return my_asset_log
 
 
-def ExportSingleFbxAction(
-        op,
-        originalScene,
-        fullpath,
-        armature,
-        targetAction,
-        action_curve_scale
-        ):
+def export_single_fbx_action(
+    op: bpy.types.Operator,
+    originalScene,
+    fullpath: str,
+    armature: bpy.types.Object,
+    target_action: bpy.types.Action
+):
 
     '''
     #####################################################
@@ -111,15 +138,16 @@ def ExportSingleFbxAction(
     if export_as_proxy:
         bfu_export_utils.ApplyProxyData(active)
 
-    scene.frame_start = bfu_utils.GetDesiredActionStartEndTime(active, targetAction)[0]
-    scene.frame_end = bfu_utils.GetDesiredActionStartEndTime(active, targetAction)[1]
+    frame_range = bfu_utils.get_desired_action_start_end_range(active, target_action)
+    scene.frame_start = frame_range[0]
+    scene.frame_end = frame_range[1] + 1
 
     if export_as_proxy:
         if export_proxy_child is not None:
-            armature.animation_data.action = targetAction  # Apply desired action
+            armature.animation_data.action = target_action  # Apply desired action
         bfu_utils.RemoveSocketFromSelectForProxyArmature()
 
-    active.animation_data.action = targetAction  # Apply desired action
+    active.animation_data.action = target_action  # Apply desired action
     skeleton_export_procedure = active.bfu_skeleton_export_procedure
 
     if addon_prefs.bakeArmatureAction:
@@ -136,9 +164,8 @@ def ExportSingleFbxAction(
         my_scene_unit_settings.SetUnitForUnrealEngineExport()
         my_skeletal_export_scale = bfu_utils.SkeletalExportScale(active)
         my_skeletal_export_scale.ApplySkeletalExportScale(rrf, is_a_proxy=export_as_proxy)
-        if not action_curve_scale:
-            action_curve_scale = bfu_utils.ActionCurveScale(rrf*active.scale.z)
-            action_curve_scale.ResacleForUnrealEngine()
+        my_action_curve_scale = bfu_utils.ActionCurveScale(rrf*active.scale.z)
+        my_action_curve_scale.ResacleForUnrealEngine()
         my_shape_keys_curve_scale = bfu_utils.ShapeKeysCurveScale(rrf, is_a_proxy=export_as_proxy)
         my_shape_keys_curve_scale.ResacleForUnrealEngine()
         my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf, is_a_proxy=export_as_proxy)
@@ -246,6 +273,7 @@ def ExportSingleFbxAction(
         my_rig_consraints_scale.ResetScaleAfterExport()
         my_skeletal_export_scale.ResetSkeletalExportScale()
         my_scene_unit_settings.ResetUnit()
+        my_action_curve_scale.ResetScaleAfterExport()
         my_shape_keys_curve_scale.ResetScaleAfterExport()
         my_modifiers_data_scale.ResetScaleAfterExport()
 
@@ -262,4 +290,3 @@ def ExportSingleFbxAction(
     for armature in scene.objects:
         bfu_utils.ClearAllBFUTempVars(armature)
 
-    return action_curve_scale

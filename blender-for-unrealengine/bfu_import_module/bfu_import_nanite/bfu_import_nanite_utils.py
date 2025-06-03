@@ -20,6 +20,7 @@ from typing import Optional
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 from .. import import_module_utils
+from ..asset_types import ExportAssetType
 
 try:
     import unreal
@@ -32,8 +33,8 @@ support_interchange = import_module_unreal_utils.get_support_interchange()
 def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
     import_module_utils.print_debug_step("Set Nanite import settings.")
 
-    asset_type = asset_data.get("asset_type")
-    if asset_type not in ["StaticMesh", "SkeletalMesh"]:
+    asset_type = ExportAssetType.get_asset_type_from_string(asset_data.get("asset_type"))
+    if asset_type not in [ExportAssetType.STATIC_MESH, ExportAssetType.SKELETAL_MESH]:
         # Only apply settings for StaticMesh and SkeletalMesh
         return
     
@@ -41,22 +42,22 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
         build_nanite = asset_additional_data["build_nanite"]
 
         if itask.use_interchange:
-            if asset_type == "StaticMesh":
+            if asset_type == ExportAssetType.STATIC_MESH:
                 if "build_nanite" in asset_additional_data:
                     itask.get_igap_mesh().set_editor_property('build_nanite', build_nanite)
-            if asset_type == "SkeletalMesh":
+            if asset_type == ExportAssetType.SKELETAL_MESH:
                 if "build_nanite" in asset_additional_data:
-                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh 
+                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh
                     # but that was not yet added in Python API.
                     pass
                     #itask.get_igap_mesh().set_editor_property('build_nanite', build_nanite)
         else:
-            if asset_type == "StaticMesh":
+            if asset_type == ExportAssetType.STATIC_MESH:
                 if "build_nanite" in asset_additional_data:
                     itask.get_static_mesh_import_data().set_editor_property('build_nanite', build_nanite)
-            if asset_type == "SkeletalMesh":
+            if asset_type == ExportAssetType.SKELETAL_MESH:
                 if "build_nanite" in asset_additional_data:
-                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh 
+                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh
                     # but that was not yet added in Python API.
                     pass
                     #itask.get_static_mesh_import_data().set_editor_property('build_nanite', build_nanite)

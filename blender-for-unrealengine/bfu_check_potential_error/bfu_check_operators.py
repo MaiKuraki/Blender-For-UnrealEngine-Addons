@@ -23,65 +23,6 @@ from .. import bfu_cached_assets
 from .. import bfu_check_potential_error
 from .. import bbpl
 
-
-class BFU_OT_ShowAssetToExport(bpy.types.Operator):
-    bl_label = "Show asset(s)"
-    bl_idname = "object.showasset"
-    bl_description = "Click to show assets that are to be exported."
-
-    def execute(self, context):
-
-        obj = context.object
-        if obj:
-            if obj.type == "ARMATURE":
-                animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
-                animation_asset_cache.UpdateActionCache()
-                
-
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.GetFinalAssetList()
-        popup_title = "Assets list"
-        if len(final_asset_list_to_export) > 0:
-            popup_title = str(len(final_asset_list_to_export))+' asset(s) will be exported.'
-        else:
-            popup_title = 'No exportable assets were found.'
-
-        def draw(self, context: bpy.types.Context):
-            col = self.layout.column()
-            for asset in final_asset_list_to_export:
-                asset :bfu_cached_assets.bfu_cached_assets_types.AssetToExport
-                row = col.row()
-                if asset.obj is not None:
-                    if asset.action is not None:
-                        if (type(asset.action) is bpy.types.Action):
-                            # Action name
-                            action = asset.action.name
-                        elif (type(asset.action) is bpy.types.AnimData):
-                            # Nonlinear name
-                            action = asset.obj.bfu_anim_nla_export_name
-                        else:
-                            action = "..."
-                        row.label(
-                            text="- ["+asset.name+"] --> " +
-                            action+" ("+asset.asset_type+")")
-                    else:
-                        if asset.asset_type != "Collection StaticMesh":
-                            row.label(
-                                text="- "+asset.name +
-                                " ("+asset.asset_type+")")
-                        else:
-                            row.label(
-                                text="- "+asset.obj.name +
-                                " ("+asset.asset_type+")")
-
-                else:
-                    row.label(text="- ("+asset.asset_type+")")
-        bpy.context.window_manager.popup_menu(
-            draw,
-            title=popup_title,
-            icon='PACKAGE')
-        return {'FINISHED'}
-
 class BFU_OT_CheckPotentialErrorPopup(bpy.types.Operator):
     bl_label = "Check Potential Issues"
     bl_idname = "object.checkpotentialerror"
@@ -165,7 +106,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
     def execute(self, context):
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, event: bpy.types.Event):
         wm = context.window_manager
         return wm.invoke_popup(self, width=1020)
 
@@ -253,7 +194,6 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
 # -------------------------------------------------------------------
 
 classes = (
-    BFU_OT_ShowAssetToExport,
     BFU_OT_CheckPotentialErrorPopup,
     BFU_OT_OpenPotentialErrorPopup,
     BFU_OT_OpenPotentialErrorPopup.BFU_OT_FixitTarget,

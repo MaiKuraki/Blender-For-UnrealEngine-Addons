@@ -19,6 +19,7 @@
 
 import os
 import bpy
+from typing import List
 from . import bfu_export_text_files_utils
 from .. import bfu_export_logs
 from .. import languages
@@ -29,8 +30,9 @@ from .. import bfu_light_map
 from .. import bfu_assets_references
 from .. import bfu_vertex_color
 from .. import bfu_lod
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
-def write_main_assets_data():
+def write_main_assets_data(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]):
     # Generate a script for import assets in Ue4
     scene = bpy.context.scene
 
@@ -43,80 +45,80 @@ def write_main_assets_data():
 
     # Import assets
     data['assets'] = []
-    for unreal_exported_asset in bfu_export_logs.bfu_asset_export_logs_utils.get_exported_assets_logs():
+    for unreal_exported_asset in exported_asset_log:
         data['assets'].append(write_single_asset_data(unreal_exported_asset))
 
     bfu_export_text_files_utils.add_generated_json_footer(data)
     return data
 
-def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog):
     scene = bpy.context.scene
     asset_data = {}
     asset_data["scene_unit_scale"] = bfu_utils.get_scene_unit_scale()
 
-    asset_data["asset_name"] = unreal_exported_asset.asset_name
-    asset_data["asset_global_scale"] = unreal_exported_asset.asset_global_scale
-    if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type):
-        asset_data["asset_type"] = "Animation"
-    elif unreal_exported_asset.asset_type == "Collection StaticMesh":
-        asset_data["asset_type"] = "StaticMesh"
-    else:
-        asset_data["asset_type"] = unreal_exported_asset.asset_type
+    asset_data["asset_name"] = unreal_exported_asset.exported_asset.name
+    asset_data["asset_type"] = unreal_exported_asset.exported_asset.asset_type.get_type_as_string()
+    asset_data["asset_import_name"] = unreal_exported_asset.exported_asset.import_name
+    asset_data["asset_import_path"] = unreal_exported_asset.exported_asset.import_dirpath
+    
 
-
-
-    if unreal_exported_asset.unreal_target_import_path:
-        asset_data["full_import_path"] = unreal_exported_asset.unreal_target_import_path
-    else:
-        # @TODO "folder_name" is old now use "unreal_desired_import_path"
-        if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type):
-            relative_import_path = os.path.join(unreal_exported_asset.folder_name, scene.bfu_anim_subfolder_name)
-        else:
-            relative_import_path = unreal_exported_asset.folder_name
-
-        full_import_path = scene.bfu_unreal_import_module + "/" + os.path.join(scene.bfu_unreal_import_location, relative_import_path)
-        full_import_path = full_import_path.replace('\\', '/').rstrip('/')
-        asset_data["full_import_path"] = full_import_path
-
+    asset_type = unreal_exported_asset.exported_asset.asset_type
     asset_data["files"] = []
-    for file in unreal_exported_asset.files:
+    for pakages in unreal_exported_asset.exported_asset.asset_pakages:
+        file = pakages.file
         file_data = {}
         file_data["type"] = file.file_type
-        file_data["file_path"] = file.GetAbsolutePath()
+        file_data["file_path"] = file.get_full_path()
+        asset_data["files"].append(file_data)
+    if unreal_exported_asset.exported_asset.additional_data:
+        additional_data = unreal_exported_asset.exported_asset.additional_data
+        file = additional_data.file
+        file_data = {}
+        file_data["type"] = file.file_type
+        file_data["file_path"] = file.get_full_path()
         asset_data["files"].append(file_data)
 
-    if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type) or unreal_exported_asset.asset_type == "SkeletalMesh":
-        
+    if asset_type in [AssetType.SKELETAL_MESH, AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
+        main_armature = unreal_exported_asset.exported_asset.asset_pakages[0].objects[0]
         # Skeleton
-        asset_data["target_skeleton_search_ref"] = bfu_assets_references.bfu_asset_ref_utils.get_skeleton_search_ref(unreal_exported_asset.object)
+        asset_data["target_skeleton_search_ref"] = bfu_assets_references.bfu_asset_ref_utils.get_skeleton_search_ref(main_armature)
         # Skeletal Mesh
-        asset_data["target_skeletal_mesh_search_ref"] = bfu_assets_references.bfu_asset_ref_utils.get_skeletal_mesh_search_ref(unreal_exported_asset.object)
+        asset_data["target_skeletal_mesh_search_ref"] = bfu_assets_references.bfu_asset_ref_utils.get_skeletal_mesh_search_ref(main_armature)
 
         # Better to seperate to let control to uses but my default it use the Skeleton Search Ref.
-        asset_data["target_skeleton_import_ref"] = bfu_assets_references.bfu_asset_ref_utils.get_skeleton_search_ref(unreal_exported_asset.object)
+        asset_data["target_skeleton_import_ref"] = bfu_assets_references.bfu_asset_ref_utils.get_skeleton_search_ref(main_armature)
 
         
 
-    if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type):
-        asset_data["animation_start_frame"] = unreal_exported_asset.animation_start_frame
-        asset_data["animation_end_frame"] = unreal_exported_asset.animation_end_frame    
+    if asset_type in [AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
+        frame_range = unreal_exported_asset.exported_asset.asset_pakages[0].frame_range
+        asset_data["animation_start_frame"] = frame_range[0]
+        asset_data["animation_end_frame"] = frame_range[1]
 
-    if unreal_exported_asset.object:
-        if unreal_exported_asset.asset_type in ["StaticMesh"]:
-            asset_data["auto_generate_collision"] = unreal_exported_asset.object.bfu_auto_generate_collision
-            asset_data["collision_trace_flag"] = unreal_exported_asset.object.bfu_collision_trace_flag
+    main_obj_data = None
+    if asset_type in [AssetType.COLLECTION_AS_STATIC_MESH]:
+        main_collection = unreal_exported_asset.exported_asset.asset_pakages[0].collection
+        main_obj_data = main_collection
+    else:
+        main_object = unreal_exported_asset.exported_asset.asset_pakages[0].objects[0]
+        if main_object:
+            if asset_type in [AssetType.STATIC_MESH]:
+                asset_data["auto_generate_collision"] = main_object.bfu_auto_generate_collision
+                asset_data["collision_trace_flag"] = main_object.bfu_collision_trace_flag
 
-        if unreal_exported_asset.asset_type in ["SkeletalMesh"]:
-            asset_data["create_physics_asset"] = unreal_exported_asset.object.bfu_create_physics_asset
-            asset_data["enable_skeletal_mesh_per_poly_collision"] = unreal_exported_asset.object.bfu_enable_skeletal_mesh_per_poly_collision
+            if asset_type in [AssetType.SKELETAL_MESH]:
+                asset_data["create_physics_asset"] = main_object.bfu_create_physics_asset
+                asset_data["enable_skeletal_mesh_per_poly_collision"] = main_object.bfu_enable_skeletal_mesh_per_poly_collision
 
-        if bfu_utils.GetIsAnimation(unreal_exported_asset.asset_type):
-            asset_data["do_not_import_curve_with_zero"] = unreal_exported_asset.object.bfu_do_not_import_curve_with_zero
+            if asset_type in [AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
+                asset_data["do_not_import_curve_with_zero"] = main_object.bfu_do_not_import_curve_with_zero
+        main_obj_data = main_object
 
-    asset_data.update(bfu_lod.bfu_lod_utils.get_lod_asset_data(unreal_exported_asset))
-    asset_data.update(bfu_vertex_color.bfu_vertex_color_utils.get_vertex_color_asset_data(unreal_exported_asset))
-    asset_data.update(bfu_material.bfu_material_utils.get_material_asset_data(unreal_exported_asset))
-    asset_data.update(bfu_light_map.bfu_light_map_utils.get_light_map_asset_data(unreal_exported_asset))
-    asset_data.update(bfu_nanite.bfu_nanite_utils.get_nanite_asset_data(unreal_exported_asset))
+
+    asset_data.update(bfu_lod.bfu_lod_utils.get_lod_asset_data(main_obj_data, asset_type))
+    asset_data.update(bfu_vertex_color.bfu_vertex_color_utils.get_vertex_color_asset_data(main_obj_data, asset_type))
+    asset_data.update(bfu_material.bfu_material_utils.get_material_asset_data(main_obj_data, asset_type))
+    asset_data.update(bfu_light_map.bfu_light_map_utils.get_light_map_asset_data(main_obj_data, asset_type))
+    asset_data.update(bfu_nanite.bfu_nanite_utils.get_nanite_asset_data(main_obj_data, asset_type))
 
     return asset_data

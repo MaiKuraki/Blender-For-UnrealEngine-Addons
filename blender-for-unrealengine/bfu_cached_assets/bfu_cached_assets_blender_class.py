@@ -22,17 +22,11 @@ import fnmatch
 from typing import TYPE_CHECKING, List
 
 from . import bfu_cached_assets_types
-from .. import bbpl
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode, AssetType
 from .. import bfu_basics
 from .. import bfu_utils
-from .. import bfu_camera
-from .. import bfu_alembic_animation
-from .. import bfu_groom
-from .. import bfu_spline
-from .. import bfu_skeletal_mesh
-from .. import bfu_static_mesh
 from .. import bfu_assets_manager
-from .. import bfu_modular_skeletal_mesh
+
 
 
 
@@ -74,11 +68,11 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
         if force_update_cache:
             MyCachedActions.is_cached = False
 
-        if MyCachedActions.CheckCache(obj):
-            actions = MyCachedActions.GetStoredActions()
+        if MyCachedActions.check_cache(obj):
+            actions = MyCachedActions.get_stored_actions()
 
         else:
-            MyCachedActions.Clear()
+            MyCachedActions.clear()
 
             objBoneNames = [bone.name for bone in obj.data.bones]
             for action in bpy.data.actions:
@@ -86,9 +80,9 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
                     if bfu_basics.GetIfActionIsAssociated(action, objBoneNames):
                         actions.append(action)
             # Update the cache
-            MyCachedActions.StoreActions(obj, actions)
+            MyCachedActions.store_actions(obj, actions)
         return actions
-
+   
     def GetAnimationAssetList(self):
         # Returns only the actions that will be exported with the Armature
 
@@ -122,110 +116,154 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
             TargetActionToExport = self.GetCachedExportAutoActionList(obj)
 
         return TargetActionToExport
+    
 
 
 class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
-    def GetFinalAssetList(self) -> List[bfu_cached_assets_types.AssetToExport]:
+    def get_final_asset_list(self, search_mode: AssetDataSearchMode = AssetDataSearchMode.ASSET_NUMBER) -> List[AssetToExport]:
         # Returns all assets that will be exported
+        # WARNING: the assets not to be ordered. First asset are exported first.
 
-        def getHaveParentToExport(obj):
+        def get_have_parent_to_export(obj: bpy.types.Object) -> bpy.types.Object:
             if obj.parent is not None:
                 if obj.parent.bfu_export_type == 'export_recursive':
                     return obj.parent
                 else:
-                    return getHaveParentToExport(obj.parent)
+                    return get_have_parent_to_export(obj.parent)
             else:
                 return None
 
         scene = bpy.context.scene
         export_filter = scene.bfu_export_selection_filter
 
-        TargetAssetToExport = []  # Obj, Action, type
+        target_asset_to_export: List[AssetToExport] = []
 
-        objList = []
-        collectionList = []
-
+        # Search for collections
+        collection_list: List[bpy.types.Collection] = []
         if export_filter == "default":
-            objList = bfu_utils.GetAllobjectsByExportType("export_recursive")
             collection_asset_cache = GetCollectionAssetCache()
             collection_export_asset_list = collection_asset_cache.GetCollectionAssetList()
             for col_asset in collection_export_asset_list:
                 if col_asset.name in bpy.data.collections:
                     collection = bpy.data.collections[col_asset.name]
-                    collectionList.append(collection)
-                
+                    collection_list.append(collection)
 
-        elif export_filter == "only_object" or export_filter == "only_object_action":
-            recuList = bfu_utils.GetAllobjectsByExportType("export_recursive")
+        # Search for collections assets
+        for collection in collection_list:
+            asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(collection)
+            if asset_class_list:
+                for asset_class in asset_class_list:
+                    target_asset_to_export.extend(asset_class.get_asset_export_data(collection, None, search_mode=search_mode))
+
+        # Search for objects
+        obj_list: List[bpy.types.Object] = []
+        if export_filter == "default":
+            obj_list = bfu_utils.get_all_objects_by_export_type("export_recursive")  
+
+        elif export_filter in ["only_object", "only_object_action"]:
+            recursive_list = bfu_utils.get_all_objects_by_export_type("export_recursive")
 
             for obj in bpy.context.selected_objects:
-                if obj in recuList:
-                    if obj not in objList:
-                        objList.append(obj)
-                parentTarget = getHaveParentToExport(obj)
-                if parentTarget is not None:
-                    if parentTarget not in objList:
-                        objList.append(parentTarget)
+                if obj in recursive_list:
+                    if obj not in obj_list:
+                        obj_list.append(obj)
+                parent_target = get_have_parent_to_export(obj)
+                if parent_target is not None:
+                    if parent_target not in obj_list:
+                        obj_list.append(parent_target)
 
-        for collection in collectionList:
-            # Collection
-            if scene.bfu_use_static_collection_export:
-                TargetAssetToExport.append(bfu_cached_assets_types.AssetToExport(collection, None, "Collection StaticMesh"))
+        # Search for objects assets
+        for obj in obj_list:
+            asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(obj)
+            if asset_class_list: 
+                for asset_class in asset_class_list:
+                    target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
 
-        for obj in objList:
+        # Search for armatures and their actions
+        armature_list: List[bpy.types.Object] = []
+        if export_filter == "default":
+            armature_list = bfu_utils.get_all_objects_by_export_type("export_recursive")
+        elif export_filter in ["only_object", "only_object_action"]:
+            armature_recursive_list = bfu_utils.get_all_objects_by_export_type("export_recursive")
+
+            for obj in bpy.context.selected_objects:
+                if obj in armature_recursive_list:
+                    if obj not in armature_list:
+                        armature_list.append(obj)
+                armature_parent_target = get_have_parent_to_export(obj)
+                if armature_parent_target is not None:
+                    if armature_parent_target not in armature_list:
+                        armature_list.append(armature_parent_target)
+
+        armature_actions_map: List[(bpy.types.Object, bpy.types.Action)] = []
+        if export_filter == "only_object_action":
+            for armature in armature_list:
+                if armature.animation_data and armature.animation_data.action:
+                    armature_actions_map.append((armature, armature.animation_data.action))
+        else:
+            for armature in armature_list:
+                for action in bpy.data.actions:
+                    armature_actions_map.append((armature, action))
 
 
-            if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
+        # Search for actions assets
+        for armature, action in armature_actions_map:
+            asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(armature, action)
+            if asset_class_list:
+                for asset_class in asset_class_list:
+                    target_asset_to_export.extend(asset_class.get_asset_export_data(armature, action, search_mode=search_mode))
 
-                # Skeletal Mesh
-                if scene.bfu_use_skeletal_export:
-                    if obj.bfu_modular_skeletal_mesh_mode == "all_in_one":
-                        asset = bfu_cached_assets_types.AssetToExport(obj, None, "SkeletalMesh")
-                        asset.name = obj.name
-                        asset.obj_list = bfu_utils.GetExportDesiredChilds(obj)
-                        TargetAssetToExport.append(asset)
-                    elif obj.bfu_modular_skeletal_mesh_mode == "every_meshs":
-                        for mesh in bbpl.basics.get_obj_childs(obj):
-                            asset = bfu_cached_assets_types.AssetToExport(obj, None, "SkeletalMesh")
-                            asset.name = obj.name + obj.bfu_modular_skeletal_mesh_every_meshs_separate + mesh.name
-                            asset.obj_list = [mesh]
-                            TargetAssetToExport.append(asset)
-                    elif obj.bfu_modular_skeletal_mesh_mode == "specified_parts":
-                        TargetAssetToExport.extend(bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_assets_to_export_for_modular_skeletal_mesh(obj))
+        # Reorder the asset list
+        asset_type_order = [
+            AssetType.COLLECTION_AS_STATIC_MESH,
+            AssetType.CAMERA,
+            AssetType.SPLINE,
+            AssetType.STATIC_MESH,
+            AssetType.SKELETAL_MESH,
+            AssetType.ANIM_ALEMBIC,
+            AssetType.GROOM_SIMULATION,
+            AssetType.ANIM_POSE,
+            AssetType.ANIM_ACTION,
+            AssetType.ANIM_NLA,
+        ]
 
+        type_priority = {asset_type: index for index, asset_type in enumerate(asset_type_order)}
 
+        def sort_key(asset: AssetToExport):
+            return type_priority.get(asset.asset_type, len(asset_type_order))
+        
+        target_asset_to_export.sort(key=sort_key)
+        return target_asset_to_export
+  
+        # NLA
+        if scene.bfu_use_anim_export:
+            if obj.bfu_anim_nla_use:
+                TargetAssetToExport.append(AssetToExport(obj, obj.animation_data, AssetType.ANIM_NLA))
 
-                # NLA
-                if scene.bfu_use_anin_export:
-                    if obj.bfu_anim_nla_use:
-                        TargetAssetToExport.append(bfu_cached_assets_types.AssetToExport(obj, obj.animation_data, "NlAnim"))
-
-                animation_asset_cache = GetAnimationAssetCache(obj)
-                animation_to_export = animation_asset_cache.GetAnimationAssetList()
-                for action in animation_to_export:
-                    if scene.bfu_export_selection_filter == "only_object_action":
-                        if obj.animation_data:
-                            if obj.animation_data.action == action:
-                                TargetAssetToExport.append(bfu_cached_assets_types.AssetToExport(obj, action, "Action"))
-                    else:
-                        # Action
-                        if scene.bfu_use_anin_export:
-                            if bfu_utils.GetActionType(action) == "Action":
-                                TargetAssetToExport.append(bfu_cached_assets_types.AssetToExport(obj, action, "Action"))
-
-                        # Pose
-                        if scene.bfu_use_anin_export:
-                            if bfu_utils.GetActionType(action) == "Pose":
-                                TargetAssetToExport.append(bfu_cached_assets_types.AssetToExport(obj, action, "Pose"))
-            # Others
+        animation_asset_cache = GetAnimationAssetCache(obj)
+        animation_to_export = animation_asset_cache.GetAnimationAssetList()
+        for action in animation_to_export:
+            if scene.bfu_export_selection_filter == "only_object_action":
+                if obj.animation_data:
+                    if obj.animation_data.action == action:
+                        TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_ACTION))
             else:
-                asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
-                if asset_class and asset_class.can_export_obj_asset(obj):
-                    TargetAssetToExport.append(bfu_cached_assets_types.AssetToExport(obj, None, asset_class.get_asset_type_name(obj)))
+                if scene.bfu_use_anim_export:
+                    
+                    if bfu_utils.action_is_one_frame(action) == True:
+                        # Action
+                        TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_ACTION))
+                    else:
+                        # Pose
+                        TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_POSE))
+        # Others
+        asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
+        if asset_class and asset_class.can_export_asset(obj):
+            TargetAssetToExport.append(AssetToExport(obj, None, asset_class.get_asset_type(obj)))
 
 
-        return TargetAssetToExport
+
 
 def GetCollectionAssetCache() -> BFU_CollectionExportAssetCache:
     scene = bpy.context.scene

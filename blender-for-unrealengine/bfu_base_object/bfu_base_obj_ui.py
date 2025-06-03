@@ -46,13 +46,8 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             AssetType = panel.row()
             AssetType.prop(obj, 'name', text="", icon='OBJECT_DATA')
             # Show asset type
-            asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
-            if asset_class:
-                asset_type_name = asset_class.get_asset_type_name(obj)
-            else:
-                asset_type_name = "Asset type not found."
-
-            AssetType.label(text='('+asset_type_name+')')
+            asset_type = bfu_assets_manager.bfu_asset_manager_utils.get_asset_type(obj)
+            AssetType.label(text='('+asset_type.get_friendly_name()+')')
 
             ExportType = panel.column()
             ExportType.prop(obj, 'bfu_export_type')

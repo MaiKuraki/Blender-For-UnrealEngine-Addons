@@ -1,91 +1,82 @@
 import bpy
 import os
 import time
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Dict
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetPackage
 
+class ExportedPackageLog():
+    # [PackageName, PackageType, ExportPath, ExportTime]
 
-class BFU_OT_FileExport(bpy.types.PropertyGroup):
-    file_name: bpy.props.StringProperty()
-    file_extension: bpy.props.StringProperty()
-    file_path: bpy.props.StringProperty()
-    file_type: bpy.props.StringProperty()
+    def __init__(self):
+        self.export_start_time = 0.0
+        self.export_end_time = 0.0
+        self.export_success = False
 
-    def GetFileWithExtension(self):
-        return self.file_name + "." + self.file_extension
-
-    def GetRelativePath(self):
-        return os.path.join(self.file_path, self.GetFileWithExtension())
-
-    def GetAbsolutePath(self):
-        return os.path.join(bpy.path.abspath(self.file_path), self.GetFileWithExtension())
-
-
-class BFU_OT_UnrealExportedAssetLog(bpy.types.PropertyGroup):
-    # [AssetName , AssetType , ExportPath, ExportTime]
-
-    asset_name: bpy.props.StringProperty(default="None")
-    asset_global_scale: bpy.props.FloatProperty(default=1.0)
-    skeleton_name: bpy.props.StringProperty(default="None")
-    # return from bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass.get_asset_type_name()
-    asset_type: bpy.props.StringProperty(default="None")  
-    # @TODO @DEPRECATED "folder_name" is old now use "unreal_desired_import_path"
-    folder_name: bpy.props.StringProperty(default="")
-    unreal_target_import_path: bpy.props.StringProperty(default="")
-    files: bpy.props.CollectionProperty(type=BFU_OT_FileExport)
-    object: bpy.props.PointerProperty(type=bpy.types.Object)
-    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
-    export_start_time: bpy.props.FloatProperty(default=0.0)
-    export_end_time: bpy.props.FloatProperty(default=0.0)
-    export_success: bpy.props.BoolProperty(default=False)
-    animation_start_frame: bpy.props.IntProperty(default=0)
-    animation_end_frame: bpy.props.IntProperty(default=0)
-
-    if TYPE_CHECKING:
-        files: List[BFU_OT_FileExport]
-
-
-    def add_new_file(self)-> BFU_OT_FileExport:
-        return self.files.add()
-
-    def StartAssetExport(self):
+    def start_package_export(self):
         self.export_start_time = time.perf_counter()
 
-    def EndAssetExport(self, success):
+    def end_package_export(self, success):
         self.export_end_time = time.perf_counter()
         self.export_success = success
 
-    def GetExportTime(self):
+    def get_package_export_time(self):
         return self.export_end_time - self.export_start_time
 
-    def GetFileByType(self, file_type: str) -> BFU_OT_FileExport:
-        for file in self.files:
-            if file.file_type == file_type:
-                return file
+class ExportedAssetLog():
+    # [AssetName , AssetType , ExportPath, ExportTime]
 
-    def GetFilename(self):
-        main_file = self.files[0]
-        return main_file.file_name
+    def __init__(self, exported_asset: AssetToExport):
+        self.exported_asset = exported_asset
+        self.package_logs: Dict[str, ExportedPackageLog] = {}
 
-    def GetFilenameWithExtension(self):
-        main_file = self.files[0]
-        return main_file.GetFileWithExtension()
+    def start_asset_export(self):
+        self.export_start_time = time.perf_counter()
+
+    def end_asset_export(self, success):
+        self.export_end_time = time.perf_counter()
+        self.export_success = success
+
+    def get_asset_export_time(self):
+        return self.export_end_time - self.export_start_time
+
+    def StartPackageExport(self, package: AssetPackage):
+        new_package_log = ExportedPackageLog()
+        new_package_log.start_package_export()
+        self.package_logs[package.name] = new_package_log
+
+    def EndPackageExport(self, package: AssetPackage, success):
+        if package.name in self.package_logs:
+            self.package_logs[package.name].end_package_export(success)
+        else:
+            raise KeyError(f"Package {package.name} not found in logs for asset {self.exported_asset.name}.")
+        
+    def get_package_export_time(self, package: AssetPackage):
+        if package.name in self.package_logs:
+            return self.package_logs[package.name].get_package_export_time()
+        else:
+            raise KeyError(f"Package {package.name} not found in logs for asset {self.exported_asset.name}.")
+        
+    def get_package_export_success(self, package: AssetPackage):
+        if package.name in self.package_logs:
+            return self.package_logs[package.name].export_success
+        else:
+            raise KeyError(f"Package {package.name} not found in logs for asset {self.exported_asset.name}.")
+
+
+
+
 
 
 classes = (
-    BFU_OT_FileExport,
-    BFU_OT_UnrealExportedAssetLog,
 )
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.bfu_unreal_exported_assets_logs = bpy.props.CollectionProperty(
-        type=BFU_OT_UnrealExportedAssetLog)
 
 
 def unregister():
-    del bpy.types.Scene.bfu_unreal_exported_assets_logs
 
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

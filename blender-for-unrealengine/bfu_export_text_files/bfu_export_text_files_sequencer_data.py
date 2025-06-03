@@ -21,9 +21,10 @@ from . import bfu_export_text_files_utils
 from .. import languages
 from .. import bfu_export_logs
 from .. import bfu_utils
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
-def write_sequencer_tracks_data():
+def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog):
     scene = bpy.context.scene
 
     data = {}
@@ -44,12 +45,15 @@ def write_sequencer_tracks_data():
 
     # Import camera
     data['cameras'] = []
-    for asset in bfu_export_logs.bfu_asset_export_logs_utils.get_exported_assets_logs():
-        if (asset.asset_type == "Camera"):
-            camera = asset.object
+    for asset in unreal_exported_asset:
+        asset_type = asset.exported_asset.asset_type
+        if asset_type == AssetType.CAMERA:
+            asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog
+            main_camera = asset.exported_asset.asset_pakages[0].objects[0]
+            
 
             camera_data = {}
-            camera_data["name"] = camera.name
+            camera_data["name"] = main_camera.name
             camera_data["additional_tracks_path"] = asset.GetFileByType("AdditionalTrack").GetAbsolutePath()
             data['cameras'].append(camera_data)
 

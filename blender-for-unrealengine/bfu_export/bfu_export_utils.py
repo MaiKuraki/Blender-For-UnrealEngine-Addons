@@ -43,16 +43,25 @@ Export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
 def print_export_fail(string):
     print(bpl.color_set.red(string))
 
-def check_and_make_export_path(dirpath, filename):
-    # Check and create a folder if it does not exist
+def check_and_make_export_path(dirpath):
+    """
+    Check if the directory exists, and create it if it doesn't.
+    If the path ends with a file extension, it will create the directory of that file.
+    """
     absdirpath = bpy.path.abspath(dirpath)
+
+    # Si le chemin finit par une extension, on suppose que c'est un fichier
+    if os.path.splitext(absdirpath)[1]:
+        absdirpath = os.path.dirname(absdirpath)
+
     if not os.path.exists(absdirpath):
         try:
             os.makedirs(absdirpath)
         except Exception as e:
             print_export_fail(f"An error occurred during makedirs: {str(e)}")
             return False
-    return os.path.join(absdirpath, filename)
+
+    return True
 
 
 def ApplyProxyData(obj):
@@ -612,63 +621,14 @@ def GetRescaleSocketFactor():
     else:
         return addon_prefs.staticSocketsImportedSize
 
-
-def ExportAutoProRig(
-        filepath,
-        use_selection=True,
-        export_rig_name="root",
-        bake_anim=True,
-        anim_export_name_string="",
-        mesh_smooth_type="OFF",
-        arp_simplify_fac=0.0
-        ):
-
-    bpy.context.scene.arp_engine_type = 'unreal'
-    bpy.context.scene.arp_export_rig_type = 'mped'  # types: 'humanoid', 'mped'
-    bpy.context.scene.arp_ge_sel_only = use_selection
-
-    # Rig
-    bpy.context.scene.arp_export_twist = False
-    bpy.context.scene.arp_export_noparent = False
-    bpy.context.scene.arp_units_x100 = True
-    bpy.context.scene.arp_ue_root_motion = True
-
-    # Anim
-    bpy.context.scene.arp_bake_actions = bake_anim
-    bpy.context.scene.arp_export_name_actions = True
-    bpy.context.scene.arp_export_name_string = anim_export_name_string
-    bpy.context.scene.arp_simplify_fac = arp_simplify_fac
-
-    # Misc
-    bpy.context.scene.arp_mesh_smooth_type = mesh_smooth_type
-    bpy.context.scene.arp_use_tspace = False
-    bpy.context.scene.arp_fix_fbx_matrix = False
-    bpy.context.scene.arp_fix_fbx_rot = False
-    bpy.context.scene.arp_init_fbx_rot = False
-    bpy.context.scene.arp_bone_axis_primary_export = 'Y'
-    bpy.context.scene.arp_bone_axis_secondary_export = 'X'
-    bpy.context.scene.arp_export_rig_name = export_rig_name
-
-    # export it
-    print("Start AutoProRig Export")
-    # TODO Need update
-    #bpy.ops.id.arp_export_fbx_panel(filepath=filepath)
-
-def ExportAdditionalParameter(dirpath, filename, unreal_exported_asset):
+def export_additional_data(fullpath: str, data: dict):
     # Export additional parameter from static and skeletal mesh track for ue4
     # SocketsList
 
-    absdirpath = bpy.path.abspath(dirpath)
-    result = check_and_make_export_path(absdirpath, filename)
+    result = check_and_make_export_path(fullpath)
     if result:
-        AdditionalTrack = bfu_export_text_files.bfu_export_text_files_asset_additional_data.write_single_asset_additional_data(unreal_exported_asset)
-        return bfu_export_text_files.bfu_export_text_files_utils.export_single_json_file(
-            AdditionalTrack,
-            absdirpath,
-            filename
-            )
-    else:
-        return None
+        AdditionalTrack = bfu_export_text_files.bfu_export_text_files_asset_additional_data.write_additional_data(data)
+        return bfu_export_text_files.bfu_export_text_files_utils.export_single_json_file(AdditionalTrack, fullpath)
 
 def get_final_fbx_export_primary_bone_axis(obj):
     if obj.bfu_override_procedure_preset:

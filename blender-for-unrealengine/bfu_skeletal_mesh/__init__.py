@@ -25,6 +25,8 @@ from . import bfu_skeletal_mesh_utils
 from . import bfu_skeletal_mesh_type
 from . import bfu_skeletal_animation_type
 from . import bfu_skeletal_mesh_config
+from . import bfu_export_skeletal_mesh_package
+from . import bfu_export_action_animation_package
 
 if "bfu_skeletal_mesh_props" in locals():
     importlib.reload(bfu_skeletal_mesh_props)
@@ -38,6 +40,10 @@ if "bfu_skeletal_animation_type" in locals():
     importlib.reload(bfu_skeletal_animation_type)
 if "bfu_skeletal_mesh_config" in locals():
     importlib.reload(bfu_skeletal_mesh_config)
+if "bfu_export_skeletal_mesh_package" in locals():
+    importlib.reload(bfu_export_skeletal_mesh_package)
+if "bfu_export_action_animation_package" in locals():
+    importlib.reload(bfu_export_action_animation_package)
 
 
 classes = (

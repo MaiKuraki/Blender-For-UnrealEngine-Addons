@@ -26,31 +26,49 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_export_logs
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
+from .. import bfu_cached_assets
+
+def process_spline_export_from_asset(
+    op: bpy.types.Operator,
+    asset: AssetToExport,
+    pre_bake_spline: 'bfu_spline.bfu_spline_data.BFU_SplinesList' = None
+) -> bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog:
+
+    obj = asset.obj
+    my_asset_log = process_spline_export(op, obj, pre_bake_spline)
+    my_asset_log.unreal_target_import_path = asset.import_dirpath
+    return my_asset_log
 
 
+def process_spline_export(
+    op: bpy.types.Operator,
+    obj: bpy.types.Object,
+    pre_bake_spline: 'bfu_spline.bfu_spline_data.BFU_SplinesList' = None
+) -> bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog:
 
-
-def ProcessSplineExport(op, obj, pre_bake_spline: bfu_spline.bfu_spline_data.BFU_SplinesList = None):
+    init_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Init export", 2)
+    init_export_time_log.should_print_log = True
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
 
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
-    asset_type = asset_class.get_asset_type_name(obj)
-    dirpath = asset_class.get_obj_export_directory_path(obj, "", True)
-    file_name = asset_class.get_obj_file_name(obj, obj.name, "")
-    file_name_at = asset_class.get_obj_file_name(obj, obj.name+"_AdditionalTrack", "") 
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
+    asset_type = asset_class.get_asset_type(obj)
+    dirpath = asset_class.get_asset_export_directory_path(obj, "", True)
+    file_name = asset_class.get_asset_file_name(obj, obj.name, "")
+    file_name_at = asset_class.get_asset_file_name(obj, obj.name+"_AdditionalTrack", "") 
 
     my_asset_log = bfu_export_logs.bfu_asset_export_logs_utils.create_new_asset_log()
     my_asset_log.object = obj
     my_asset_log.asset_name = obj.name
     my_asset_log.asset_global_scale = obj.bfu_export_global_scale
-    my_asset_log.folder_name = obj.bfu_export_folder_name
-    my_asset_log.asset_type = asset_type
+    my_asset_log.asset_type = asset_type.get_type_as_string()
     my_asset_log.animation_start_frame = scene.frame_start
     my_asset_log.animation_end_frame = scene.frame_end+1
     file = my_asset_log.add_new_file()
 
     fullpath = bfu_export_utils.check_and_make_export_path(dirpath, file.GetFileWithExtension())
+    init_export_time_log.end_time_log()
     if fullpath:
         my_asset_log.StartAssetExport()
 
@@ -60,7 +78,7 @@ def ProcessSplineExport(op, obj, pre_bake_spline: bfu_spline.bfu_spline_data.BFU
             file.file_path = dirpath
             file.file_type = "FBX"
 
-            ExportSingleFbxSpline(op, dirpath, file.GetFileWithExtension(), obj)
+            export_single_fbx_spline(op, dirpath, file.GetFileWithExtension(), obj)
 
         if scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts:
             file.file_name = file_name_at
@@ -73,11 +91,11 @@ def ProcessSplineExport(op, obj, pre_bake_spline: bfu_spline.bfu_spline_data.BFU
     return my_asset_log
 
 
-def ExportSingleFbxSpline(
-        op,
-        fullpath,
-        obj
-        ):
+def export_single_fbx_spline(
+    op: bpy.types.Operator,
+    fullpath: str,
+    obj: bpy.types.Object
+) -> None:
 
     '''
     #####################################################
@@ -102,8 +120,9 @@ def ExportSingleFbxSpline(
     obj.delta_scale *= 0.01
     if obj.animation_data is not None:
         action = obj.animation_data.action
-        scene.frame_start = bfu_utils.GetDesiredActionStartEndTime(obj, action)[0]
-        scene.frame_end = bfu_utils.GetDesiredActionStartEndTime(obj, action)[1]
+        frame_range = bfu_utils.get_desired_action_start_end_range(obj, action)
+        scene.frame_start = frame_range[0]
+        scene.frame_end = frame_range[1] + 1
 
     export_fbx_spline = obj.bfu_export_fbx_spline
     spline_export_procedure = obj.bfu_spline_export_procedure

@@ -17,9 +17,11 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import os
+import pathlib
 import bpy
 import datetime
 from shutil import copyfile
+from typing import List
 
 from . import bfu_export_text_files_asset_data
 from . import bfu_export_text_files_sequencer_data
@@ -33,7 +35,7 @@ from .. import bfu_utils
 from .. import bfu_export_logs
 
 
-def write_all_data_files():
+def write_all_data_files(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]):
     time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("Write text files")
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
@@ -49,10 +51,11 @@ def write_all_data_files():
     if scene.bfu_use_text_export_log:
         Text = languages.ti("write_text_additional_track_start") + "\n"
         Text += "" + "\n"
-        Text += bfu_export_logs.bfu_asset_export_logs_utils.get_export_asset_logs_details()
+        Text += bfu_export_logs.bfu_asset_export_logs_utils.get_export_asset_logs_details(exported_asset_log)
         if Text is not None:
             Filename = bfu_basics.ValidFilename(scene.bfu_file_export_log_name)
-            export_log_result = bfu_export_text_files_utils.export_single_text_file(Text, root_dirpath, Filename)
+            log_fullpath = os.path.join(root_dirpath, Filename)
+            export_log_result = bfu_export_text_files_utils.export_single_text_file(Text, log_fullpath)
             if export_log_result:
                 success_export_log = True
 
@@ -62,9 +65,11 @@ def write_all_data_files():
     else:
         bfu_path = os.path.join(bbpl.blender_addon.addon_utils.get_addon_path("Unreal Engine Assets Exporter"), "bfu_import_module")
 
+    # Asset data
     if scene.bfu_use_text_import_asset_script:
-        json_data = bfu_export_text_files_asset_data.write_main_assets_data()
-        export_asset_data_result = bfu_export_text_files_utils.export_single_json_file(json_data, root_dirpath, "ImportAssetData.json")
+        json_data = bfu_export_text_files_asset_data.write_main_assets_data(exported_asset_log)
+        asset_data_fullpath = os.path.join(root_dirpath, "ImportAssetData.json")
+        export_asset_data_result = bfu_export_text_files_utils.export_single_json_file(json_data, asset_data_fullpath)
         if export_asset_data_result:
             success_asset_data = True
 
@@ -78,9 +83,11 @@ def write_all_data_files():
             copyfile(source, destination)
             success_import_script = True
 
+    # Sequencer data
     if scene.bfu_use_text_import_sequence_script:
-        json_data = bfu_export_text_files_sequencer_data.write_sequencer_tracks_data()
-        export_sequencer_data_result = bfu_export_text_files_utils.export_single_json_file(json_data, root_dirpath, "ImportSequencerData.json")
+        json_data = bfu_export_text_files_sequencer_data.write_sequencer_tracks_data(exported_asset_log)
+        sequencer_data_fullpath = os.path.join(root_dirpath, "ImportSequencerData.json")
+        export_sequencer_data_result = bfu_export_text_files_utils.export_single_json_file(json_data, sequencer_data_fullpath)
         if export_sequencer_data_result:
             success_sequencer_data = True
 

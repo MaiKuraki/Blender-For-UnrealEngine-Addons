@@ -16,13 +16,12 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os
 import bpy
-import fnmatch
-from . import bfu_groom_config
+from pathlib import Path
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
 class BFU_Groom(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
@@ -30,54 +29,79 @@ class BFU_Groom(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
         super().__init__()
         pass
 
-    def support_asset_type(self, obj, details = None):
+    def support_asset_type(self, obj: bpy.types.Object, details: any = None) -> bool:
+        if not isinstance(obj, bpy.types.Object):
+            return False
         if obj.bfu_export_as_groom_simulation:
             return True
         return False
 
-    def get_asset_type_name(self, obj):
-        return bfu_groom_config.asset_type_name
+    def get_asset_type(self, obj: bpy.types.Object, details: any = None) -> AssetType:
+        return AssetType.GROOM_SIMULATION
     
-    def get_obj_file_name(self, obj, desired_name="", fileType=".fbx"):
+    def get_asset_file_name(self, obj: bpy.types.Object, details: any = None, desired_name: str = "", without_extension: bool = False) -> str:
         # Generate assset file name for skeletal mesh
         scene = bpy.context.scene
         if obj.bfu_use_custom_export_name:
             if obj.bfu_custom_export_name:
                 return obj.bfu_custom_export_name
+            
+        if without_extension:
+            fileType = ""
+        else:
+            asset_type = self.get_asset_file_type(obj)
+            if asset_type == "FBX":
+                fileType = ".fbx"
+            elif asset_type == "GLTF":
+                fileType = ".glb"
+
+
         if desired_name:
             return bfu_basics.ValidFilename(scene.bfu_groom_simulation_prefix_export_name+desired_name+fileType)
         return bfu_basics.ValidFilename(scene.bfu_groom_simulation_prefix_export_name+obj.name+fileType)
-    
-    def get_obj_export_directory_path(self, obj, extra_path = "", absolute = True):
+
+    def get_asset_export_directory_path(self, obj: bpy.types.Object, extra_path: str = "", absolute: bool = True) -> str:
         scene = bpy.context.scene
 
         # Get root path
         if absolute:
-            root_path = bpy.path.abspath(scene.bfu_export_groom_file_path)
+            root_path = Path(bpy.path.abspath(scene.bfu_export_camera_file_path))
         else:
-            root_path = scene.bfu_export_groom_file_path
+            root_path = Path(scene.bfu_export_camera_file_path)
 
         # Add obj folder path
         folder_name = bfu_utils.get_export_folder_name(obj)
-        dirpath = os.path.join(root_path, folder_name)
+        dirpath = root_path / folder_name
 
         # Add extra path if provided
-        dirpath = os.path.join(dirpath, extra_path)
+        if extra_path:
+            dirpath = dirpath / extra_path
 
-        # Clean path
-        dirpath = os.path.normpath(dirpath)
-        return dirpath
+        # Clean path and return as string
+        return str(dirpath)
     
-    def get_obj_import_directory_path(self, obj, extra_path = ""):
-        # @TODO
-        return super().get_obj_import_directory_path()
+    def get_asset_import_directory_path(self, obj, extra_path = ""):
+        scene = bpy.context.scene
+
+        # Get root path
+        root_path = Path(scene.bfu_unreal_import_module)
+
+        # Add skeletal subfolder path
+        dirpath = root_path / scene.bfu_unreal_import_location / obj.bfu_export_folder_name
+
+        # Add extra path if provided
+        if extra_path:
+            dirpath = dirpath / extra_path
+
+        # Clean path and return as string
+        return str(dirpath)
     
-    def can_export_asset(self):
+    def can_export_asset_type(self):
         scene = bpy.context.scene
         return scene.bfu_use_groom_simulation_export
 
-    def can_export_obj_asset(self, obj):
-        return self.can_export_asset()
+    def can_export_asset(self, obj):
+        return self.can_export_asset_type()
     
 def register():
     bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_Groom())

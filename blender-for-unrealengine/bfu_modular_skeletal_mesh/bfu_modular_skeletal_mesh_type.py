@@ -20,7 +20,7 @@ import os
 import bpy
 import fnmatch
 from .. import bbpl
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 
 BBPL_UI_TemplateItem = bbpl.blender_layout.layout_template_list.types.create_template_item_class()
@@ -87,6 +87,11 @@ class BFU_UI_ModularSkeletalSpecifiedPartsTargetList(BBPL_UI_TemplateList): # Dr
     rows: bpy.props.IntProperty(default = 3)
     maxrows: bpy.props.IntProperty(default = 3)
 
+    if TYPE_CHECKING:
+        template_collection: List[BFU_UI_ModularSkeletalSpecifiedPartsTargetItem]
+        def get_template_collection(self) -> List[BFU_UI_ModularSkeletalSpecifiedPartsTargetItem]:
+            return self.template_collection
+
 class BFU_UI_ModularSkeletalSpecifiedPartsMeshItem(BBPL_UI_TemplateItem): # Item class (bpy.types.PropertyGroup)
     enabled: bpy.props.BoolProperty(
         name="Use",
@@ -151,6 +156,12 @@ class BFU_UL_ModularSkeletalSpecifiedPartsMeshItemDraw(BBPL_UL_TemplateItemDraw)
 class BFU_UI_ModularSkeletalSpecifiedPartsMeshs(BBPL_UI_TemplateList): # Draw Item class (bpy.types.UIList)
     template_collection: bpy.props.CollectionProperty(type=BFU_UI_ModularSkeletalSpecifiedPartsMeshItem)
     template_collection_uilist_class_name = "BFU_UL_ModularSkeletalSpecifiedPartsMeshItemDraw"
+    
+    if TYPE_CHECKING:
+        template_collection: List[BFU_UI_ModularSkeletalSpecifiedPartsMeshItem]
+        def get_template_collection(self) -> List[BFU_UI_ModularSkeletalSpecifiedPartsMeshItem]:
+            return self.template_collection
+
     def draw(self, layout: bpy.types.UILayout):
         super().draw(layout)
 

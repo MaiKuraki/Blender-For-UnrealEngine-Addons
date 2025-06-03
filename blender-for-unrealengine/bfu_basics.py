@@ -22,7 +22,6 @@ from pathlib import Path
 import bpy
 import shutil
 import bmesh
-import addon_utils
 
 def GetAddonPrefs():
     return bpy.context.preferences.addons[__package__].preferences

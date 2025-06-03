@@ -24,18 +24,19 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_static_mesh
 from .. import bfu_export_logs
+from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
-def get_nanite_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_nanite_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
     return asset_data
 
-def get_nanite_asset_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_nanite_asset_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
-    if asset.object:
-        if asset.asset_type in ["StaticMesh", "SkeletalMesh"]: # Check only static and skeletal meshs for the moment.
-            if asset.object.bfu_build_nanite_mode == "build_nanite_true":
+    if obj:
+        if asset_type in [AssetType.STATIC_MESH, AssetType.SKELETAL_MESH]:
+            if obj.bfu_build_nanite_mode == "build_nanite_true":
                 asset_data["build_nanite"] = True
-            elif asset.object.bfu_build_nanite_mode == "build_nanite_false":
+            elif obj.bfu_build_nanite_mode == "build_nanite_false":
                 asset_data["build_nanite"] = False
             # Keep empty for auto
     return asset_data

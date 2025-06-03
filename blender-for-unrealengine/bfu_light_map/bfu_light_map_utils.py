@@ -25,6 +25,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_static_mesh
 from .. import bfu_export_logs
+from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
 
@@ -105,7 +106,7 @@ def UpdateAreaLightMapList(objects_to_update=None):
         objs = objects_to_update
     else:
         objs = []
-        export_recu_objs = bfu_utils.GetAllobjectsByExportType("export_recursive")
+        export_recu_objs = bfu_utils.get_all_objects_by_export_type("export_recursive")
         for export_recu_obj in export_recu_objs:
 
             if bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(export_recu_obj):
@@ -125,17 +126,17 @@ def GetUseCustomLightMapResolution(obj):
         return False
     return True
 
-def get_light_map_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_light_map_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
     return asset_data
 
-def get_light_map_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
+def get_light_map_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
     asset_data = {}
-    if asset.asset_type in ["StaticMesh"]:
-        if asset.object:
-            asset_data["generate_lightmap_u_vs"] = asset.object.bfu_generate_light_map_uvs
+    if asset_type in [AssetType.STATIC_MESH]:
+        if obj:
+            asset_data["generate_lightmap_u_vs"] = obj.bfu_generate_light_map_uvs
         
-            asset_data["use_custom_light_map_resolution"] = GetUseCustomLightMapResolution(asset.object)
-            asset_data["light_map_resolution"] = GetCompuntedLightMap(asset.object)
+            asset_data["use_custom_light_map_resolution"] = GetUseCustomLightMapResolution(obj)
+            asset_data["light_map_resolution"] = GetCompuntedLightMap(obj)
 
     return asset_data
