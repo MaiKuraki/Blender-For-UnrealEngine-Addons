@@ -30,7 +30,7 @@ from .. import layout_utils
 from ... import __internal__
 
 class CustomAccordionUI_PropertyGroup(bpy.types.PropertyGroup):
-    expend: bpy.props.BoolProperty(
+    expend: bpy.props.BoolProperty(  # type: ignore
         name="Use",
         description="Click to expand / collapse",
         default=False,
@@ -44,6 +44,9 @@ class CustomAccordionUI_PropertyGroup(bpy.types.PropertyGroup):
     def support_panel_prop(self, layout: bpy.types.UILayout):
         # Use panel_prop() was added only in Blender 4.1 and work on UI region.type only.
         # The BBPL one work since Blender 2.8 on any regions.
+
+        if bpy.context is None:
+            return False
 
         if bpy.app.version >= (4, 1, 0):
             if bpy.context.region.type == "UI":
