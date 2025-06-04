@@ -129,7 +129,7 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
         if action.name not in user_scene_save.action_names:
             bpy.data.actions.remove(action)
 
-    bbpl.scene_utils.move_to_local_view(local_view_areas)
+    bbpl.scene_utils.move_to_local_view()
     post_export_time_log.end_time_log()
     return exported_asset_log
 

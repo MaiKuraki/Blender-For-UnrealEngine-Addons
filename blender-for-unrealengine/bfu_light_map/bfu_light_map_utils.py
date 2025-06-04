@@ -68,7 +68,7 @@ def GetExportRealSurfaceArea(obj):
     area = bfu_basics.GetSurfaceArea(active)
     bfu_utils.CleanDeleteObjects(bpy.context.selected_objects)
     SavedSelect.reset_select()
-    bbpl.scene_utils.move_to_local_view(local_view_areas)
+    bbpl.scene_utils.move_to_local_view()
     return area
 
 def GetCompuntedLightMap(obj):

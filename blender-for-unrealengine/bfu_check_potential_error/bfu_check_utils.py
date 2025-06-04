@@ -239,7 +239,7 @@ def try_to_correct_potential_issues(issue_index):
     # ----------------------------------------Reset data
     MyCurrentDataSave.reset_select(use_names = True)
     MyCurrentDataSave.reset_scene_at_save()
-    bbpl.scene_utils.move_to_local_view(local_view_areas)
+    bbpl.scene_utils.move_to_local_view()
 
     # ----------------------------------------
 
