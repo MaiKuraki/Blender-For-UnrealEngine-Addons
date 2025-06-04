@@ -42,7 +42,7 @@ class CounterTimer():
         """
         self.start = time.perf_counter()
 
-    def get_time(self):
+    def get_time(self) -> float:
         """
         Get the elapsed time since the timer started.
 
@@ -50,8 +50,8 @@ class CounterTimer():
             float: Elapsed time in seconds.
         """
         return time.perf_counter() - self.start
-        
-    def get_str_time(self):
+
+    def get_str_time(self) -> str:
         """
         Get the elapsed str time since the timer started.
 
@@ -59,8 +59,8 @@ class CounterTimer():
             str: Elapsed time formatted as a string.
         """
         return get_formatted_time(self.get_time())
-        
-def format_property_name(name):
+
+def format_property_name(name: str) -> str:
     """
     Formats a property name from snake_case to Title Case and replaces underscores with spaces.
     
@@ -94,7 +94,7 @@ def get_formatted_time(
     minutes, seconds = divmod(remainder, 60)
 
     if compact:
-        parts = []
+        parts: list[str] = []
         if hours:
             parts.append(f"{hours}h")
         if minutes:
