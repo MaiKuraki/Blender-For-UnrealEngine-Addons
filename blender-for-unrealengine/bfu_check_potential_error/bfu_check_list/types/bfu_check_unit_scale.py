@@ -30,7 +30,6 @@ class BFU_Checker_UnitScale(bfu_checker):
         self.check_name = "Unit Scale"
 
     def run_asset_check(self, asset: AssetToExport):
-        print("XXXXXXXXXXXXXXXXXXXX")
         addon_prefs = bfu_addon_pref.get_addon_prefs()
 
         if bpy.context is None:
@@ -58,13 +57,10 @@ class BFU_Checker_UnitScale(bfu_checker):
                         my_po_error.correct_label = 'Set Unreal Unit'
             
             elif file_type in [BFU_FileTypeEnum.GLTF]:
-                print("S6")
                 
                 # Check if the unit scale is equal to 1.0 for GLTF export.
                 if addon_prefs.notifyUnitScalePotentialError:
-                    print("S7")
                     if not bfu_utils.get_scene_unit_scale_is_close(0.01):
-                        print("S8")
                         str_unit_scale = str(bfu_utils.get_scene_unit_scale())
                         my_po_error = self.add_potential_error()
                         my_po_error.name = bpy.context.scene.name
