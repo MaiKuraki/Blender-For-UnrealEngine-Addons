@@ -26,8 +26,8 @@ def get_collection_file_name(collection, desired_name="", fileType=".fbx"):
     # Generate assset file name for skeletal mesh
     scene = bpy.context.scene
     if desired_name:
-        return bfu_basics.ValidFilename(scene.bfu_static_mesh_prefix_export_name+desired_name+fileType)
-    return bfu_basics.ValidFilename(scene.bfu_static_mesh_prefix_export_name+collection.name+fileType)
+        return bfu_basics.valid_file_name(scene.bfu_static_mesh_prefix_export_name+desired_name+fileType)
+    return bfu_basics.valid_file_name(scene.bfu_static_mesh_prefix_export_name+collection.name+fileType)
 
 def get_animation_file_name(obj, action, fileType=".fbx"):
     # Generate action file name
@@ -43,10 +43,10 @@ def get_animation_file_name(obj, action, fileType=".fbx"):
     animType = bfu_utils.GetActionType(action)
     if animType == "NlAnim" or animType == "Action":
         # Nla can be exported as action
-        return bfu_basics.ValidFilename(scene.bfu_anim_prefix_export_name+ArmatureName+action.name+fileType)
+        return bfu_basics.valid_file_name(scene.bfu_anim_prefix_export_name+ArmatureName+action.name+fileType)
 
     elif animType == "Pose":
-        return bfu_basics.ValidFilename(scene.bfu_pose_prefix_export_name+ArmatureName+action.name+fileType)
+        return bfu_basics.valid_file_name(scene.bfu_pose_prefix_export_name+ArmatureName+action.name+fileType)
 
     else:
         return None
@@ -62,4 +62,4 @@ def get_nonlinear_animation_file_name(obj, fileType=".fbx"):
     if obj.bfu_anim_naming_type == "include_custom_name":
         ArmatureName = obj.bfu_anim_naming_custom+"_"
 
-    return bfu_basics.ValidFilename(scene.bfu_anim_prefix_export_name+ArmatureName+obj.bfu_anim_nla_export_name+fileType)
+    return bfu_basics.valid_file_name(scene.bfu_anim_prefix_export_name+ArmatureName+obj.bfu_anim_nla_export_name+fileType)

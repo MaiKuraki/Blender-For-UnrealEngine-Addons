@@ -1,6 +1,7 @@
 import bpy
 from enum import Enum
 from typing import List, Tuple, Dict
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_GroomExportProcedure(str, Enum):
     BLENDER_STANDARD = "blender-standard"
@@ -20,6 +21,12 @@ def get_groom_export_procedure_enum_property_list() -> List[Tuple[str, str, str,
 
 def get_default_groom_export_procedure() -> str:
     return BFU_GroomExportProcedure.default().value
+
+def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:
+    return get_export_file_type(get_object_export_procedure(obj))
+
+def get_export_file_type(procedure: BFU_GroomExportProcedure) -> BFU_FileTypeEnum:
+    return BFU_FileTypeEnum.ALEMBIC
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_GroomExportProcedure:
     for export_type in BFU_GroomExportProcedure:

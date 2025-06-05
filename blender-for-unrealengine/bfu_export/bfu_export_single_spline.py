@@ -54,9 +54,9 @@ def process_spline_export(
 
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     asset_type = asset_class.get_asset_type(obj)
-    dirpath = asset_class.get_asset_export_directory_path(obj, "", True)
-    file_name = asset_class.get_asset_file_name(obj, obj.name, "")
-    file_name_at = asset_class.get_asset_file_name(obj, obj.name+"_AdditionalTrack", "") 
+    dirpath = asset_class.get_package_export_directory_path(obj, "", True)
+    file_name = asset_class.get_package_file_name(obj, obj.name, "")
+    file_name_at = asset_class.get_package_file_name(obj, obj.name+"_AdditionalTrack", "") 
 
     my_asset_log = bfu_export_logs.bfu_asset_export_logs_utils.create_new_asset_log()
     my_asset_log.object = obj
@@ -107,7 +107,7 @@ def export_single_fbx_spline(
     scene = bpy.context.scene
     addon_prefs = bfu_basics.GetAddonPrefs()
 
-    filename = bfu_basics.ValidFilename(filename)
+    filename = bfu_basics.valid_file_name(filename)
     if obj.type != 'CAMERA':
         return
 
@@ -201,4 +201,4 @@ def export_single_fbx_spline(
     obj.delta_scale *= 100
 
     for obj in scene.objects:
-        bfu_utils.ClearAllBFUTempVars(obj)
+        bfu_utils.clear_all_bfu_temp_vars(obj)

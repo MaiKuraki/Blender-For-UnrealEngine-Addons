@@ -28,6 +28,7 @@ from typing import List, Tuple
 from . import bbpl
 from . import bfu_basics
 from . import bfu_base_object
+from . import bfu_addon_pref
 
 
 class SavedBones():
@@ -185,7 +186,7 @@ def CleanDeleteSelect():
     return removed_objects
 
 
-def CleanDeleteObjects(objs):
+def clean_delete_objects(objs: List[bpy.types.Object]) -> List[str]:
 
     objs = list(dict.fromkeys(objs))
 
@@ -645,7 +646,7 @@ def draw_proxy_propertys(obj):
     return True
 
 def GetExportAsProxy(obj):
-    if GetObjProxyChild(obj):
+    if get_obj_proxy_child(obj):
         return True
 
     if obj.data:
@@ -654,10 +655,10 @@ def GetExportAsProxy(obj):
     return False
 
 
-def GetExportProxyChild(obj):
+def GetExportProxyChild(obj: bpy.types.Object) -> bpy.types.Object:
 
-    if GetObjProxyChild(obj):
-        return GetObjProxyChild(obj)
+    if get_obj_proxy_child(obj):
+        return get_obj_proxy_child(obj)
 
     scene = bpy.context.scene
     if obj.data:
@@ -726,7 +727,7 @@ def RemoveSocketFromSelectForProxyArmature():
     for obj in bpy.context.selected_objects:
         if fnmatch.fnmatchcase(obj.name, "SOCKET*"):
             sockets.append(obj)
-    CleanDeleteObjects(sockets)
+    clean_delete_objects(sockets)
     select.reset_select(use_names = True)
 
 
@@ -876,7 +877,7 @@ def CorrectExtremeUV(step_scale=2, move_to_absolute=False):
 
             obj.data.update()
 
-def ApplyExportTransform(obj, use_type="Object"):
+def ApplyExportTransform(obj: bpy.types.Object, use_type: str = "Object"):
 
     newMatrix = obj.matrix_world @ mathutils.Matrix.Translation((0, 0, 0))
     saveScale = obj.scale * 1
@@ -1105,7 +1106,7 @@ class ActionCurveScale():
 def ValidFilenameForUnreal(filename):
     # valid file name for unreal assets
     extension = os.path.splitext(filename)[1]
-    newfilename = bfu_basics.ValidFilename(os.path.splitext(filename)[0])
+    newfilename = bfu_basics.valid_file_name(os.path.splitext(filename)[0])
     return (''.join(c for c in newfilename if c != ".")+extension)
 
 
@@ -1135,8 +1136,9 @@ def GetCollectionExportDir(col, abspath=False):
     else:
         return dirpath
 
+# @TODO: @Deprecated use the function in bfu_export_nomenclature_utils
 def get_export_folder_name(obj):
-    folder_name = bfu_basics.ValidDirName(obj.bfu_export_folder_name)
+    folder_name = bfu_basics.valid_folder_name(obj.bfu_export_folder_name)
     return folder_name
 
 def get_unreal_import_location():
@@ -1177,7 +1179,7 @@ def get_armature_root_bones(armature: bpy.types.Object) -> List[bpy.types.EditBo
         if armature.bfu_export_deform_only:
             for bone in armature.data.bones:
                 if bone.use_deform:
-                    rootBone = bfu_basics.getRootBoneParent(bone)
+                    rootBone = bfu_basics.get_root_bone_parent(bone)
                     if rootBone not in root_bones:
                         root_bones.append(rootBone)
 
@@ -1188,24 +1190,19 @@ def get_armature_root_bones(armature: bpy.types.Object) -> List[bpy.types.EditBo
     return root_bones
 
 
-def GetDesiredExportArmatureName(obj):
-    addon_prefs = bfu_basics.GetAddonPrefs()
+def GetDesiredExportArmatureName(obj: bpy.types.Object) -> str:
+    addon_prefs = bfu_addon_pref.get_addon_prefs()
     single_root = len(get_armature_root_bones(obj)) == 1
     if addon_prefs.add_skeleton_root_bone or single_root != 1:
         return addon_prefs.skeleton_root_bone_name
     return "Armature"
 
 
-def GetObjExportScale(obj):
+def GetObjExportScale(obj: bpy.types.Object) -> float:
     return obj.bfu_export_global_scale
 
 
-
-
-
-
-
-def AddFrontEachLine(ImportScript, text="\t"):
+def AddFrontEachLine(ImportScript: str, text: str = "\t") -> str:
 
     NewImportScript = ""
     text_splited = ImportScript.split('\n')
@@ -1218,70 +1215,72 @@ def AddFrontEachLine(ImportScript, text="\t"):
 # Custom property
 
 
-def SetVarOnObject(obj, VarName, Value):
+def set_var_on_object(obj, VarName, Value):
     obj[VarName] = Value
 
 
-def GetVarOnObject(obj, VarName):
+def get_var_on_object(obj, VarName):
     return obj[VarName]
 
 
-def HasVarOnObject(obj, VarName):
+def has_var_on_object(obj, VarName):
     return VarName in obj
 
 
-def ClearVarOnObject(obj, VarName):
+def clear_var_on_object(obj, VarName):
     if VarName in obj:
         del obj[VarName]
 
 
-def SaveObjCurrentName(obj):
+def save_obj_current_name(obj: bpy.types.Object):
     # Save object current name as Custom property
-    SetVarOnObject(obj, "BFU_OriginName", obj.name)
+    set_var_on_object(obj, "BFU_OriginName", obj.name)
 
 
-def GetObjOriginName(obj):
-    return GetVarOnObject(obj, "BFU_OriginName")
+def get_obj_origin_name(obj: bpy.types.Object) -> str:
+    return get_var_on_object(obj, "BFU_OriginName")
 
 
-def ClearObjOriginNameVar(obj):
-    ClearVarOnObject(obj, "BFU_OriginName")
+def clear_obj_origin_name_var(obj: bpy.types.Object) -> None:
+    clear_var_on_object(obj, "BFU_OriginName")
 
 
-def SetObjProxyData(obj):
+def set_obj_proxy_data(obj: bpy.types.Object):
     # Save object proxy info as Custom property
-    SetVarOnObject(obj, "BFU_ExportAsProxy", GetExportAsProxy(obj))
-    SetVarOnObject(obj, "BFU_ExportProxyChild", GetExportProxyChild(obj))
+    set_var_on_object(obj, "BFU_ExportAsProxy", GetExportAsProxy(obj))
+    set_var_on_object(obj, "BFU_ExportProxyChild", GetExportProxyChild(obj))
 
 
-def GetObjProxyChild(obj):
-    if (not HasVarOnObject(obj, "BFU_ExportAsProxy")):
+def get_obj_proxy_child(obj: bpy.types.Object) -> bool:
+    if (not has_var_on_object(obj, "BFU_ExportAsProxy")):
         return False
 
-    if (not HasVarOnObject(obj, "BFU_ExportProxyChild")):
+    if (not has_var_on_object(obj, "BFU_ExportProxyChild")):
         return False
 
-    if GetVarOnObject(obj, "BFU_ExportAsProxy"):
-        return GetVarOnObject(obj, "BFU_ExportProxyChild")
+    if get_var_on_object(obj, "BFU_ExportAsProxy"):
+        return get_var_on_object(obj, "BFU_ExportProxyChild")
     return None
 
 
-def ClearObjProxyDataVars(obj):
-    ClearVarOnObject(obj, "BFU_ExportAsProxy")
-    ClearVarOnObject(obj, "BFU_ExportProxyChild")
+def clear_obj_proxy_data_vars(obj: bpy.types.Object) -> None:
+    clear_var_on_object(obj, "BFU_ExportAsProxy")
+    clear_var_on_object(obj, "BFU_ExportProxyChild")
 
 
-def ClearAllBFUTempVars(obj):
-    ClearVarOnObject(obj, "BFU_OriginName")
-    ClearVarOnObject(obj, "BFU_ExportAsProxy")
-    ClearVarOnObject(obj, "BFU_ExportProxyChild")
+def clear_all_bfu_temp_vars(obj: bpy.types.Object) -> None:
+    clear_var_on_object(obj, "BFU_OriginName")
+    clear_var_on_object(obj, "BFU_ExportAsProxy")
+    clear_var_on_object(obj, "BFU_ExportProxyChild")
 
-def get_scene_unit_scale():
+def get_scene_unit_scale() -> float:
     #Have to round for avoid microscopic offsets.
+    if bpy.context is None:
+        return 1.0
     scene = bpy.context.scene
     return round(scene.unit_settings.scale_length, 8)
 
-def get_scene_unit_scale_is_close(value: float):
+def get_scene_unit_scale_is_close(value: float) -> bool:
     #Check if value is close to scene unit class.
     scene = bpy.context.scene
     unit_scale = round(scene.unit_settings.scale_length, 8)

@@ -67,8 +67,8 @@ def export_as_skeletal_mesh(
     bfu_skeletal_mesh.bfu_skeletal_mesh_utils.deselect_socket(armature) 
 
     asset_name = bfu_export.bfu_export_utils.PrepareExportName(armature, True)
-    duplicate_data = bfu_export.bfu_export_utils.DuplicateSelectForExport()
-    bfu_export.bfu_export_utils.SetDuplicateNameForExport(duplicate_data)
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export()
+    bfu_export.bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
 
     bfu_export.bfu_export_utils.ConvertSelectedToMesh()
     bfu_export.bfu_export_utils.MakeSelectVisualReal()
@@ -113,7 +113,7 @@ def export_as_skeletal_mesh(
 
     bfu_export.bfu_export_utils.ConvertArmatureConstraintToModifiers(active)
 
-    asset_name.SetExportName()
+    asset_name.set_export_name()
 
     save_use_simplify = bbpl.utils.SaveUserRenderSimplify()
     scene.render.use_simplify = False
@@ -212,17 +212,17 @@ def export_as_skeletal_mesh(
 
     save_use_simplify.LoadUserRenderSimplify()
     asset_name.ResetNames()
-    bfu_vertex_color.bfu_vertex_color_utils.ClearVertexColorForUnrealExport(active)
+    bfu_vertex_color.bfu_vertex_color_utils.clear_vertex_color_for_unreal_export(active)
     bfu_export.bfu_export_utils.ResetArmatureConstraintToModifiers(active)
-    bfu_export.bfu_export_utils.ResetSocketsExportName(active)
-    bfu_export.bfu_export_utils.ResetSocketsTransform(active)
-    bfu_utils.CleanDeleteObjects(bpy.context.selected_objects)
+    bfu_export.bfu_export_utils.reset_sockets_export_name(active)
+    bfu_export.bfu_export_utils.reset_sockets_transform(active)
+    bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     for data in duplicate_data.data_to_remove:
         data.RemoveData()
 
     bfu_export.bfu_export_utils.ResetDuplicateNameAfterExport(duplicate_data)
 
     for armature in scene.objects:
-        bfu_utils.ClearAllBFUTempVars(armature)
+        bfu_utils.clear_all_bfu_temp_vars(armature)
     post_export_time_log.end_time_log()
     return True

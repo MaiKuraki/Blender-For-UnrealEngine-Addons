@@ -23,6 +23,7 @@ import datetime
 from shutil import copyfile
 from typing import List
 
+from pathlib import Path
 from . import bfu_export_text_files_asset_data
 from . import bfu_export_text_files_sequencer_data
 from . import bfu_export_text_files_utils
@@ -36,16 +37,13 @@ from .. import bfu_export_logs
 
 
 def write_all_data_files(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]):
+    if bpy.context is None:
+        return
+
     time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("Write text files")
     scene = bpy.context.scene
-    addon_prefs = bfu_basics.GetAddonPrefs()
-    root_dirpath = bpy.path.abspath(scene.bfu_export_other_file_path)
+    root_dirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path))
 
-    success_export_log = False
-    success_asset_data = False
-    success_sequencer_data = False
-    success_import_script = False
-    success_sequencer_script = False
 
     # Export log
     if scene.bfu_use_text_export_log:
@@ -53,52 +51,48 @@ def write_all_data_files(exported_asset_log: List[bfu_export_logs.bfu_asset_expo
         Text += "" + "\n"
         Text += bfu_export_logs.bfu_asset_export_logs_utils.get_export_asset_logs_details(exported_asset_log)
         if Text is not None:
-            Filename = bfu_basics.ValidFilename(scene.bfu_file_export_log_name)
-            log_fullpath = os.path.join(root_dirpath, Filename)
-            export_log_result = bfu_export_text_files_utils.export_single_text_file(Text, log_fullpath)
-            if export_log_result:
-                success_export_log = True
+            Filename = bfu_basics.valid_file_name(scene.bfu_file_export_log_name)
+            log_fullpath = root_dirpath / Filename
+            bfu_export_text_files_utils.export_single_text_file(Text, log_fullpath)
+
 
     # Import script
     if bpy.app.version >= (4, 2, 0):
-        bfu_path = os.path.join(bbpl.blender_extension.extension_utils.get_package_path(), "bfu_import_module")
+        package_path = bbpl.blender_extension.extension_utils.get_package_path()
+        if package_path:
+            bfu_path = Path(package_path) / "bfu_import_module"
+        else:
+            bfu_path = Path("unknown")
     else:
-        bfu_path = os.path.join(bbpl.blender_addon.addon_utils.get_addon_path("Unreal Engine Assets Exporter"), "bfu_import_module")
+        bfu_path = Path(bbpl.blender_addon.addon_utils.get_addon_path("Unreal Engine Assets Exporter")) / "bfu_import_module"
 
     # Asset data
     if scene.bfu_use_text_import_asset_script:
         json_data = bfu_export_text_files_asset_data.write_main_assets_data(exported_asset_log)
-        asset_data_fullpath = os.path.join(root_dirpath, "ImportAssetData.json")
-        export_asset_data_result = bfu_export_text_files_utils.export_single_json_file(json_data, asset_data_fullpath)
-        if export_asset_data_result:
-            success_asset_data = True
+        asset_data_fullpath = root_dirpath / "ImportAssetData.json"
+        bfu_export_text_files_utils.export_single_json_file(json_data, asset_data_fullpath)
 
-        source = os.path.join(bfu_path, "asset_import_script.py")
-        filename = bfu_basics.ValidFilename(scene.bfu_file_import_asset_script_name)
-        destination = os.path.join(root_dirpath, filename)
+        source = bfu_path / "asset_import_script.py"
+        filename = bfu_basics.valid_file_name(scene.bfu_file_import_asset_script_name)
+        destination = root_dirpath / filename
         if bfu_export_text_files_utils.is_read_only(destination):
             print(f"Cannot replace '{destination}': File is read-only.")
-            success_import_script = False
         else:
             copyfile(source, destination)
-            success_import_script = True
 
     # Sequencer data
     if scene.bfu_use_text_import_sequence_script:
         json_data = bfu_export_text_files_sequencer_data.write_sequencer_tracks_data(exported_asset_log)
-        sequencer_data_fullpath = os.path.join(root_dirpath, "ImportSequencerData.json")
-        export_sequencer_data_result = bfu_export_text_files_utils.export_single_json_file(json_data, sequencer_data_fullpath)
-        if export_sequencer_data_result:
-            success_sequencer_data = True
+        sequencer_data_fullpath = root_dirpath / "ImportSequencerData.json"
+        bfu_export_text_files_utils.export_single_json_file(json_data, sequencer_data_fullpath)
 
-        source = os.path.join(bfu_path, "sequencer_import_script.py")
-        filename = bfu_basics.ValidFilename(scene.bfu_file_import_sequencer_script_name)
-        destination = os.path.join(root_dirpath, filename)
+
+        source = bfu_path / "sequencer_import_script.py"
+        filename = bfu_basics.valid_file_name(scene.bfu_file_import_sequencer_script_name)
+        destination = root_dirpath / filename
         if bfu_export_text_files_utils.is_read_only(destination):
             print(f"Cannot replace '{destination}': File is read-only.")
-            success_sequencer_script = False
         else:
             copyfile(source, destination)
-            success_sequencer_script = True
     time_log.end_time_log()
 

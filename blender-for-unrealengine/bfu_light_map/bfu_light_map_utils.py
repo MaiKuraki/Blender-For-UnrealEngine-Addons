@@ -17,8 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-import fnmatch
-from . import bfu_light_map_utils
+from typing import List, Dict, Optional, TYPE_CHECKING, Any
 from .. import bpl
 from .. import bbpl
 from .. import bfu_basics
@@ -50,12 +49,12 @@ def GetExportRealSurfaceArea(obj):
     for selectObj in bpy.context.selected_objects:
         # Remove unable to convert mesh
         if selectObj.type == "EMPTY" or selectObj.type == "CURVE":
-            bfu_utils.CleanDeleteObjects([selectObj])
+            bfu_utils.clean_delete_objects([selectObj])
 
     for selectObj in bpy.context.selected_objects:
         # Remove collision box
         if bfu_utils.CheckIsCollision(selectObj):
-            bfu_utils.CleanDeleteObjects([selectObj])
+            bfu_utils.clean_delete_objects([selectObj])
 
     if bpy.context.view_layer.objects.active is None:
         # When the active id a empty
@@ -67,7 +66,7 @@ def GetExportRealSurfaceArea(obj):
     bfu_utils.CleanJoinSelect()
     active = bpy.context.view_layer.objects.active
     area = bfu_basics.GetSurfaceArea(active)
-    bfu_utils.CleanDeleteObjects(bpy.context.selected_objects)
+    bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     SavedSelect.reset_select()
     bbpl.scene_utils.move_to_local_view()
     return area
@@ -127,16 +126,22 @@ def GetUseCustomLightMapResolution(obj):
         return False
     return True
 
-def get_light_map_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
-    asset_data = {}
+def get_light_map_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
     return asset_data
 
-def get_light_map_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
-    asset_data = {}
+def get_light_map_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
     if asset_type in [AssetType.STATIC_MESH]:
         if obj:
-            asset_data["generate_lightmap_u_vs"] = obj.bfu_generate_light_map_uvs
-        
+
+            if TYPE_CHECKING:
+                class FakeObject(bpy.types.Object):
+                    bfu_generate_light_map_uvs: bool = False
+                obj = FakeObject()
+
+            asset_data["generate_light_map_uvs"] = obj.bfu_generate_light_map_uvs
+
             asset_data["use_custom_light_map_resolution"] = GetUseCustomLightMapResolution(obj)
             asset_data["light_map_resolution"] = GetCompuntedLightMap(obj)
 

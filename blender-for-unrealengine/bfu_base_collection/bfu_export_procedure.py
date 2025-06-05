@@ -1,6 +1,7 @@
 import bpy
 from enum import Enum
 from typing import List, Tuple, Dict
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_CollectionExportProcedure(str, Enum):
     UE_STANDARD = "ue-standard"
@@ -27,17 +28,17 @@ def get_collection_export_procedure_enum_property_list() -> List[Tuple[str, str,
 def get_default_collection_export_procedure() -> str:
     return BFU_CollectionExportProcedure.default().value
 
-def get_object_export_procedure(col: bpy.types.Collection) -> BFU_CollectionExportProcedure:
+def get_col_export_type(col: bpy.types.Collection) -> BFU_FileTypeEnum:
+    return get_export_file_type(get_col_export_procedure(col))
+
+def get_export_file_type(procedure: BFU_CollectionExportProcedure) -> BFU_FileTypeEnum:
+    return BFU_FileTypeEnum.FBX
+
+def get_col_export_procedure(col: bpy.types.Collection) -> BFU_CollectionExportProcedure:
     for export_type in BFU_CollectionExportProcedure:
         if getattr(col, "bfu_collection_export_procedure", None) == export_type.value:
             return export_type
     return BFU_CollectionExportProcedure.default()
-
-def get_col_export_type(col: bpy.types.Collection) -> str:
-    return get_export_file_type(get_object_export_procedure(col))
-
-def get_export_file_type(procedure: BFU_CollectionExportProcedure) -> str:
-    return "FBX"
 
 def get_col_procedure_preset(procedure: BFU_CollectionExportProcedure) -> Dict[str, str | bool]:
     preset: Dict[str, str | bool] = {}

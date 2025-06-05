@@ -77,8 +77,8 @@ def export_as_action_animation(
 
     asset_name = bfu_export.bfu_export_utils.PrepareExportName(armature, True)
     if export_as_proxy is False:
-        duplicate_data = bfu_export.bfu_export_utils.DuplicateSelectForExport()
-        bfu_export.bfu_export_utils.SetDuplicateNameForExport(duplicate_data)
+        duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export()
+        bfu_export.bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
 
     if export_as_proxy is False:
         bfu_export.bfu_export_utils.ConvertSelectedToMesh()
@@ -138,7 +138,7 @@ def export_as_action_animation(
         active.animation_data.action_blend_type = 'REPLACE'
         active.animation_data.action_influence = 1
 
-    asset_name.SetExportName()
+    asset_name.set_export_name()
     prepare_export_time_log.end_time_log()
 
     process_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Process export", 2)
@@ -238,13 +238,13 @@ def export_as_action_animation(
     saved_base_transforms.reset_object_transforms()
 
     if export_as_proxy is False:
-        bfu_utils.CleanDeleteObjects(bpy.context.selected_objects)
+        bfu_utils.clean_delete_objects(bpy.context.selected_objects)
         for data in duplicate_data.data_to_remove:
             data.RemoveData()
 
         bfu_export.bfu_export_utils.ResetDuplicateNameAfterExport(duplicate_data)
 
     for armature in scene.objects:
-        bfu_utils.ClearAllBFUTempVars(armature)
+        bfu_utils.clear_all_bfu_temp_vars(armature)
     post_export_time_log.end_time_log()
     return True

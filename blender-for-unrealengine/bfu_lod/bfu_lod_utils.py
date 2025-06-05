@@ -18,16 +18,19 @@
 
 import os
 import bpy
-import fnmatch
-from .. import bbpl
-from .. import bfu_export_logs
-from .. import bfu_static_mesh
+from typing import Any, Dict, Optional, TYPE_CHECKING
+from pathlib import Path
 from .. import bfu_assets_manager
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
-def get_lod_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
-    asset_data = {}
+def get_lod_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
+
+    if TYPE_CHECKING:
+        class FakeObject(bpy.types.Object):
+            bfu_export_as_lod_mesh: bool = False
+        obj = FakeObject()
 
     if asset_type in [AssetType.STATIC_MESH, AssetType.SKELETAL_MESH]:
         if obj.bfu_export_as_lod_mesh:
@@ -37,8 +40,19 @@ def get_lod_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
 
     return asset_data
 
-def get_lod_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
-    asset_data = {}
+def get_lod_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
+
+    if TYPE_CHECKING:
+        class FakeObject(bpy.types.Object):
+            bfu_use_static_mesh_lod_group: bool = False
+            bfu_static_mesh_lod_group: str = ""
+            bfu_lod_target1: Optional[bpy.types.Object]
+            bfu_lod_target2: Optional[bpy.types.Object]
+            bfu_lod_target3: Optional[bpy.types.Object]
+            bfu_lod_target4: Optional[bpy.types.Object]
+            bfu_lod_target5: Optional[bpy.types.Object]
+        obj = FakeObject()
 
     # Add lod group name
     if obj:
@@ -50,24 +64,25 @@ def get_lod_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dic
 
     # Add lod slots
     if obj:
-        asset_data['level_of_details'] = {}
+        asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
+        if asset_class:
 
-        def GetLodPath(lod_obj):
-            asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(lod_obj)
-            if asset_class:
-                directory_path = asset_class.get_asset_export_directory_path(lod_obj, "", True)
-                file_name = asset_class.get_asset_file_name(lod_obj)
-            return os.path.join(directory_path, file_name)
+            asset_data['level_of_details'] = {}
 
-        if obj.bfu_lod_target1 is not None:
-            asset_data['level_of_details']['lod_1'] = GetLodPath(obj.bfu_lod_target1)
-        if obj.bfu_lod_target2 is not None:
-            asset_data['level_of_details']['lod_2'] = GetLodPath(obj.bfu_lod_target2)
-        if obj.bfu_lod_target3 is not None:
-            asset_data['level_of_details']['lod_3'] = GetLodPath(obj.bfu_lod_target3)
-        if obj.bfu_lod_target4 is not None:
-            asset_data['level_of_details']['lod_4'] = GetLodPath(obj.bfu_lod_target4)
-        if obj.bfu_lod_target5 is not None:
-            asset_data['level_of_details']['lod_5'] = GetLodPath(obj.bfu_lod_target5)
+            def GetLodPath(lod_obj: bpy.types.Object) -> str:
+                directory_path: Path = asset_class.get_package_export_directory_path(lod_obj, absolute = True)
+                file_name = asset_class.get_package_file_name(lod_obj)
+                return str(directory_path / file_name)
+
+            if obj.bfu_lod_target1 is not None:
+                asset_data['level_of_details']['lod_1'] = GetLodPath(obj.bfu_lod_target1)
+            if obj.bfu_lod_target2 is not None:
+                asset_data['level_of_details']['lod_2'] = GetLodPath(obj.bfu_lod_target2)
+            if obj.bfu_lod_target3 is not None:
+                asset_data['level_of_details']['lod_3'] = GetLodPath(obj.bfu_lod_target3)
+            if obj.bfu_lod_target4 is not None:
+                asset_data['level_of_details']['lod_4'] = GetLodPath(obj.bfu_lod_target4)
+            if obj.bfu_lod_target5 is not None:
+                asset_data['level_of_details']['lod_5'] = GetLodPath(obj.bfu_lod_target5)
 
     return asset_data

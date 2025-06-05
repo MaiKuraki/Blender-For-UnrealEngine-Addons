@@ -40,12 +40,12 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
 
     if itask.use_interchange:
         if asset_type == ExportAssetType.STATIC_MESH:
-            if "generate_lightmap_u_vs" in asset_additional_data:
-                itask.get_igap_mesh().set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_lightmap_u_vs"])
+            if "generate_light_map_uvs" in asset_additional_data:
+                itask.get_igap_mesh().set_editor_property('generate_light_map_uvs', asset_additional_data["generate_light_map_uvs"])
     else:
         if asset_type == ExportAssetType.STATIC_MESH:
-            if "generate_lightmap_u_vs" in asset_additional_data:
-                itask.get_static_mesh_import_data().set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_lightmap_u_vs"])
+            if "generate_light_map_uvs" in asset_additional_data:
+                itask.get_static_mesh_import_data().set_editor_property('generate_light_map_uvs', asset_additional_data["generate_light_map_uvs"])
 
 
 def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
@@ -65,13 +65,13 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_addi
                 unreal.EditorStaticMeshLibrary.set_lod_build_settings(static_mesh, 0, build_settings)
 
     if itask.use_interchange:
-        if "generate_lightmap_u_vs" in asset_additional_data:
+        if "generate_light_map_uvs" in asset_additional_data:
             mesh_pipeline = static_mesh.get_editor_property('asset_import_data').get_pipelines()[0].get_editor_property('mesh_pipeline')
-            mesh_pipeline.set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_lightmap_u_vs"])  # Import data
-            unreal.EditorStaticMeshLibrary.set_generate_lightmap_uv(static_mesh, asset_additional_data["generate_lightmap_u_vs"])  # Build settings at lod
+            mesh_pipeline.set_editor_property('generate_light_map_uvs', asset_additional_data["generate_light_map_uvs"])  # Import data
+            unreal.EditorStaticMeshLibrary.set_generate_lightmap_uv(static_mesh, asset_additional_data["generate_light_map_uvs"])  # Build settings at lod
 
     else:
         asset_import_data = static_mesh.get_editor_property('asset_import_data')
-        if "generate_lightmap_u_vs" in asset_additional_data:
-            asset_import_data.set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_lightmap_u_vs"])  # Import data
-            unreal.EditorStaticMeshLibrary.set_generate_lightmap_uv(static_mesh, asset_additional_data["generate_lightmap_u_vs"])  # Build settings at lod
+        if "generate_light_map_uvs" in asset_additional_data:
+            asset_import_data.set_editor_property('generate_light_map_uvs', asset_additional_data["generate_light_map_uvs"])  # Import data
+            unreal.EditorStaticMeshLibrary.set_generate_lightmap_uv(static_mesh, asset_additional_data["generate_light_map_uvs"])  # Build settings at lod

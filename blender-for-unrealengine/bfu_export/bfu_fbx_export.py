@@ -23,6 +23,7 @@
 import traceback
 import bpy
 from mathutils import Matrix
+from typing import Set, Dict, Any
 from .. import bpl
 from .. import fbxio
 
@@ -32,55 +33,55 @@ debug_show_arguments = False
 
 
 def export_scene_fbx_with_custom_fbx_io(
-        operator, 
-        context, 
-        filepath='', 
-        check_existing=True, 
-        filter_glob: str = "*.fbx",
-        use_selection=False, 
-        use_visible=False, 
-        use_active_collection=False, 
-        global_scale=1.0, 
-        apply_unit_scale=True, 
-        apply_scale_options='FBX_SCALE_NONE', 
-        use_space_transform=True, 
-        bake_space_transform=False, 
-        object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'}, 
-        use_mesh_modifiers=True, 
-        use_mesh_modifiers_render=True, 
-        mesh_smooth_type='OFF', 
-        colors_type='SRGB', 
-        prioritize_active_color=False, 
-        use_subsurf=False, 
-        use_mesh_edges=False, 
-        use_tspace=False, 
-        use_triangles=False, 
-        use_custom_props=False, 
-        add_leaf_bones=True, 
-        primary_bone_axis='Y', 
-        secondary_bone_axis='X', 
-        use_armature_deform_only=False, 
-        armature_nodetype='NULL', 
-        bake_anim=True, 
-        bake_anim_use_all_bones=True, 
-        bake_anim_use_nla_strips=True, 
-        bake_anim_use_all_actions=True, 
-        bake_anim_force_startend_keying=True, 
-        bake_anim_step=1.0, 
-        bake_anim_simplify_factor=1.0, 
-        path_mode='AUTO', 
-        embed_textures=False, 
-        batch_mode='OFF', 
-        use_batch_own_dir=True, 
-        use_metadata=True, 
-        axis_forward='-Z', 
-        axis_up='Y', 
-        global_matrix=Matrix(), 
-        animation_only=False, 
-        mirror_symmetry_right_side_bones=False, 
-        use_ue_mannequin_bone_alignment=False, 
-        disable_free_scale_animation=False,
-    ):
+    operator: bpy.types.Operator, 
+    context: bpy.types.Context, 
+    filepath: str = '', 
+    check_existing: bool = True, 
+    filter_glob: str = "*.fbx",
+    use_selection: bool = False, 
+    use_visible: bool = False, 
+    use_active_collection: bool = False, 
+    global_scale: float = 1.0, 
+    apply_unit_scale: bool = True, 
+    apply_scale_options: str = 'FBX_SCALE_NONE', 
+    use_space_transform: bool = True, 
+    bake_space_transform: bool = False, 
+    object_types: Set[str] = {'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'}, 
+    use_mesh_modifiers: bool = True, 
+    use_mesh_modifiers_render: bool = True, 
+    mesh_smooth_type: str = 'OFF', 
+    colors_type: str = 'SRGB', 
+    prioritize_active_color: bool = False, 
+    use_subsurf: bool = False, 
+    use_mesh_edges: bool = False, 
+    use_tspace: bool = False, 
+    use_triangles: bool = False, 
+    use_custom_props: bool = False, 
+    add_leaf_bones: bool = True, 
+    primary_bone_axis: str = 'Y', 
+    secondary_bone_axis: str = 'X', 
+    use_armature_deform_only: bool = False, 
+    armature_nodetype: str = 'NULL', 
+    bake_anim: bool = True, 
+    bake_anim_use_all_bones: bool = True, 
+    bake_anim_use_nla_strips: bool = True, 
+    bake_anim_use_all_actions: bool = True, 
+    bake_anim_force_startend_keying: bool = True, 
+    bake_anim_step: float = 1.0, 
+    bake_anim_simplify_factor: float = 1.0, 
+    path_mode: str = 'AUTO', 
+    embed_textures: bool = False, 
+    batch_mode: str = 'OFF', 
+    use_batch_own_dir: bool = True, 
+    use_metadata: bool = True, 
+    axis_forward: str = '-Z', 
+    axis_up: str = 'Y', 
+    global_matrix: Matrix = Matrix(), 
+    animation_only: bool = False, 
+    mirror_symmetry_right_side_bones: bool = False, 
+    use_ue_mannequin_bone_alignment: bool = False, 
+    disable_free_scale_animation: bool = False,
+):
     # Warning, do not work in 4.0 and older version for the moment!
     # Need do a custom version OF fbx IO per version to fit with Blender API.
 
@@ -88,7 +89,7 @@ def export_scene_fbx_with_custom_fbx_io(
     blender_version = bpy.app.version
 
     # Base parameters for all versions
-    params = {
+    params: Dict[str, Any] = {
         'filepath': filepath,
         'check_existing': check_existing,
         'filter_glob': filter_glob,
@@ -158,13 +159,54 @@ def export_scene_fbx_with_custom_fbx_io(
         print(bpl.color_set.red(error_message))
 
 
-def export_scene_fbx(filepath='', check_existing=True, filter_glob='*.fbx', use_selection=False, use_visible=False, use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_NONE', use_space_transform=True, bake_space_transform=False, object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'}, use_mesh_modifiers=True, use_mesh_modifiers_render=True, mesh_smooth_type='OFF', colors_type='SRGB', prioritize_active_color=False, use_subsurf=False, use_mesh_edges=False, use_tspace=False, use_triangles=False, use_custom_props=False, add_leaf_bones=True, primary_bone_axis='Y', secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=True, bake_anim_use_all_bones=True, bake_anim_use_nla_strips=True, bake_anim_use_all_actions=True, bake_anim_force_startend_keying=True, bake_anim_step=1.0, bake_anim_simplify_factor=1.0, path_mode='AUTO', embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True, axis_forward='-Z', axis_up='Y'):
-    
+def export_scene_fbx(
+        filepath: str = '', 
+        check_existing: bool = True, 
+        filter_glob: str = '*.fbx', 
+        use_selection: bool = False, 
+        use_visible: bool = False, 
+        use_active_collection: bool = False, 
+        global_scale: float = 1.0, 
+        apply_unit_scale: bool = True, 
+        apply_scale_options: str = 'FBX_SCALE_NONE', 
+        use_space_transform: bool = True, 
+        bake_space_transform: bool = False, 
+        object_types: Set[str] = {'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'}, 
+        use_mesh_modifiers: bool = True, 
+        use_mesh_modifiers_render: bool = True, 
+        mesh_smooth_type: str = 'OFF', 
+        colors_type: str = 'SRGB', 
+        prioritize_active_color: bool = False, 
+        use_subsurf: bool = False, 
+        use_mesh_edges: bool = False, 
+        use_tspace: bool = False, 
+        use_triangles: bool = False, 
+        use_custom_props: bool = False, 
+        add_leaf_bones: bool = True, 
+        primary_bone_axis: str = 'Y',
+        secondary_bone_axis: str = 'X', 
+        use_armature_deform_only: bool = False, 
+        armature_nodetype: str = 'NULL', 
+        bake_anim: bool = True, 
+        bake_anim_use_all_bones: bool = True, 
+        bake_anim_use_nla_strips: bool = True, 
+        bake_anim_use_all_actions: bool = True, 
+        bake_anim_force_startend_keying: bool = True, 
+        bake_anim_step: float = 1.0, 
+        bake_anim_simplify_factor: float = 1.0, 
+        path_mode: str = 'AUTO', 
+        embed_textures: bool = False, 
+        batch_mode: str = 'OFF', 
+        use_batch_own_dir: bool = True, 
+        use_metadata: bool = True, 
+        axis_forward: str = '-Z', 
+        axis_up: str = 'Y'):
+
     # Check Blender version
     blender_version = bpy.app.version
 
     # Base parameters for all versions
-    params = {
+    params: Dict[str, Any] = {
         'filepath': filepath,
         'check_existing': check_existing,
         'filter_glob': filter_glob,

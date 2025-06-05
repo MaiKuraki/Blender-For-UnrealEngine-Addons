@@ -20,14 +20,13 @@ import os
 import bpy
 import datetime
 import json
-
-from .. import bpl
+from typing import Dict, Any
+from pathlib import Path
 from .. import bbpl
 from .. import languages
-from .. import bfu_basics
 
 
-def add_generated_json_header(json_data, text: str):
+def add_generated_json_header(json_data: Dict[str, Any], text: str):
 
     json_data['comment'] = {
         '1/3': languages.ti('write_text_additional_track_start'),
@@ -35,25 +34,31 @@ def add_generated_json_header(json_data, text: str):
         '3/3': languages.ti('write_text_additional_track_end'),
     }
 
-def add_generated_json_footer(json_data):
+def add_generated_json_footer(json_data: Dict[str, Any]):
     # Empty for the momment.
     pass
 
-def add_generated_json_meta_data(json_data):
-    
+def add_generated_json_meta_data(json_data: Dict[str, Any]):
+
     current_datetime = datetime.datetime.now()
     current_datetime_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     timestamp = int(current_datetime.timestamp())
 
     blender_file_path = bpy.data.filepath
 
+    import_module_path: Path = Path("unknown")
     if bpy.app.version >= (4, 2, 0):
         version_str = 'Version '+ str(bbpl.blender_extension.extension_utils.get_package_version())
         addon_path = bbpl.blender_extension.extension_utils.get_package_path()
+        if addon_path:
+            import_module_path = Path(addon_path) / "bfu_import_module"
     else:
         version_str = 'Version '+ bbpl.blender_addon.addon_utils.get_addon_version_str("Unreal Engine Assets Exporter")
         addon_path = bbpl.blender_addon.addon_utils.get_addon_path("Unreal Engine Assets Exporter")
-    import_modiule_path = os.path.join(addon_path, "bfu_import_module")
+        if addon_path:
+            import_module_path = Path(addon_path) / "bfu_import_module"
+    
+    
 
 
     json_data['info'] = {
@@ -62,23 +67,22 @@ def add_generated_json_meta_data(json_data):
         "blender_file": blender_file_path,
         'addon_version': version_str,
         'addon_path': addon_path,
-        'import_modiule_path': import_modiule_path,
+        'import_module_path': str(import_module_path),
     }
 
-def is_read_only(filepath):
-    return os.path.exists(filepath) and not os.access(filepath, os.W_OK)
+def is_read_only(filepath: Path) -> bool:
+    return filepath.exists() and not os.access(filepath, os.W_OK)
 
-def export_single_text_file(text, fullpath: str,):
+def export_single_text_file(text: str, fullpath: Path):
 
     if is_read_only(fullpath):
         print(f"Cannot write to '{fullpath}': File is read-only.")
-        return None
 
     with open(fullpath, "w") as file:
         file.write(text)
         
 
-def export_single_json_file(json_data, fullpath: str,):
+def export_single_json_file(json_data: Dict[str, Any], fullpath: Path):
 
     if is_read_only(fullpath):
         print(f"Cannot write to '{fullpath}': File is read-only.")

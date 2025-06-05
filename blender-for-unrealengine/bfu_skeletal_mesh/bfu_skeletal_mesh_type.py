@@ -34,6 +34,7 @@ from .. import bfu_vertex_color
 from .. import bfu_material
 from .. import bfu_lod
 from .. import bfu_base_object
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 
 class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
@@ -49,22 +50,20 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
                 return True
         return False
 
+
     def get_asset_type(self, obj: bpy.types.Object, details: Any = None) -> AssetType:
         return AssetType.SKELETAL_MESH
 
-    def get_asset_export_name(self, obj: bpy.types.Object) -> str:
-        if not isinstance(obj, bpy.types.Object):
-            return False
-        if bfu_utils.GetExportAsProxy(obj):
-            proxy_child = bfu_utils.GetExportProxyChild(obj)
-            if proxy_child is not None:
-                return bfu_basics.ValidFilename(proxy_child.name)
-        return bfu_basics.ValidFilename(obj.name)
 
-    def get_asset_file_type(self, obj: bpy.types.Object, details: Any = None) -> str:
-        return bfu_export_procedure.get_obj_export_file_type(obj)
+####################################################################
+# Asset Package Management
+####################################################################
 
-    def get_asset_file_name(self, obj: bpy.types.Object, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
+    def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
+        return bfu_export_procedure.get_obj_export_file_type(data)
+
+
+    def get_package_file_name(self, obj: bpy.types.Object, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
         # Generate assset file name for skeletal mesh
         scene = bpy.context.scene
         if obj.bfu_use_custom_export_name:
@@ -74,7 +73,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
         if without_extension:
             fileType = ""
         else:
-            asset_type = self.get_asset_file_type(obj)
+            asset_type = self.get_package_file_type(obj)
             if asset_type == "FBX":
                 fileType = ".fbx"
             elif asset_type == "GLTF":
@@ -82,10 +81,10 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
 
 
         if desired_name:
-            return bfu_basics.ValidFilename(scene.bfu_skeletal_mesh_prefix_export_name+desired_name+fileType)
-        return bfu_basics.ValidFilename(scene.bfu_skeletal_mesh_prefix_export_name+obj.name+fileType)
+            return bfu_basics.valid_file_name(scene.bfu_skeletal_mesh_prefix_export_name+desired_name+fileType)
+        return bfu_basics.valid_file_name(scene.bfu_skeletal_mesh_prefix_export_name+obj.name+fileType)
 
-    def get_asset_export_directory_path(self, obj: bpy.types.Object, extra_path: str = "", absolute: bool = True) -> str:
+    def get_package_export_directory_path(self, obj: bpy.types.Object, extra_path: str = "", absolute: bool = True) -> str:
         scene = bpy.context.scene
 
         # Get root path
@@ -100,7 +99,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
 
         # Add skeletal sub folder path
         if obj.bfu_create_sub_folder_with_skeletal_mesh_name:
-            dirpath = dirpath / self.get_asset_export_name(obj)
+            dirpath = dirpath / bfu_basics.valid_file_name(obj.name)
 
         # Add extra path if provided
         if extra_path:
@@ -154,20 +153,20 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
                 asset_list.append(asset)
 
                 import_dirpath = self.get_asset_import_directory_path(obj)
-                asset.set_import_name(self.get_asset_file_name(obj, without_extension=True))
+                asset.set_import_name(self.get_package_file_name(obj, without_extension=True))
                 asset.set_import_dirpath(import_dirpath)
 
                 if search_mode.search_packages():
                     pak = asset.add_asset_package(obj.name, ["Lod0"])
 
                     # Set the export dirpath
-                    dirpath = self.get_asset_export_directory_path(obj, "", True)
-                    file_name = self.get_asset_file_name(obj)
-                    file_type = self.get_asset_file_type(obj)
+                    dirpath = self.get_package_export_directory_path(obj, "", True)
+                    file_name = self.get_package_file_name(obj)
+                    file_type = self.get_package_file_type(obj)
                     pak.set_file(dirpath, file_name, file_type)
 
                     if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):
-                        file_name_without_extension = self.get_asset_file_name(obj, without_extension=True)
+                        file_name_without_extension = self.get_package_file_name(obj, without_extension=True)
                         additional_data = asset.set_asset_additional_data(self.get_asset_additional_data(obj))
                         additional_data.set_file(dirpath, f"{file_name_without_extension}_additional_data.json")
 
@@ -185,20 +184,20 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
                     asset_list.append(asset)
 
                     import_dirpath = self.get_asset_import_directory_path(obj)
-                    asset.set_import_name(self.get_asset_file_name(mesh, without_extension=True))
+                    asset.set_import_name(self.get_package_file_name(mesh, without_extension=True))
                     asset.set_import_dirpath(import_dirpath)
 
                     if search_mode.search_packages():
                         pak = asset.add_asset_package(mesh.name, ["Lod0"])
 
                         # Set the export dirpath
-                        dirpath = self.get_asset_export_directory_path(mesh, "", True)
-                        file_name = self.get_asset_file_name(mesh)
-                        file_type = self.get_asset_file_type(mesh)
+                        dirpath = self.get_package_export_directory_path(mesh, "", True)
+                        file_name = self.get_package_file_name(mesh)
+                        file_type = self.get_package_file_type(mesh)
                         pak.set_file(dirpath, file_name, file_type)
 
                         if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):
-                            file_name_without_extension = self.get_asset_file_name(mesh, without_extension=True)
+                            file_name_without_extension = self.get_package_file_name(mesh, without_extension=True)
                             additional_data = asset.set_asset_additional_data(self.get_asset_additional_data(mesh))
                             additional_data.set_file(dirpath, f"{file_name_without_extension}_additional_data.json")
 
@@ -218,20 +217,20 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
                         asset_list.append(asset)
                         
                         import_dirpath = self.get_asset_import_directory_path(obj, part.sub_folder)
-                        asset.set_import_name(self.get_asset_file_name(obj, desired_name=part.name, without_extension=True))
+                        asset.set_import_name(self.get_package_file_name(obj, desired_name=part.name, without_extension=True))
                         asset.set_import_dirpath(import_dirpath)
 
                         if search_mode.search_packages():
                             pak = asset.add_asset_package(obj.name, ["Lod0"])
 
                             # Set the export dirpath
-                            dirpath = self.get_asset_export_directory_path(obj, part.sub_folder, True)
-                            file_name = self.get_asset_file_name(obj, part.name)
-                            file_type = self.get_asset_file_type(obj)
+                            dirpath = self.get_package_export_directory_path(obj, part.sub_folder, True)
+                            file_name = self.get_package_file_name(obj, part.name)
+                            file_type = self.get_package_file_type(obj)
                             pak.set_file(dirpath, file_name, file_type)
 
                             if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):
-                                file_name_without_extension = self.get_asset_file_name(obj, desired_name=part.name, without_extension=True)
+                                file_name_without_extension = self.get_package_file_name(obj, desired_name=part.name, without_extension=True)
                                 additional_data = asset.set_asset_additional_data(self.get_asset_additional_data(obj))
                                 additional_data.set_file(dirpath, f"{file_name_without_extension}_additional_data.json")
 

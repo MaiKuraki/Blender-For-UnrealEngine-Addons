@@ -18,36 +18,34 @@
 
 import os
 import bpy
-
-from . import bbpl
-from . import bfu_ui
+from typing import TYPE_CHECKING
 from . import languages
 from .bbpl.blender_layout import layout_doc_button
 
 class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
     # this must match the addon name, use '__package__'
     # when defining this in a submodule of a python package.
-    bl_idname = __package__
+    bl_idname = __package__  # type: ignore
 
-    bakeArmatureAction: bpy.props.BoolProperty(
+    bakeArmatureAction: bpy.props.BoolProperty(  # type: ignore
         name=(languages.ti('bake_armature_action_name')),
         description=(languages.tt('bake_armature_action_desc')),
         default=False,
         )
 
-    add_skeleton_root_bone: bpy.props.BoolProperty(
+    add_skeleton_root_bone: bpy.props.BoolProperty(  # type: ignore
         name=(languages.ti('add_skeleton_root_bone_name')),
         description=(languages.tt('add_skeleton_root_bone_desc')),
         default=False,
         )
 
-    skeleton_root_bone_name: bpy.props.StringProperty(
+    skeleton_root_bone_name: bpy.props.StringProperty(  # type: ignore
         name=(languages.ti('skeleton_root_bone_name_name')),
         description=(languages.tt('skeleton_root_bone_name_desc')),
         default="ArmatureRoot",
         )
 
-    rescaleFullRigAtExport: bpy.props.EnumProperty(
+    rescaleFullRigAtExport: bpy.props.EnumProperty(  # type: ignore
         name=(languages.ti('rescale_full_rig_at_export_name')),
         description=(languages.tt('rescale_full_rig_at_export_desc')),
         items=[
@@ -69,19 +67,19 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
             ]
         )
 
-    newRigScale: bpy.props.FloatProperty(
+    newRigScale: bpy.props.FloatProperty(  # type: ignore
         name=(languages.ti('new_rig_scale_name')),
         description=(languages.tt('new_rig_scale_desc')),
         default=100,
         )
 
-    staticSocketsAdd90X: bpy.props.BoolProperty(
+    staticSocketsAdd90X: bpy.props.BoolProperty(  # type: ignore
         name=(languages.ti('static_sockets_add_90_x_name')),
         description=(languages.tt('static_sockets_add_90_x_desc')),
         default=True,
         )
 
-    rescaleSocketsAtExport: bpy.props.EnumProperty(
+    rescaleSocketsAtExport: bpy.props.EnumProperty(  # type: ignore
         name=(languages.ti('rescale_sockets_at_export_name')),
         description=(languages.tt('rescale_sockets_at_export_desc')),
         items=[
@@ -103,43 +101,43 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
             ]
         )
 
-    staticSocketsImportedSize: bpy.props.FloatProperty(
+    staticSocketsImportedSize: bpy.props.FloatProperty(  # type: ignore
         name=(languages.ti('static_sockets_imported_size_name')),
         description=(languages.tt('static_sockets_imported_size_desc')),
         default=1,
         )
 
-    skeletalSocketsImportedSize: bpy.props.FloatProperty(
+    skeletalSocketsImportedSize: bpy.props.FloatProperty(  # type: ignore
         name=(languages.ti('skeletal_sockets_imported_size_name')),
         description=(languages.tt('skeletal_sockets_imported_size_desc')),
         default=1,
         )
 
-    ignoreNLAForAction: bpy.props.BoolProperty(
+    ignoreNLAForAction: bpy.props.BoolProperty(  # type: ignore
         name=(languages.ti('ignore_nla_for_action_name')),
         description=(languages.tt('ignore_nla_for_action_desc')),
         default=False,
         )
 
-    revertExportPath: bpy.props.BoolProperty(
+    revertExportPath: bpy.props.BoolProperty(  # type: ignore
         name=(languages.ti('revert_export_path_name')),
         description=(languages.tt('revert_export_path_desc')),
         default=False,
         )
 
-    show_hiden_linked_propertys: bpy.props.BoolProperty(
+    show_hiden_linked_propertys: bpy.props.BoolProperty(  # type: ignore
         name=('Show Hiden Linked Propertys'),
         description=('Show hiden linked propertys. (Debug)'),
         default=False,
         )
 
-    useGeneratedScripts: bpy.props.BoolProperty(
+    useGeneratedScripts: bpy.props.BoolProperty(  # type: ignore
         name=(languages.ti('use_generated_scripts_name')),
         description=(languages.tt('use_generated_scripts_desc')),
         default=True,
         )
 
-    collisionColor:  bpy.props.FloatVectorProperty(
+    collisionColor:  bpy.props.FloatVectorProperty(  # type: ignore
         name=languages.ti('collision_color_name'),
         description='Color of the collision in Blender',
         subtype='COLOR',
@@ -148,7 +146,7 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
         min=0.0, max=1.0,
         )
 
-    notifyUnitScalePotentialError: bpy.props.BoolProperty(
+    notifyUnitScalePotentialError: bpy.props.BoolProperty(  # type: ignore
         name=languages.ti('notify_unit_scale_potential_error_name'),
         description=(
             'Notify as potential error' +
@@ -159,23 +157,44 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
     
     #CAMERA
 
-    bake_only_key_visible_in_cut: bpy.props.BoolProperty(
+    bake_only_key_visible_in_cut: bpy.props.BoolProperty(  # type: ignore
         name=(languages.ti('bake_only_key_visible_in_cut_name')),
         description=(languages.tt('bake_only_key_visible_in_cut_desc')),
         default=True,
         )
     
-    scale_camera_fstop_with_unit_scale: bpy.props.BoolProperty(
+    scale_camera_fstop_with_unit_scale: bpy.props.BoolProperty(  # type: ignore
         name="Scale F-Stop by Unit Scale",
         description="Scale camera F-Stop with Unit Scale.",
         default=True,
         )
     
-    scale_camera_focus_distance_with_unit_scale: bpy.props.BoolProperty(
+    scale_camera_focus_distance_with_unit_scale: bpy.props.BoolProperty(  # type: ignore
         name="Scale focus distance by Unit Scale",
         description="Scale camera focus distance with Unit Scale.",
         default=True,
         )
+    
+    if TYPE_CHECKING:
+        bakeArmatureAction: bool
+        add_skeleton_root_bone: bool
+        skeleton_root_bone_name: str        
+        rescaleFullRigAtExport: str
+        newRigScale: float
+        staticSocketsAdd90X: bool
+        rescaleSocketsAtExport: str
+        staticSocketsImportedSize: float
+        skeletalSocketsImportedSize: float
+        ignoreNLAForAction: bool
+        revertExportPath: bool
+        show_hiden_linked_propertys: bool
+        useGeneratedScripts: bool
+        collisionColor: tuple[float, float, float, float]
+        notifyUnitScalePotentialError: bool
+        bake_only_key_visible_in_cut: bool
+        scale_camera_fstop_with_unit_scale: bool
+        scale_camera_focus_distance_with_unit_scale: bool
+
     
     class BFU_OT_NewReleaseInfo(bpy.types.Operator):
         """Open last release page"""
@@ -202,51 +221,55 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
         rootBone = ColumnLeft.box()
 
         layout_doc_button.add_right_doc_page_operator(rootBone, text="SKELETON & ROOT BONE", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Skeleton-&-Root-bone")
-        rootBone.prop(self, "add_skeleton_root_bone")
+        rootBone.prop(self, "add_skeleton_root_bone")  # type: ignore
         rootBoneName = rootBone.column()
         rootBoneName.enabled = self.add_skeleton_root_bone
         rootBoneName.prop(self, "skeleton_root_bone_name")
 
-        rootBone.prop(self, "rescaleFullRigAtExport")
+        rootBone.prop(self, "rescaleFullRigAtExport")  # type: ignore
         newRigScale = rootBone.column()
         newRigScale.enabled = self.rescaleFullRigAtExport == "custom_rescale"
-        newRigScale.prop(self, "newRigScale")
+        newRigScale.prop(self, "newRigScale")  # type: ignore
 
         socket = ColumnLeft.box()
-        socket.label(text='SOCKET')
-        socket.prop(self, "staticSocketsAdd90X")
-        socket.prop(self, "rescaleSocketsAtExport")
+        socket.label(text='SOCKET')  # type: ignore
+        socket.prop(self, "staticSocketsAdd90X")  # type: ignore
+        socket.prop(self, "rescaleSocketsAtExport")  # type: ignore
         socketRescale = socket.column()
         socketRescale.enabled = self.rescaleSocketsAtExport == "custom_rescale"
-        socketRescale.prop(self, "staticSocketsImportedSize")
-        socketRescale.prop(self, "skeletalSocketsImportedSize")
+        socketRescale.prop(self, "staticSocketsImportedSize")  # type: ignore
+        socketRescale.prop(self, "skeletalSocketsImportedSize")  # type: ignore
 
         camera = ColumnLeft.box()
         layout_doc_button.add_right_doc_page_operator(camera, text="CAMERA", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Cameras")
-        camera.prop(self, "bake_only_key_visible_in_cut")
+        camera.prop(self, "bake_only_key_visible_in_cut")  # type: ignore
         layout_doc_button.add_right_doc_page_operator(camera, text="About depth of Field -> ", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Camera-Depth-of-Field")
-        camera.prop(self, "scale_camera_fstop_with_unit_scale")
-        camera.prop(self, "scale_camera_focus_distance_with_unit_scale")
+        camera.prop(self, "scale_camera_fstop_with_unit_scale")  # type: ignore
+        camera.prop(self, "scale_camera_focus_distance_with_unit_scale")  # type: ignore
 
         data = ColumnRight.box()
-        data.label(text='DATA')
-        data.prop(self, "ignoreNLAForAction")
-        data.prop(self, "bakeArmatureAction")
-        data.prop(self, "revertExportPath")
+        data.label(text='DATA')  # type: ignore
+        data.prop(self, "ignoreNLAForAction")  # type: ignore
+        data.prop(self, "bakeArmatureAction")  # type: ignore
+        data.prop(self, "revertExportPath")  # type: ignore
 
         other = ColumnRight.box()
-        other.label(text='OTHER')
-        other.prop(self, "collisionColor")
-        other.prop(self, "notifyUnitScalePotentialError")
-        other.prop(self, "show_hiden_linked_propertys")
+        other.label(text='OTHER')  # type: ignore
+        other.prop(self, "collisionColor")  # type: ignore
+        other.prop(self, "notifyUnitScalePotentialError")  # type: ignore
+        other.prop(self, "show_hiden_linked_propertys")  # type: ignore
 
         script = ColumnRight.box()
-        script.label(text='IMPORT SCRIPT')
-        script.prop(self, "useGeneratedScripts")
+        script.label(text='IMPORT SCRIPT')  # type: ignore
+        script.prop(self, "useGeneratedScripts")  # type: ignore
 
         updateButton = layout.row()
         updateButton.scale_y = 2.0
-        updateButton.operator("object.new_release_info", icon="TIME")
+        updateButton.operator("object.new_release_info", icon="TIME")  # type: ignore
+
+
+def get_addon_prefs() -> BFU_AP_AddonPreferences:
+    return bpy.context.preferences.addons[__package__].preferences # type: ignore
 
 
 classes = (

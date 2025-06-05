@@ -53,7 +53,7 @@ def process_nla_anim_export(
 
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(armature, "SkeletalAnimation")
     asset_type = asset_class.get_asset_type(armature)
-    dirpath = asset_class.get_asset_export_directory_path(armature, "", True)
+    dirpath = asset_class.get_package_export_directory_path(armature, "", True)
 
     scene.frame_end += 1  # Why ?
 
@@ -111,8 +111,8 @@ def export_single_fbx_nla_anim(
 
     asset_name = bfu_export_utils.PrepareExportName(armature, True)
     if export_as_proxy is False:
-        duplicate_data = bfu_export_utils.DuplicateSelectForExport()
-        bfu_export_utils.SetDuplicateNameForExport(duplicate_data)
+        duplicate_data = bfu_export_utils.duplicate_select_for_export()
+        bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
 
     if export_as_proxy is False:
         bfu_export_utils.ConvertSelectedToMesh()
@@ -163,7 +163,7 @@ def export_single_fbx_nla_anim(
     scene.frame_start = frame_range[0]
     scene.frame_end = frame_range[1] + 1
 
-    asset_name.SetExportName()
+    asset_name.set_export_name()
 
     if (skeleton_export_procedure == "ue-standard"):
         bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
@@ -254,11 +254,11 @@ def export_single_fbx_nla_anim(
     saved_base_transforms.reset_object_transforms()
 
     if export_as_proxy is False:
-        bfu_utils.CleanDeleteObjects(bpy.context.selected_objects)
+        bfu_utils.clean_delete_objects(bpy.context.selected_objects)
         for data in duplicate_data.data_to_remove:
             data.RemoveData()
 
         bfu_export_utils.ResetDuplicateNameAfterExport(duplicate_data)
 
     for armature in scene.objects:
-        bfu_utils.ClearAllBFUTempVars(armature)
+        bfu_utils.clear_all_bfu_temp_vars(armature)

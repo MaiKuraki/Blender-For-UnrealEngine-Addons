@@ -16,26 +16,17 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
-import bpy
+from typing import Dict, Any
 from . import bfu_export_text_files_utils
-from .. import bfu_export_logs
 from .. import languages
-from .. import bfu_basics
-from .. import bfu_socket
-from .. import bfu_light_map
-from .. import bfu_nanite
-from .. import bfu_vertex_color
-from .. import bfu_material
-from .. import bfu_lod
 
-def write_additional_data(data: dict):
+def write_additional_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Writes the additional data for a preset to a JSON file.
     :param data: The data to write.
     :return: The additional data as a dictionary.
     """
-    asset_additional_data = {}
+    asset_additional_data: Dict[str, Any] = {}
 
     bfu_export_text_files_utils.add_generated_json_header(asset_additional_data, languages.ti('write_text_additional_track_all'))
     bfu_export_text_files_utils.add_generated_json_meta_data(asset_additional_data)

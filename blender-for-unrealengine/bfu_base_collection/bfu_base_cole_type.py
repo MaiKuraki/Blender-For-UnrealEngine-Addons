@@ -32,7 +32,7 @@ from .. import bfu_nanite
 from .. import bfu_vertex_color
 from .. import bfu_material
 from .. import bfu_lod
-
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 
 
@@ -50,17 +50,21 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
     def get_asset_type(self, col: bpy.types.Collection, details: Any = None) -> AssetType:
         return AssetType.COLLECTION_AS_STATIC_MESH
 
-    def get_asset_file_type(self, col: bpy.types.Collection) -> str:
-        return bfu_export_procedure.get_col_export_type(col)
+####################################################################
+# Asset Package Management
+####################################################################
 
-    def get_asset_file_name(self, col: bpy.types.Collection, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
+    def get_package_file_type(self, data: bpy.types.Collection, details: Any = None) -> BFU_FileTypeEnum:
+        return bfu_export_procedure.get_col_export_type(data)
+
+    def get_package_file_name(self, col: bpy.types.Collection, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
         # Generate assset file name for skeletal mesh
         scene = bpy.context.scene
 
         if without_extension:
             fileType = ""
         else:
-            asset_type = self.get_asset_file_type(col)
+            asset_type = self.get_package_file_type(col)
             if asset_type == "FBX":
                 fileType = ".fbx"
             elif asset_type == "GLTF":
@@ -68,10 +72,10 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
 
 
         if desired_name:
-            return bfu_basics.ValidFilename(scene.bfu_static_mesh_prefix_export_name+desired_name+fileType)
-        return bfu_basics.ValidFilename(scene.bfu_static_mesh_prefix_export_name+col.name+fileType)
+            return bfu_basics.valid_file_name(scene.bfu_static_mesh_prefix_export_name+desired_name+fileType)
+        return bfu_basics.valid_file_name(scene.bfu_static_mesh_prefix_export_name+col.name+fileType)
 
-    def get_asset_export_directory_path(self, col: bpy.types.Collection, extra_path = "", absolute = True):
+    def get_package_export_directory_path(self, col: bpy.types.Collection, extra_path = "", absolute = True):
         scene = bpy.context.scene
 
         # Get root path
@@ -122,7 +126,7 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
             asset = AssetToExport(col.name, AssetType.COLLECTION_AS_STATIC_MESH)
 
             import_dirpath = self.get_asset_import_directory_path(col)
-            asset.set_import_name(self.get_asset_file_name(col, without_extension=True))
+            asset.set_import_name(self.get_package_file_name(col, without_extension=True))
             asset.set_import_dirpath(import_dirpath)
             asset_list.append(asset)
 
@@ -130,14 +134,14 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
                 pak = asset.add_asset_package(col.name, ["Collection"])
 
                 # Set the export dirpath
-                dirpath = self.get_asset_export_directory_path(col, "", True)
-                file_name = self.get_asset_file_name(col)
-                file_type = self.get_asset_file_type(col)
+                dirpath = self.get_package_export_directory_path(col, "", True)
+                file_name = self.get_package_file_name(col)
+                file_type = self.get_package_file_type(col)
                 pak.set_file(dirpath, file_name, file_type)
                         
 
                 if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):
-                    file_name_without_extension = self.get_asset_file_name(col, without_extension=True)
+                    file_name_without_extension = self.get_package_file_name(col, without_extension=True)
                     additional_data = asset.set_asset_additional_data(self.get_asset_additional_data(col))
                     additional_data.set_file(dirpath, f"{file_name_without_extension}_additional_data.json")
 

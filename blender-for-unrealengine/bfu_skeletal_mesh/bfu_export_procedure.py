@@ -1,6 +1,7 @@
 import bpy
 from enum import Enum
 from typing import List, Tuple, Dict
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_SkeletonExportProcedure(str, Enum):
     UE_STANDARD = "ue-standard"
@@ -33,12 +34,11 @@ def get_object_export_procedure(obj: bpy.types.Object) -> BFU_SkeletonExportProc
             return export_type
     return BFU_SkeletonExportProcedure.default()
 
-def get_obj_export_file_type(obj: bpy.types.Object) -> str:
+def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:
     return get_export_file_type(get_object_export_procedure(obj))
 
-def get_export_file_type(procedure: BFU_SkeletonExportProcedure) -> str:
-    # Ici tu peux adapter si tu ajoutes d'autres types plus tard
-    return "FBX"
+def get_export_file_type(procedure: BFU_SkeletonExportProcedure) -> BFU_FileTypeEnum:
+    return BFU_FileTypeEnum.FBX
 
 def get_obj_skeleton_fbx_procedure_preset(obj: bpy.types.Object) -> Dict[str, str | bool]:
     return get_skeleton_procedure_preset(get_object_export_procedure(obj))

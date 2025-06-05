@@ -55,8 +55,8 @@ def export_collection_as_static_mesh(
     bbpl.utils.safe_mode_set('OBJECT')
 
     bfu_utils.SelectCollectionObjects(col)
-    duplicate_data = bfu_export.bfu_export_utils.DuplicateSelectForExport()
-    bfu_export.bfu_export_utils.SetDuplicateNameForExport(duplicate_data)
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export()
+    bfu_export.bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
 
     bfu_export.bfu_export_utils.ConvertSelectedToMesh()
     bfu_export.bfu_export_utils.MakeSelectVisualReal()
@@ -126,17 +126,17 @@ def export_collection_as_static_mesh(
     post_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean after export", 2)
     save_use_simplify.LoadUserRenderSimplify()
     for obj in bpy.context.selected_objects:
-        bfu_vertex_color.bfu_vertex_color_utils.ClearVertexColorForUnrealExport(obj)
-        bfu_export.bfu_export_utils.ResetSocketsExportName(obj)
-        bfu_export.bfu_export_utils.ResetSocketsTransform(obj)
+        bfu_vertex_color.bfu_vertex_color_utils.clear_vertex_color_for_unreal_export(obj)
+        bfu_export.bfu_export_utils.reset_sockets_export_name(obj)
+        bfu_export.bfu_export_utils.reset_sockets_transform(obj)
 
-    bfu_utils.CleanDeleteObjects(bpy.context.selected_objects)
+    bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     for data in duplicate_data.data_to_remove:
         data.RemoveData()
 
     bfu_export.bfu_export_utils.ResetDuplicateNameAfterExport(duplicate_data)
 
     for obj in scene.objects:
-        bfu_utils.ClearAllBFUTempVars(obj)
+        bfu_utils.clear_all_bfu_temp_vars(obj)
     post_export_time_log.end_time_log()
     return True

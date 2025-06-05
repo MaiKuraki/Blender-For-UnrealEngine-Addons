@@ -17,22 +17,22 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-import fnmatch
-from .. import bpl
-from .. import bbpl
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_static_mesh
-from .. import bfu_export_logs
+from typing import Dict, Any, TYPE_CHECKING
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
-def get_nanite_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
-    asset_data = {}
+def get_nanite_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
     return asset_data
 
-def get_nanite_asset_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> dict:
-    asset_data = {}
+def get_nanite_asset_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
     if obj:
+
+        if TYPE_CHECKING:
+            class FakeObject(bpy.types.Object):
+                bfu_build_nanite_mode: str = "build_nanite_auto"
+            obj = FakeObject()
+
         if asset_type in [AssetType.STATIC_MESH, AssetType.SKELETAL_MESH]:
             if obj.bfu_build_nanite_mode == "build_nanite_true":
                 asset_data["build_nanite"] = True

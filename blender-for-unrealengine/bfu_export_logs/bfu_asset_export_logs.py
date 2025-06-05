@@ -15,7 +15,7 @@ class ExportedPackageLog():
     def start_package_export(self):
         self.export_start_time = time.perf_counter()
 
-    def end_package_export(self, success):
+    def end_package_export(self, success: bool):
         self.export_end_time = time.perf_counter()
         self.export_success = success
 
@@ -32,19 +32,19 @@ class ExportedAssetLog():
     def start_asset_export(self):
         self.export_start_time = time.perf_counter()
 
-    def end_asset_export(self, success):
+    def end_asset_export(self, success: bool):
         self.export_end_time = time.perf_counter()
         self.export_success = success
 
     def get_asset_export_time(self):
         return self.export_end_time - self.export_start_time
 
-    def StartPackageExport(self, package: AssetPackage):
+    def start_package_export(self, package: AssetPackage):
         new_package_log = ExportedPackageLog()
         new_package_log.start_package_export()
         self.package_logs[package.name] = new_package_log
 
-    def EndPackageExport(self, package: AssetPackage, success):
+    def end_package_export(self, package: AssetPackage, success: bool):
         if package.name in self.package_logs:
             self.package_logs[package.name].end_package_export(success)
         else:
@@ -72,11 +72,11 @@ classes = (
 
 def register():
     for cls in classes:
-        bpy.utils.register_class(cls)
+        bpy.utils.register_class(cls)  # type: ignore
 
 
 
 def unregister():
 
     for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+        bpy.utils.unregister_class(cls)  # type: ignore

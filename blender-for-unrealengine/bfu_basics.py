@@ -19,10 +19,12 @@
 import os
 import string
 from pathlib import Path
+from typing import Any, List, Dict, Optional
 import bpy
 import shutil
 import bmesh
 
+# @TODO @DEPRECATED: Use bfu_addon_pref.get_addon_prefs() instead
 def GetAddonPrefs():
     return bpy.context.preferences.addons[__package__].preferences
 
@@ -31,20 +33,20 @@ def RemoveFolderTree(folder):
     if dirpath.exists() and dirpath.is_dir():
         shutil.rmtree(dirpath, ignore_errors=True)
 
-def getRootBoneParent(bone):
-    if bone.parent is not None:
-        return getRootBoneParent(bone.parent)
+def get_root_bone_parent(bone: bpy.types.Bone) -> bpy.types.Bone:
+    if bone.parent is not None:  # type: ignore
+        return get_root_bone_parent(bone.parent)
     return bone
 
-def getFirstDeformBoneParent(bone):
-    if bone.parent is not None:
+def get_first_deform_bone_parent(bone: bpy.types.Bone) -> bpy.types.Bone:
+    if bone.parent is not None:  # type: ignore
         if bone.use_deform is True:
             return bone
         else:
-            return getFirstDeformBoneParent(bone.parent)
+            return get_first_deform_bone_parent(bone.parent)
     return bone
 
-def SetCollectionUse(collection):
+def SetCollectionUse(collection: bpy.types.Collection) -> None:
     # Set if collection is hide and selectable
     collection.hide_viewport = False
     collection.hide_select = False
@@ -79,7 +81,7 @@ def verifi_dirs(directory):
     return False
 
 
-def ValidDirName(directory):
+def valid_folder_name(directory: str) -> str:
     # https://gist.github.com/seanh/93666
     # Normalizes string, removes non-alpha characters
     # File name use
@@ -90,7 +92,7 @@ def ValidDirName(directory):
     return directory
 
 
-def ValidFilename(filename):
+def valid_file_name(filename: str) -> str:
     # https://gist.github.com/seanh/93666
     # Normalizes string, removes non-alpha characters
     # File name use

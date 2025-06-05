@@ -20,7 +20,9 @@ import bpy
 from enum import Enum
 import pathlib
 from typing import List, Optional, Tuple, Callable, Any, Dict
-from .. import bfu_basics
+from abc import ABC, abstractmethod
+from pathlib import Path
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class AssetDataSearchMode(Enum):
     FULL = "Full" # Search for all assets data.
@@ -130,14 +132,15 @@ class AssetType(Enum):
 
 
 class PackageFile:
-    def __init__(self, dirpath: str, filename: str, file_type: str = "Unknown"):
-        self.dirpath: str = dirpath
+    def __init__(self, dirpath: Path, filename: str, file_type: BFU_FileTypeEnum = BFU_FileTypeEnum.UNKNOWN):
+        self.dirpath: Path = dirpath
         self.filename: str = filename
-        self.file_type: str = file_type  # Type of the file, e.g., FBX, GLTF, etc.
+        self.file_type: BFU_FileTypeEnum = file_type  # Type of the file, e.g., FBX, GLTF, etc.
+        self.file_content_type: str = "" # Content type, LOD, MATERIAL, etc.
 
-    def get_full_path(self) -> str:
+    def get_full_path(self) -> Path:
         # Return the full path of the package file
-        return str(pathlib.Path(self.dirpath) / self.filename)
+        return pathlib.Path(self.dirpath) / self.filename
 
 class AssetPackage:
     def __init__(self, name: str, details: Optional[List[str]] = None):
@@ -150,7 +153,7 @@ class AssetPackage:
         self.export_function: Optional[Callable[..., Any]] = None
         self.frame_range: Optional[Tuple[float, float]] = None  # Frame range for animations, e.g., (start, end)
 
-    def set_file(self, dirpath: str, filename: str, file_type: str) -> PackageFile:
+    def set_file(self, dirpath: Path, filename: str, file_type: BFU_FileTypeEnum) -> PackageFile:
         # Set the package file with the given directory path and filename
         self.file = PackageFile(dirpath, filename, file_type)
         return self.file
@@ -180,10 +183,11 @@ class AdditionalAssetData:
         self.data: Dict[str, Any] = data
         self.file: Optional[PackageFile] = None
 
-    def set_file(self, dirpath: str, filename: str) -> PackageFile:
+    def set_file(self, dirpath: Path, filename: str) -> PackageFile:
         # Set the additional data file with the given directory path and filename
         self.file = PackageFile(dirpath, filename)
-        self.file.file_type = "AdditionalData"
+        self.file.file_type = BFU_FileTypeEnum.JSON
+        self.file.file_content_type = "ADDITIONAL_DATA"
         return self.file
 
 class AssetToExport:
@@ -196,8 +200,7 @@ class AssetToExport:
         self.name: str = asset_name
         self.asset_type: AssetType = asset_type
         self.import_name: str = ""
-        self.import_dirpath: str = ""
-        
+        self.import_dirpath: Path = Path()
 
         # Asset Pakages
         self.asset_pakages: List[AssetPackage] = []
@@ -219,52 +222,80 @@ class AssetToExport:
     def set_import_name(self, new_import_name: str) -> None:
         self.import_name = new_import_name
 
-    def set_import_dirpath(self, new_import_dirpath: str) -> None:
+    def set_import_dirpath(self, new_import_dirpath: Path) -> None:
         self.import_dirpath = new_import_dirpath
     
-class BFU_BaseAssetClass:
+class BFU_BaseAssetClass(ABC):
     def __init__(self):
         self.use_lods = False
         self.use_materials = False
         self.use_sockets = False
 
+    
+# ###################################################################
+# # Asset Root Class
+# ###################################################################
+
+    #@abstractmethod
     def support_asset_type(self, data: Any, details: Any = None) -> bool:
+        # Used to detect if the data is supported by this asset type.
         return False
 
-    def get_asset_type(self, data: Any) -> AssetType:
+    #@abstractmethod
+    def get_asset_type(self, data: Any, details: Any = None) -> AssetType:
         return AssetType.UNKNOWN
 
-    def get_asset_export_name(self, data: Any) -> str:
-        return ""
-
-    def get_asset_file_name(self, data: Any, details: Any = None, desired_name: str = "") -> str:
-        return ""
-
-    def get_asset_export_directory_path(self, data: Any, details: Any = None, extra_path: str = "", absolute: bool = True) -> str:
-        return ""
-
-    def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: str = "") -> str:
-        return ""
-
+    #@abstractmethod
     def can_export_asset_type(self) -> bool:
+        # Can export the asset for this asset type.
+        # Used with scene filters. Export Static Meshes ? Export Skeletal Meshes ? etc.
         return False
 
     def can_export_asset(self, data: Any) -> bool:
-        return False
+        # Can export this specific asset (data)
+        # By default True if the asset type can be exported.
+        if not self.can_export_asset_type(): # First type the type before checking the data.
+            return False
 
-    def get_asset_export_data(self, data: Any, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-        return []
+        return True
 
-    def get_asset_export_content(self, data: Any) -> List[bytes]:
-        return []
+    #@abstractmethod
+    def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
+        return Path()
 
-    def get_asset_additional_data(self, data: Any) -> Dict[str, Any]:
-        return {}
-    
-####################################################################
-# UI
-####################################################################
+# ###################################################################
+# # Asset Package Management
+# ###################################################################
+
+    #@abstractmethod
+    def get_package_file_type(self, data: Any, details: Any = None) -> BFU_FileTypeEnum:
+        return BFU_FileTypeEnum.UNKNOWN
+
+    #@abstractmethod
+    def get_package_file_name(self, data: Any, details: Any = None, desired_name: str = "") -> str:
+        return "<Unknown>"
+
+    #@abstractmethod
+    def get_package_export_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None, absolute: bool = True) -> Path:
+        return Path()
+
+# ###################################################################
+# # UI
+# ###################################################################
 
     def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, data: Any) -> bpy.types.UILayout:
         # If object supports export procedure, draw the UI for it
         return layout
+    
+# ####################################################################
+# # Asset Construction
+# ####################################################################
+
+    def get_asset_export_content(self, data: Any) -> List[Any]:
+        return []
+
+    def get_asset_export_data(self, data: Any, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
+        return []
+    
+    def get_asset_additional_data(self, data: Any) -> Dict[str, Any]:
+        return {}

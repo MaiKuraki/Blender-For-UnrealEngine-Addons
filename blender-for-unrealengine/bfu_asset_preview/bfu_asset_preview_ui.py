@@ -41,8 +41,8 @@ def draw_asset_preview_bar(
     asset_count = len(final_asset_list_to_export)
     asset_info_ui = layout.row().box().split(factor=0.75)
     asset_info_text = get_asset_title_text(asset_count)
-    asset_info_ui.label(text=asset_info_text)
-    asset_info_ui.operator("object.showasset", text="Show Assets")
+    asset_info_ui.label(text=asset_info_text)  # type: ignore
+    asset_info_ui.operator("object.showasset", text="Show Assets")  # type: ignore
 
 def draw(
     layout: bpy.types.UILayout, 
@@ -52,7 +52,7 @@ def draw(
 
     # Popup title
     popup_title = get_asset_title_text(len(final_asset_list_to_export))
-    layout.label(text=popup_title, icon='PACKAGE')
+    layout.label(text=popup_title, icon='PACKAGE')  # type: ignore
     scene = context.scene
 
     for asset in final_asset_list_to_export:
@@ -66,7 +66,7 @@ def draw(
         asset_info = asset_row.row()
         asset_info.alignment = 'LEFT'
         asset_name = f"- {asset.name} ({asset.asset_type.get_friendly_name()})"
-        asset_info.label(text=asset_name)
+        asset_info.label(text=asset_name)  # type: ignore
 
         # Asset Pakages
         packages_col = asset_row.column()
@@ -84,14 +84,14 @@ def draw(
 
             # package Title
             package_title = f"{package.name}"
-            package_content_details_row.label(text=package_title)
+            package_content_details_row.label(text=package_title)  # type: ignore
 
             # Package details
             if package.details:
                 package_details = f"({', '.join(package.details)})"
             else:
                 package_details = ""
-            package_content_details_row.label(text=f"{package_details}")
+            package_content_details_row.label(text=f"{package_details}")  # type: ignore
 
             # Package resource count
             if asset.asset_type.can_contain_objects():
@@ -99,7 +99,7 @@ def draw(
                 package_resource = ""
                 if len(package.objects) > 0:
                     package_resource = f"[{len(package.objects)} objects]"
-                package_content_details_row.label(text=package_resource)
+                package_content_details_row.label(text=package_resource)  # type: ignore
 
             # Package animation details
             if asset.asset_type.can_use_frame_range():
@@ -107,16 +107,16 @@ def draw(
                 if frame_range is not None:
                     if asset.asset_type == AssetType.ANIM_POSE:
                         pose_frame_text = f"Frame: {frame_range[0]}"
-                        package_content_details_row.label(text=pose_frame_text)
+                        package_content_details_row.label(text=pose_frame_text)  # type: ignore
                     else:
                         frame_range_text = f"Frames: {frame_range[0]}-{frame_range[1]}"
                         frame_count = frame_range[1] - frame_range[0] + 1
                         fps = scene.render.fps / scene.render.fps_base
                         animation_duration = frame_count / fps
                         animation_duration_text = bpl.utils.get_formatted_time_as_seconds(time_in_seconds=animation_duration, compact=True, min_decimals=2)
-                        package_content_details_row.label(text=f"{frame_range_text} ({frame_count}, {animation_duration_text}) FPS: {fps}")
+                        package_content_details_row.label(text=f"{frame_range_text} ({frame_count}, {animation_duration_text}) FPS: {fps}")  # type: ignore
                 else:
-                    package_content_details_row.label(text="No frame range set.")
+                    package_content_details_row.label(text="No frame range set.")  # type: ignore
 
 
 
@@ -125,17 +125,19 @@ def draw(
             package_content_file_row = package_content_col.row()
             package_content_file_row.alignment = "EXPAND"
             if package.file is not None:
-                package_content_file_row.label(icon='FILE', text=package.file.get_full_path())
+                str_path = str(package.file.get_full_path())
+                package_content_file_row.label(icon='FILE', text=str_path)  # type: ignore
             else:
-                package_content_file_row.label(icon='FILE', text="No file set for this package.")
+                package_content_file_row.label(icon='FILE', text="No file set for this package.")  # type: ignore
 
         if asset.additional_data is not None:
-            additional_data_row = package_content_col.row()
+            additional_data_row = package_content_col.row()  # type: ignore
             additional_data_row.alignment = "EXPAND"
             if asset.additional_data.file is not None:
-                additional_data_row.label(icon='FILE', text=asset.additional_data.file.get_full_path())
+                str_path = str(asset.additional_data.file.get_full_path())
+                additional_data_row.label(icon='FILE', text=str_path)  # type: ignore
             else:
-                additional_data_row.label(icon='FILE', text="No file set for additional data.")
+                additional_data_row.label(icon='FILE', text="No file set for additional data.")  # type: ignore
 
         '''
         if asset.obj is not None:

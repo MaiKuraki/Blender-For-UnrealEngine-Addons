@@ -18,16 +18,8 @@
 
 
 import bpy
-from typing import List
-from . import bfu_fbx_export
-from . import bfu_gltf_export
 from . import bfu_export_utils
-from .. import bbpl
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_vertex_color
 from .. import bfu_export_logs
-from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
 
 
@@ -39,20 +31,21 @@ def process_generic_export_from_asset(
     new_log = bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog(asset)
     new_log.start_asset_export()
     for package in asset.asset_pakages:
-        new_log.StartPackageExport(package)
+        new_log.start_package_export(package)
         # Check folder before export
-        bfu_export_utils.check_and_make_export_path(package.file.get_full_path())
+        if package.file:
+            bfu_export_utils.check_and_make_export_path(package.file.get_full_path())
 
         if package.export_function:
             result = package.export_function(op, package)
             if result:
-                new_log.EndPackageExport(package, True)
+                new_log.end_package_export(package, True)
             else:
-                new_log.EndPackageExport(package, False)
+                new_log.end_package_export(package, False)
         else:
-            new_log.EndPackageExport(package, False)
+            new_log.end_package_export(package, False)
 
-    if asset.additional_data:
+    if asset.additional_data and asset.additional_data.file:
         bfu_export_utils.export_additional_data(asset.additional_data.file.get_full_path(), asset.additional_data.data)
 
     new_log.end_asset_export(True)

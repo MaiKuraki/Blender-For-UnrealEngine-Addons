@@ -16,13 +16,23 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-from typing import List
-from .bfu_asset_manager_type import BFU_BaseAssetClass
+from enum import Enum
 
-registred_asset_class: List[BFU_BaseAssetClass] = []
+class BFU_FileTypeEnum(Enum):
+    # List of file types supported by the addon at export.
+    FBX = "FBX"
+    GLTF = "GLTF"
+    ALEMBIC = "Alembic"
+    JSON = "JSON"
+    UNKNOWN = "Unknown"
 
-def register_asset_class(asset: BFU_BaseAssetClass):
-    registred_asset_class.append(asset)
-
-def get_registred_asset_class():
-    return registred_asset_class
+    def get_file_extension(self) -> str:
+        if self == BFU_FileTypeEnum.FBX:
+            return ".fbx"
+        elif self == BFU_FileTypeEnum.GLTF:
+            return ".glb"
+        elif self == BFU_FileTypeEnum.ALEMBIC:
+            return ".abc"
+        elif self == BFU_FileTypeEnum.JSON:
+            return ".json"
+        return ".unknown"

@@ -50,8 +50,8 @@ def process_groom_simulation_export(
     addon_prefs = bfu_basics.GetAddonPrefs()
     
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
-    dirpath = asset_class.get_asset_export_directory_path(obj, "", True)
-    file_name = asset_class.get_asset_file_name(obj, obj.name, "")
+    dirpath = asset_class.get_package_export_directory_path(obj, "", True)
+    file_name = asset_class.get_package_file_name(obj, obj.name, "")
     asset_type = asset_class.get_asset_type(obj)
 
     my_asset_log = bfu_export_logs.bfu_asset_export_logs_utils.create_new_asset_log()
@@ -116,4 +116,4 @@ def export_single_groom_simulation(
 
 
     for obj in scene.objects:
-        bfu_utils.ClearAllBFUTempVars(obj)
+        bfu_utils.clear_all_bfu_temp_vars(obj)

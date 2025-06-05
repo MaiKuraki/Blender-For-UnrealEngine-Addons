@@ -39,7 +39,7 @@ class BFU_Groom(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
     def get_asset_type(self, obj: bpy.types.Object, details: any = None) -> AssetType:
         return AssetType.GROOM_SIMULATION
     
-    def get_asset_file_name(self, obj: bpy.types.Object, details: any = None, desired_name: str = "", without_extension: bool = False) -> str:
+    def get_package_file_name(self, obj: bpy.types.Object, details: any = None, desired_name: str = "", without_extension: bool = False) -> str:
         # Generate assset file name for skeletal mesh
         scene = bpy.context.scene
         if obj.bfu_use_custom_export_name:
@@ -49,7 +49,7 @@ class BFU_Groom(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
         if without_extension:
             fileType = ""
         else:
-            asset_type = self.get_asset_file_type(obj)
+            asset_type = self.get_package_file_type(obj)
             if asset_type == "FBX":
                 fileType = ".fbx"
             elif asset_type == "GLTF":
@@ -57,10 +57,10 @@ class BFU_Groom(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
 
 
         if desired_name:
-            return bfu_basics.ValidFilename(scene.bfu_groom_simulation_prefix_export_name+desired_name+fileType)
-        return bfu_basics.ValidFilename(scene.bfu_groom_simulation_prefix_export_name+obj.name+fileType)
+            return bfu_basics.valid_file_name(scene.bfu_groom_simulation_prefix_export_name+desired_name+fileType)
+        return bfu_basics.valid_file_name(scene.bfu_groom_simulation_prefix_export_name+obj.name+fileType)
 
-    def get_asset_export_directory_path(self, obj: bpy.types.Object, extra_path: str = "", absolute: bool = True) -> str:
+    def get_package_export_directory_path(self, obj: bpy.types.Object, extra_path: str = "", absolute: bool = True) -> str:
         scene = bpy.context.scene
 
         # Get root path

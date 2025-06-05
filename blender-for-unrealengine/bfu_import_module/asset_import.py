@@ -18,7 +18,7 @@
 
 
 import os.path
-from typing import List
+from typing import List, Dict, Any
 from . import bpl
 from . import import_module_utils
 from . import import_module_unreal_utils
@@ -73,9 +73,9 @@ def ImportTask(asset_data):
         FileType = "FBX"
 
     def found_additional_data():
-        files = asset_data["files"]
+        files: List[Dict[str, Any]] = asset_data["files"]
         for file in files:
-            if file["type"] == "AdditionalData":
+            if file["content_type"] == "ADDITIONAL_DATA":
                 return import_module_utils.JsonLoadFile(file["file_path"])
         return None
 

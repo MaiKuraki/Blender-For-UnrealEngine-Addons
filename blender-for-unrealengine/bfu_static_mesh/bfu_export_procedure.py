@@ -19,6 +19,7 @@
 import bpy
 from typing import List, Tuple, Dict
 from enum import Enum
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_StaticExportProcedure(Enum):
     CUSTOM_FBX_EXPORT = "custom_fbx_export"
@@ -60,16 +61,16 @@ def get_object_export_procedure(obj: bpy.types.Object) -> BFU_StaticExportProced
             return export_type
     return BFU_StaticExportProcedure.default()
 
-def get_obj_export_file_type(obj: bpy.types.Object) -> str:
+def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:
     return get_export_file_type(get_object_export_procedure(obj))
 
-def get_export_file_type(procedure: BFU_StaticExportProcedure) -> str: # Object.bfu_static_export_procedure
+def get_export_file_type(procedure: BFU_StaticExportProcedure) -> BFU_FileTypeEnum: # Object.bfu_static_export_procedure
     if procedure == BFU_StaticExportProcedure.CUSTOM_FBX_EXPORT:
-        return "FBX"
+        return BFU_FileTypeEnum.FBX
     elif procedure == BFU_StaticExportProcedure.STANDARD_FBX:
-        return "FBX"
+        return BFU_FileTypeEnum.FBX
     elif procedure == BFU_StaticExportProcedure.STANDARD_GLTF:
-        return "GLTF"
+        return BFU_FileTypeEnum.GLTF
 
 def get_obj_static_fbx_procedure_preset(obj: bpy.types.Object) -> Dict[str, bool | str]:
     return get_static_fbx_procedure_preset(get_object_export_procedure(obj))
