@@ -16,12 +16,8 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_base_object
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport, AssetType
 
 class BFU_Checker_BadStaticMeshExportedLikeSkeletalMesh(bfu_checker):
 
@@ -29,34 +25,20 @@ class BFU_Checker_BadStaticMeshExportedLikeSkeletalMesh(bfu_checker):
         super().__init__()
         self.check_name = "StaticMesh Exported Like SkeletalMesh"
 
-    # Prepare the list of mesh objects to check
-    def get_mesh_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        return [obj for obj in obj_to_check if obj.type == 'MESH']
-
     # Check if a mesh with an Armature modifier is incorrectly exported as Static Mesh
-    def run_check(self):
-        mesh_type_to_check = self.get_mesh_to_check()
-        for obj in mesh_type_to_check:
-            for modif in obj.modifiers:
-                if modif.type == "ARMATURE" and bfu_base_object.bfu_export_type.is_export_recursive(obj):
+    def run_asset_check(self, asset: AssetToExport):
+        if asset.asset_type != AssetType.STATIC_MESH:
+            return
+        
+        for obj in self.get_objects_to_check(asset):
+            for mod in obj.modifiers:
+                if mod.type == "ARMATURE":  # type: ignore
                     my_po_error = self.add_potential_error()
                     my_po_error.name = obj.name
                     my_po_error.type = 1
                     my_po_error.text = (
-                        f'In object "{obj.name}", the modifier "{modif.type}" '
-                        f'named "{modif.name}" will not be applied when exported '
+                        f'In object "{obj.name}", the modifier "{mod.type}" '
+                        f'named "{mod.name}" will not be applied when exported '
                         'with StaticMesh assets.\nNote: with armature, if you want to export '
                         'objects as skeletal mesh, you need to set only the armature as '
                         'export_recursive, not the child objects.'

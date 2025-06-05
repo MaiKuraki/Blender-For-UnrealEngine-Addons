@@ -19,7 +19,7 @@
 
 import bpy
 import fnmatch
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from . import bfu_cached_assets_types
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode, AssetType
@@ -38,12 +38,13 @@ MyCachedActions = bfu_cached_assets_types.CachedAction()
 
 class BFU_CollectionExportAssetCache(bpy.types.PropertyGroup):
 
-    def GetCollectionAssetList(self):
+    def get_collection_asset_list(self):
 
-        scene = self.id_data
-        collection_export_asset_list = []
+        scene: bpy.types.Scene = self.id_data
+        collection_export_asset_list: list[bpy.types.Collection] = []
 
         for col in scene.bfu_collection_asset_list:
+            col: bpy.types.Collection
             if col.use:
                 if col.name in bpy.data.collections:
                     collection = bpy.data.collections[col.name]
@@ -55,14 +56,14 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
 
     def UpdateActionCache(self):
         # Force update cache export auto action list
-        return self.GetCachedExportAutoActionList(True)
+        return self.get_cached_export_auto_action_list(True)
 
-    def GetCachedExportAutoActionList(self, force_update_cache=False):
+    def get_cached_export_auto_action_list(self, force_update_cache: bool = False)-> list[bpy.types.Action]:
         # This will cheak if the action contains
         # the same bones of the armature
-        
-        obj = self.id_data
-        actions = []
+
+        obj: bpy.types.Object = self.id_data
+        actions: list[bpy.types.Action] = []
 
         # Use the cache
         if force_update_cache:
@@ -74,24 +75,24 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
         else:
             MyCachedActions.clear()
 
-            objBoneNames = [bone.name for bone in obj.data.bones]
+            obj_bone_names: List[str] = [bone.name for bone in obj.data.bones]
             for action in bpy.data.actions:
                 if action.library is None:
-                    if bfu_basics.GetIfActionIsAssociated(action, objBoneNames):
+                    if bfu_basics.get_if_action_can_associate_bone(action, obj_bone_names):
                         actions.append(action)
             # Update the cache
             MyCachedActions.store_actions(obj, actions)
         return actions
    
-    def GetAnimationAssetList(self):
+    def get_animation_asset_list(self):
         # Returns only the actions that will be exported with the Armature
 
-        obj = self.id_data
+        obj: bpy.types.Object = self.id_data
 
         if obj.bfu_export_as_lod_mesh:
             return []
 
-        TargetActionToExport = []  # Action list
+        target_action_to_export: list[bpy.types.Action] = []  # Action list
         if obj.bfu_anim_action_export_enum == "dont_export":
             return []
 
@@ -105,17 +106,17 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
                 for targetAction in obj.bfu_action_asset_list:
                     if targetAction.use:
                         if targetAction.name == action.name:
-                            TargetActionToExport.append(action)
+                            target_action_to_export.append(action)
 
         elif obj.bfu_anim_action_export_enum == "export_specific_prefix":
             for action in bpy.data.actions:
                 if fnmatch.fnmatchcase(action.name, obj.bfu_prefix_name_to_export+"*"):
-                    TargetActionToExport.append(action)
+                    target_action_to_export.append(action)
 
         elif obj.bfu_anim_action_export_enum == "export_auto":
-            TargetActionToExport = self.GetCachedExportAutoActionList(obj)
+            target_action_to_export = self.get_cached_export_auto_action_list(obj)
 
-        return TargetActionToExport
+        return target_action_to_export
     
 
 
@@ -142,8 +143,8 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Search for collections
         collection_list: List[bpy.types.Collection] = []
         if export_filter == "default":
-            collection_asset_cache = GetCollectionAssetCache()
-            collection_export_asset_list = collection_asset_cache.GetCollectionAssetList()
+            collection_asset_cache = get_collectiona_asset_cache()
+            collection_export_asset_list = collection_asset_cache.get_collection_asset_list()
             for col_asset in collection_export_asset_list:
                 if col_asset.name in bpy.data.collections:
                     collection = bpy.data.collections[col_asset.name]
@@ -241,7 +242,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             if obj.bfu_anim_nla_use:
                 TargetAssetToExport.append(AssetToExport(obj, obj.animation_data, AssetType.ANIM_NLA))
 
-        animation_asset_cache = GetAnimationAssetCache(obj)
+        animation_asset_cache = get_animation_asset_cache(obj)
         animation_to_export = animation_asset_cache.GetAnimationAssetList()
         for action in animation_to_export:
             if scene.bfu_export_selection_filter == "only_object_action":
@@ -265,14 +266,14 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
 
 
-def GetCollectionAssetCache() -> BFU_CollectionExportAssetCache:
+def get_collectiona_asset_cache() -> BFU_CollectionExportAssetCache:
     scene = bpy.context.scene
     return scene.collection_asset_cache
 
-def GetAnimationAssetCache(obj) -> BFU_AnimationExportAssetCache:
+def get_animation_asset_cache(obj: bpy.types.Object) -> BFU_AnimationExportAssetCache:
     return obj.animation_asset_cache
 
-def GetfinalAssetCache() -> BFU_FinalExportAssetCache:
+def get_final_asset_cache() -> BFU_FinalExportAssetCache:
     scene = bpy.context.scene
     return scene.final_asset_cache
 

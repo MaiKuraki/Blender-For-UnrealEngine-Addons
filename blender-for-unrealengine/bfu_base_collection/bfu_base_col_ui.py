@@ -57,8 +57,8 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
                     bfu_export_procedure.draw_col_export_procedure(panel, col)
 
             collectionPropertyInfo = panel.row().box().split(factor=0.75)
-            collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetCollectionAssetCache()
-            collection_export_asset_list = collection_asset_cache.GetCollectionAssetList()
+            collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_collectiona_asset_cache()
+            collection_export_asset_list = collection_asset_cache.get_collection_asset_list()
             collectionNum = len(collection_export_asset_list)
             collectionFeedback = (
                 str(collectionNum) +

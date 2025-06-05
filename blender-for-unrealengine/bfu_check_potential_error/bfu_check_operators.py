@@ -18,10 +18,10 @@
 
 
 import bpy
-from . import bfu_check_list
-from .. import bfu_cached_assets
-from .. import bfu_check_potential_error
+from typing import Set
 from .. import bbpl
+from . import bfu_check_list
+from . import bfu_check_utils
 
 class BFU_OT_CheckPotentialErrorPopup(bpy.types.Operator):
     bl_label = "Check Potential Issues"
@@ -29,8 +29,8 @@ class BFU_OT_CheckPotentialErrorPopup(bpy.types.Operator):
     bl_description = "Check potential issues on assets to export."
     text = "none"
 
-    def execute(self, context):
-        fix_info = bfu_check_potential_error.bfu_check_utils.process_general_fix()
+    def execute(self, context: bpy.types.Context | None):
+        fix_info = bfu_check_utils.process_general_fix()
         invoke_info = ""
         for x, fix_info_key in enumerate(fix_info):
             fix_info_data = fix_info[fix_info_key]
@@ -39,23 +39,23 @@ class BFU_OT_CheckPotentialErrorPopup(bpy.types.Operator):
                 invoke_info += "\n"
 
         bfu_check_list.run_all_check()
-        bpy.ops.object.openpotentialerror("INVOKE_DEFAULT", invoke_info=invoke_info)
+        bpy.ops.object.openpotentialerror("INVOKE_DEFAULT", invoke_info=invoke_info)  # type: ignore
         return {'FINISHED'}
 
 class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
     bl_label = "Open potential errors"
     bl_idname = "object.openpotentialerror"
     bl_description = "Open potential errors"
-    invoke_info: bpy.props.StringProperty(default="...")
+    invoke_info: bpy.props.StringProperty(default="...")  # type: ignore
 
     class BFU_OT_FixitTarget(bpy.types.Operator):
         bl_label = "Fix it !"
         bl_idname = "object.fixit_objet"
         bl_description = "Correct target error"
-        errorIndex: bpy.props.IntProperty(default=-1)
+        error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context):
-            result = bfu_check_potential_error.bfu_check_utils.try_to_correct_potential_issues(self.errorIndex)
+        def execute(self, context: bpy.types.Context | None):
+            result = bfu_check_utils.try_to_correct_potential_issues(self.error_index)  # type: ignore
             self.report({'INFO'}, result)
             return {'FINISHED'}
 
@@ -63,129 +63,114 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_label = "Select(Object)"
         bl_idname = "object.select_error_objet"
         bl_description = "Select target Object."
-        errorIndex: bpy.props.IntProperty(default=-1)
+        error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context):
-            bfu_check_potential_error.bfu_check_utils.select_potential_issue_object(self.errorIndex)
+        def execute(self, context: bpy.types.Context | None):
+            bfu_check_utils.select_potential_issue_object(self.error_index)  # type: ignore
             return {'FINISHED'}
 
     class BFU_OT_SelectVertexButton(bpy.types.Operator):
         bl_label = "Select(Vertex)"
         bl_idname = "object.select_error_vertex"
         bl_description = "Select target Vertex."
-        errorIndex: bpy.props.IntProperty(default=-1)
+        error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context):
-            bfu_check_potential_error.bfu_check_utils.select_potential_issue_vertices(self.errorIndex)
+        def execute(self, context: bpy.types.Context | None):
+            bfu_check_utils.select_potential_issue_vertices(self.error_index)  # type: ignore
             return {'FINISHED'}
 
     class BFU_OT_SelectPoseBoneButton(bpy.types.Operator):
         bl_label = "Select(PoseBone)"
         bl_idname = "object.select_error_posebone"
         bl_description = "Select target Pose Bone."
-        errorIndex: bpy.props.IntProperty(default=-1)
+        error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context):
-            bfu_check_potential_error.bfu_check_utils.select_potential_issue_pose_bone(self.errorIndex)
+        def execute(self, context: bpy.types.Context | None):
+            bfu_check_utils.select_potential_issue_pose_bone(self.error_index)  # type: ignore
             return {'FINISHED'}
 
-    class BFU_OT_OpenPotentialErrorDocs(bpy.types.Operator):
-        bl_label = "Open docs"
-        bl_idname = "object.open_potential_error_docs"
-        bl_description = "Open potential error docs."
-        octicon: bpy.props.StringProperty(default="")
 
-        def execute(self, context):
-            bbpl
-            os.system(
-                "start \"\" " +
-                "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/How-avoid-potential-errors" +
-                "#"+self.octicon)
-            return {'FINISHED'}
-
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context | None):
         return {'FINISHED'}
 
-    def invoke(self, context, event: bpy.types.Event):
+    def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event):
         wm = context.window_manager
         return wm.invoke_popup(self, width=1020)
 
-    def check(self, context):
+    def check(self, context: bpy.types.Context | None):
         return True
 
-    def draw(self, context: bpy.types.Context):
+    def draw(self, context: bpy.types.Context | None):
 
         layout = self.layout
-        if len(bpy.context.scene.bfu_export_potential_errors) > 0:
+
+        potential_errors = bfu_check_utils.get_potential_errors()
+        if len(potential_errors) > 0:
             popup_title = (
-                str(len(bpy.context.scene.bfu_export_potential_errors)) +
+                str(len(potential_errors)) +
                 " potential error(s) found!")
         else:
             popup_title = "No potential error to correct!"
 
 
         layout.label(text=popup_title)
-        invoke_info_lines = self.invoke_info.split("\n")
+        invoke_info_lines: list[str] = self.invoke_info.split("\n")
         for invoke_info_line in invoke_info_lines:
             layout.label(text="- "+invoke_info_line)
         
         layout.separator()
         row = layout.row()
         col = row.column()
-        for x in range(len(bpy.context.scene.bfu_export_potential_errors)):
-            error = bpy.context.scene.bfu_export_potential_errors[x]
-
+        for x, error in enumerate(potential_errors):
             myLine = col.box().split(factor=0.85)
             # ----
             if error.type == 0:
-                msgType = 'INFO'
-                msgIcon = 'INFO'
+                msg_type: str = 'INFO'
+                msg_icon: str = 'INFO'
             elif error.type == 1:
-                msgType = 'WARNING'
-                msgIcon = 'ERROR'
+                msg_type: str = 'WARNING'
+                msg_icon: str = 'ERROR'
             elif error.type == 2:
-                msgType = 'ERROR'
-                msgIcon = 'CANCEL'
+                msg_type: str = 'ERROR'
+                msg_icon: str = 'CANCEL'
+            else:
+                msg_type: str = 'UNKNOWN'
+                msg_icon: str = 'QUESTION'
             # ----
 
             # Text
             TextLine = myLine.column()
-            errorFullMsg = msgType+": "+error.text
-            splitedText = errorFullMsg.split("\n")
+            error_full_msg: str = msg_type + ": " + error.text
+            splited_texts: list[str] = error_full_msg.split("\n")
 
-            for text, Line in enumerate(splitedText):
+            for text, Line in enumerate(splited_texts):
                 if (text < 1):
 
-                    if (error.docsOcticon != "None"):  # Doc button
-                        
-                        url = "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/How-avoid-potential-errors" + "#" + error.docsOcticon
+                    if (error.docs_octicon != "None"):  # Doc button
+
+                        url = "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/How-avoid-potential-errors" + "#" + error.docs_octicon
                         bbpl.blender_layout.layout_doc_button.add_left_doc_page_operator(TextLine, text="More Info", url=url)
-                    
-                    FisrtTextLine = TextLine.row()
-                    FisrtTextLine.label(text=Line, icon=msgIcon)
+
+                    first_text_line = TextLine.row()
+                    first_text_line.label(text=Line, icon=msg_icon)
                 else:
                     TextLine.label(text=Line)
 
             # Select and fix button
             ButtonLine = myLine.column()
-            if (error.correctRef != "None"):
-                props = ButtonLine.operator(
-                    "object.fixit_objet",
-                    text=error.correctlabel)
-                props.errorIndex = x
+            if (error.correct_ref != "None"):
+                props = ButtonLine.operator("object.fixit_objet",text=error.correct_label)
+                props.error_index = x
             if (error.object is not None):
-                if (error.selectObjectButton):
-                    props = ButtonLine.operator(
-                        "object.select_error_objet")
-                    props.errorIndex = x
-                if (error.selectVertexButton):
-                    props = ButtonLine.operator(
-                        "object.select_error_vertex")
-                    props.errorIndex = x
-                if (error.selectPoseBoneButton):
-                    props = ButtonLine.operator(
-                        "object.select_error_posebone")
-                    props.errorIndex = x
+                if (error.select_object_button):
+                    props = ButtonLine.operator("object.select_error_objet")
+                    props.error_index = x
+                if (error.select_vertex_button):
+                    props = ButtonLine.operator("object.select_error_vertex")
+                    props.error_index = x
+                if (error.select_pose_bone_button):
+                    props = ButtonLine.operator("object.select_error_posebone")
+                    props.error_index = x
 
 
 
@@ -200,7 +185,6 @@ classes = (
     BFU_OT_OpenPotentialErrorPopup.BFU_OT_SelectObjectButton,
     BFU_OT_OpenPotentialErrorPopup.BFU_OT_SelectVertexButton,
     BFU_OT_OpenPotentialErrorPopup.BFU_OT_SelectPoseBoneButton,
-    BFU_OT_OpenPotentialErrorPopup.BFU_OT_OpenPotentialErrorDocs,
 )
 
 

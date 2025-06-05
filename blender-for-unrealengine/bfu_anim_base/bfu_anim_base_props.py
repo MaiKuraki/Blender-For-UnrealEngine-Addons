@@ -46,9 +46,9 @@ class BFU_OT_ShowActionToExport(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.object
-        animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
+        animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_animation_asset_cache(obj)
         animation_asset_cache.UpdateActionCache()
-        animation_to_export = animation_asset_cache.GetAnimationAssetList()
+        animation_to_export = animation_asset_cache.get_animation_asset_list()
 
         popup_title = "Action list"
         if len(animation_to_export) > 0:

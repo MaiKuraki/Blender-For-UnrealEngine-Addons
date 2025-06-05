@@ -166,7 +166,6 @@ class BFU_StaticMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClas
 
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode)-> List[AssetToExport]:
         
-
         if bpy.context is None:
             return []
         scene = bpy.context.scene
@@ -181,17 +180,15 @@ class BFU_StaticMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClas
             class FakeObject(bpy.types.Object):
                 bfu_export_as_lod_mesh: bool = False
             data = FakeObject()
-
         asset_list: List[AssetToExport] = []
         if scene.bfu_use_static_export:
             if data.bfu_export_as_lod_mesh == False:
-                asset = AssetToExport(data.name, AssetType.STATIC_MESH)
+                asset = AssetToExport(self, data.name, AssetType.STATIC_MESH)
                 asset_list.append(asset)
 
                 import_dirpath = self.get_asset_import_directory_path(data)
                 asset.set_import_name(self.get_package_file_name(data, without_extension=True))
                 asset.set_import_dirpath(import_dirpath)
-
                 if search_mode.search_packages():
                     pak = asset.add_asset_package(data.name, ["Lod0"])
 

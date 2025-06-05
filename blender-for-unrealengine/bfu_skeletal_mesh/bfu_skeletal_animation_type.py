@@ -153,11 +153,11 @@ class BFU_SkeletalAnimation(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAs
             asset_name = f"{obj.name}_{action.name}"
             if bfu_utils.action_is_one_frame(action):
                 # Action
-                asset = AssetToExport(asset_name, AssetType.ANIM_POSE)
+                asset = AssetToExport(self, asset_name, AssetType.ANIM_POSE)
                 asset_list.append(asset)
             else:
                 # Pose
-                asset = AssetToExport(asset_name, AssetType.ANIM_ACTION)
+                asset = AssetToExport(self, asset_name, AssetType.ANIM_ACTION)
                 asset_list.append(asset)
 
             import_dirpath = self.get_asset_import_directory_path(obj)

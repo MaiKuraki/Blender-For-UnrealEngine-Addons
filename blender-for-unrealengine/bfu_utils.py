@@ -475,9 +475,12 @@ class ModifiersDataScale():
         return modifiers
 
 
-def GetAllCollisionObj():
+def get_all_collision_obj() -> List[bpy.types.Object]:
     # Get any object that can be understood
     # as a collision or a socket by unreal
+
+    if bpy.context is None:
+        return []
 
     colObjs = [obj for obj in bpy.context.scene.objects if (
         fnmatch.fnmatchcase(obj.name, "UBX*") or
@@ -486,7 +489,21 @@ def GetAllCollisionObj():
         fnmatch.fnmatchcase(obj.name, "UCX*"))]
     return colObjs
 
-def EvaluateCameraPosition(camera):
+def check_is_collision(target: bpy.types.Object) -> bool:
+    # Return true if obj is a collision
+
+    if bpy.context is None:
+        return False
+
+    for obj in bpy.context.scene.objects:
+        if (fnmatch.fnmatchcase(obj.name, "UBX*") or
+            fnmatch.fnmatchcase(obj.name, "UCP*") or
+            fnmatch.fnmatchcase(obj.name, "USP*") or
+            fnmatch.fnmatchcase(obj.name, "UCX*")):
+            return True
+    return False
+
+def evaluate_camera_position(camera):
     # Get Transfrom
     loc = camera.matrix_world.to_translation()
     r = camera.matrix_world.to_euler("XYZ")
@@ -494,7 +511,7 @@ def EvaluateCameraPosition(camera):
     array_transform = [loc, r, s]
     return array_transform
 
-def EvaluateCameraPositionForUnreal(camera, previous_euler=mathutils.Euler()):
+def evaluate_camera_position_for_unreal(camera, previous_euler=mathutils.Euler()):
     # Get Transfrom
     unit_scale = get_scene_unit_scale()
     display_size = camera.data.display_size
@@ -610,12 +627,7 @@ def GetIsAnimation(animation_type):
 
 
 
-def CheckIsCollision(target):
-    # Return true if obj is a collision
-    for obj in GetAllCollisionObj():
-        if obj == target:
-            return True
-    return False
+
 
 
 def SelectCollectionObjects(collection):
@@ -645,6 +657,7 @@ def draw_proxy_propertys(obj):
         return False
     return True
 
+# @TODO: @Deprecated
 def GetExportAsProxy(obj):
     if get_obj_proxy_child(obj):
         return True
@@ -654,7 +667,7 @@ def GetExportAsProxy(obj):
             return True
     return False
 
-
+# @TODO: @Deprecated
 def GetExportProxyChild(obj: bpy.types.Object) -> bpy.types.Object:
 
     if get_obj_proxy_child(obj):

@@ -16,13 +16,9 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
 from ...bfu_check_types import bfu_checker
 from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_skeletal_mesh
-from .... import bfu_base_object
+from ....bfu_assets_manager.bfu_asset_manager_type import AssetToExport
 
 class BFU_Checker_ArmatureChildWithBoneParent(bfu_checker):
 
@@ -30,28 +26,14 @@ class BFU_Checker_ArmatureChildWithBoneParent(bfu_checker):
         super().__init__()
         self.check_name = "Armature Child With Bone Parent"
 
-    # Prepare the list of skeletal armatures to check
-    def get_armatures_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        return [obj for obj in obj_to_check if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)]
-
     # Check if a mesh child is parented to a bone, which will cause import issues
-    def run_check(self):
-        for obj in self.get_armatures_to_check():
+    def run_asset_check(self, asset: AssetToExport):
+        if not asset.asset_type.is_skeletal():
+            return
+        for obj in self.get_armatures_to_check(asset):
             childs = bfu_utils.GetExportDesiredChilds(obj)
             for child in childs:
-                if child.type == "MESH" and child.parent_type == 'BONE':
+                if child.type == "MESH" and child.parent_type == 'BONE':  # type: ignore
                     my_po_error = self.add_potential_error()
                     my_po_error.name = child.name
                     my_po_error.type = 2
@@ -60,4 +42,4 @@ class BFU_Checker_ArmatureChildWithBoneParent(bfu_checker):
                         '\nIf you use Parent Bone to parent your mesh to your armature, the import will fail.'
                     )
                     my_po_error.object = child
-                    my_po_error.docsOcticon = 'armature-child-with-bone-parent'
+                    my_po_error.docs_octicon = 'armature-child-with-bone-parent'

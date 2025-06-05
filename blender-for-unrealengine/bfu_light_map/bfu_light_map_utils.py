@@ -53,7 +53,7 @@ def GetExportRealSurfaceArea(obj):
 
     for selectObj in bpy.context.selected_objects:
         # Remove collision box
-        if bfu_utils.CheckIsCollision(selectObj):
+        if bfu_utils.check_is_collision(selectObj):
             bfu_utils.clean_delete_objects([selectObj])
 
     if bpy.context.view_layer.objects.active is None:
@@ -65,7 +65,7 @@ def GetExportRealSurfaceArea(obj):
 
     bfu_utils.CleanJoinSelect()
     active = bpy.context.view_layer.objects.active
-    area = bfu_basics.GetSurfaceArea(active)
+    area = bfu_basics.get_surface_area(active)
     bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     SavedSelect.reset_select()
     bbpl.scene_utils.move_to_local_view()

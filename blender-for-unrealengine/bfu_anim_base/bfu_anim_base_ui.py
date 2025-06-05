@@ -75,8 +75,8 @@ def draw_animation_tab_footer_ui(layout: bpy.types.UILayout, context: bpy.types.
         ArmaturePropertyInfo = (
             layout.row().box().split(factor=0.75)
             )
-        animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
-        animation_to_export = animation_asset_cache.GetAnimationAssetList()
+        animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_animation_asset_cache(obj)
+        animation_to_export = animation_asset_cache.get_animation_asset_list()
         ActionNum = len(animation_to_export)
         if obj.bfu_anim_nla_use:
             ActionNum += 1

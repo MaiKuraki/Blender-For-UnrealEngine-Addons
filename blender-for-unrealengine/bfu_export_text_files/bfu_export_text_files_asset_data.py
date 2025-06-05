@@ -63,7 +63,7 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
 
     asset_type = unreal_exported_asset.exported_asset.asset_type
     files: List[Dict[str, Any]] = []
-    for pakages in unreal_exported_asset.exported_asset.asset_pakages:
+    for pakages in unreal_exported_asset.exported_asset.asset_packages:
         file = pakages.file
         if file:
             file_data: Dict[str, Any] = {}
@@ -83,7 +83,7 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
     asset_data["files"] = files
 
     if asset_type in [AssetType.SKELETAL_MESH, AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
-        main_armature = unreal_exported_asset.exported_asset.asset_pakages[0].objects[0]
+        main_armature = unreal_exported_asset.exported_asset.asset_packages[0].objects[0]
         # Skeleton
         asset_data["target_skeleton_search_ref"] = bfu_assets_references.bfu_asset_ref_utils.get_skeleton_search_ref(main_armature)
         # Skeletal Mesh
@@ -95,7 +95,7 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
         
 
     if asset_type in [AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
-        frame_range = unreal_exported_asset.exported_asset.asset_pakages[0].frame_range
+        frame_range = unreal_exported_asset.exported_asset.asset_packages[0].frame_range
         if frame_range:
             asset_data["animation_start_frame"] = frame_range[0]
             asset_data["animation_end_frame"] = frame_range[1]
@@ -107,7 +107,7 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
         #main_collection = unreal_exported_asset.exported_asset.asset_pakages[0].collection
         #main_obj_data = main_collection
     else:
-        main_object = unreal_exported_asset.exported_asset.asset_pakages[0].objects[0]
+        main_object = unreal_exported_asset.exported_asset.asset_packages[0].objects[0]
         if main_object:
             if asset_type in [AssetType.STATIC_MESH]:
                 asset_data["auto_generate_collision"] = main_object.bfu_auto_generate_collision

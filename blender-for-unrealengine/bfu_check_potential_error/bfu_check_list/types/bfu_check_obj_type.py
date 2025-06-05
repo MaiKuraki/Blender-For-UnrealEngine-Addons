@@ -16,10 +16,9 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
+
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_ObjType(bfu_checker):
 
@@ -27,30 +26,20 @@ class BFU_Checker_ObjType(bfu_checker):
         super().__init__()
         self.check_name = "Object Type"
 
-    def run_check(self):
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
+        self.non_recommended_types = {"SURFACE", "META", "FONT"}
 
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        # Check if objects use a non-recommended type
-        non_recommended_types = {"SURFACE", "META", "FONT"}
-        for obj in obj_to_check:
-            if obj.type in non_recommended_types:
-                my_po_error = self.add_potential_error()
-                my_po_error.name = obj.name
-                my_po_error.type = 1
-                my_po_error.text = (
-                    f'Object "{obj.name}" is a {obj.type}. The object of the type '
-                    'SURFACE, META, and FONT is not recommended.'
-                )
-                my_po_error.object = obj
-                my_po_error.correctRef = "ConvertToMesh"
-                my_po_error.correctlabel = 'Convert to mesh'
+    def run_asset_check(self, asset: AssetToExport):
+        for package in asset.asset_packages:
+            for obj in package.objects:
+                obj_type = obj.type  # type: ignore
+                if obj_type in self.non_recommended_types:
+                    my_po_error = self.add_potential_error()
+                    my_po_error.name = obj.name
+                    my_po_error.type = 1
+                    my_po_error.text = (
+                        f'Object "{obj.name}" is a {obj_type}. The object of the type '
+                        'SURFACE, META, and FONT is not recommended.'
+                    )
+                    my_po_error.object = obj
+                    my_po_error.correct_ref = "ConvertToMesh"
+                    my_po_error.correct_label = 'Convert to mesh'

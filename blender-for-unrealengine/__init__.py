@@ -39,6 +39,7 @@ try:
     from . import bbpl
     from . import bfu_simple_file_type_enum
     from . import bfu_assets_manager
+    from . import bfu_check_potential_error
     from . import bfu_asset_preview
     from . import bfu_propertys
     from . import bfu_base_object
@@ -73,7 +74,6 @@ try:
     from . import bfu_addon_pref
     from . import bfu_export_logs
     from . import bfu_ui
-    from . import bfu_check_potential_error
     from . import bfu_export_text_files
     from . import bfu_basics
     from . import bfu_utils
@@ -92,6 +92,8 @@ try:
         importlib.reload(bfu_simple_file_type_enum)
     if "bfu_assets_manager" in locals():
         importlib.reload(bfu_assets_manager)
+    if "bfu_check_potential_error" in locals():
+        importlib.reload(bfu_check_potential_error)
     if "bfu_asset_preview" in locals():
         importlib.reload(bfu_asset_preview)
     if "bfu_propertys" in locals():
@@ -160,8 +162,6 @@ try:
         importlib.reload(bfu_export_logs)
     if "bfu_ui" in locals():
         importlib.reload(bfu_ui)
-    if "bfu_check_potential_error" in locals():
-        importlib.reload(bfu_check_potential_error)
     if "bfu_export_text_files" in locals():
         importlib.reload(bfu_export_text_files)
     if "bfu_basics" in locals():
@@ -191,6 +191,7 @@ try:
 
         bbpl.register()
         bfu_assets_manager.register()
+        bfu_check_potential_error.register()
         bfu_asset_preview.register()
         bfu_propertys.register()
         bfu_base_object.register()
@@ -225,7 +226,6 @@ try:
         bfu_addon_pref.register()
         bfu_export_logs.register()
         bfu_ui.register()
-        bfu_check_potential_error.register()
         bfu_backward_compatibility.register()
         bfu_cached_assets.register()
         
@@ -236,7 +236,6 @@ try:
 
         bfu_cached_assets.unregister()
         bfu_backward_compatibility.unregister()
-        bfu_check_potential_error.unregister()
         bfu_ui.unregister()
         bfu_export_logs.unregister()
         bfu_addon_pref.unregister()
@@ -271,6 +270,7 @@ try:
         bfu_base_object.unregister()
         bfu_propertys.unregister()
         bfu_asset_preview.unregister()
+        bfu_check_potential_error.unregister()
         bfu_assets_manager.unregister()
         bbpl.unregister()
 

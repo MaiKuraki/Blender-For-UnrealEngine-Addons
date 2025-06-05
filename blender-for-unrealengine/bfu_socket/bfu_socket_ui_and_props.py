@@ -63,7 +63,7 @@ class BFU_OT_CopySkeletalSocketButton(bpy.types.Operator):
         obj = context.object
         if obj:
             if obj.type == "ARMATURE":
-                bfu_basics.setWindowsClipboard(bfu_socket_utils.GetImportSkeletalMeshSocketScriptCommand(obj))
+                bfu_basics.set_windows_clipboard(bfu_socket_utils.GetImportSkeletalMeshSocketScriptCommand(obj))
                 self.report(
                     {'INFO'},
                     "Skeletal sockets copied. Paste in Unreal Engine Skeletal Mesh assets for import sockets. (Ctrl+V)")

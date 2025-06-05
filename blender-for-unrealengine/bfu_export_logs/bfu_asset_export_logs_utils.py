@@ -62,7 +62,7 @@ def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs
         export_log += f"ASSET [{asset_type.get_friendly_name()}] '{asset_name}' EXPORTED IN {export_time}\r\n"
 
         # Log asset packages
-        for package in asset.exported_asset.asset_pakages:
+        for package in asset.exported_asset.asset_packages:
             if asset_type in [AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
                 primary_info = f"Animation ({asset_type.get_friendly_name()})"
             elif asset_type == asset_type.COLLECTION_AS_STATIC_MESH:

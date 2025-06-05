@@ -189,9 +189,9 @@ class BFU_CameraTracks():
 
     def evaluate_camera_transform(self, camera: bpy.types.Object, frame: int, target_use: str):
         if target_use == "Blender":
-            camera_transform = bfu_utils.EvaluateCameraPosition(camera)
+            camera_transform = bfu_utils.evaluate_camera_position(camera)
         elif target_use == "UnrealEngine":
-            camera_transform = bfu_utils.EvaluateCameraPositionForUnreal(camera)
+            camera_transform = bfu_utils.evaluate_camera_position_for_unreal(camera)
         array_location = camera_transform[0]
         array_rotation = camera_transform[1]
         array_scale = camera_transform[2]

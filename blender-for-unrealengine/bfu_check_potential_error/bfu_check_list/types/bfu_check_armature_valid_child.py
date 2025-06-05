@@ -16,12 +16,9 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
+
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_skeletal_mesh
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_ArmatureValidChild(bfu_checker):
 
@@ -29,38 +26,19 @@ class BFU_Checker_ArmatureValidChild(bfu_checker):
         super().__init__()
         self.check_name = "Armature Valid Child"
 
-    # Prepare the list of skeletal armatures to check
-    def get_armatures_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        return [obj for obj in obj_to_check if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)]
 
     # Check that the skeleton has at least one valid mesh child to export
-    def run_check(self):
-        for obj in self.get_armatures_to_check():
-            export_as_proxy = bfu_utils.GetExportAsProxy(obj)
-            childs = bfu_utils.GetExportDesiredChilds(obj)
-            valid_child = sum(1 for child in childs if child.type == "MESH")
+    def run_asset_check(self, asset: AssetToExport):
+        if not asset.asset_type.is_skeletal():
+            return
 
-            if export_as_proxy and bfu_utils.GetExportProxyChild(obj) is not None:
-                valid_child += 1
-
-            if valid_child < 1:
-                my_po_error = self.add_potential_error()
-                my_po_error.name = obj.name
-                my_po_error.type = 2
-                my_po_error.text = (
-                    f'Object "{obj.name}" is an Armature and does not have '
-                    'any valid children.'
-                )
-                my_po_error.object = obj
+        if len(self.get_meshes_to_check(asset)) == 0:
+            main_object = asset.asset_packages[0].objects[0]
+            my_po_error = self.add_potential_error()
+            my_po_error.name = asset.name
+            my_po_error.type = 2
+            my_po_error.text = (
+                f'In asset named "{asset.name}", the Armature "{main_object.name}" does not have '
+                'any valid children.'
+            )
+            my_po_error.object = main_object

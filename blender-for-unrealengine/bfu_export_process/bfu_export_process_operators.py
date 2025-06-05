@@ -97,7 +97,7 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
 
             return True
 
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
+        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
         final_asset_list_to_export = final_asset_cache.get_final_asset_list(search_mode=AssetDataSearchMode.FULL)
 
         if not is_ready_for_export(final_asset_list_to_export):
@@ -131,7 +131,7 @@ class BFU_OT_CopyImportAssetScriptCommand(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        bfu_basics.setWindowsClipboard(bfu_utils.GetImportAssetScriptCommand())
+        bfu_basics.set_windows_clipboard(bfu_utils.GetImportAssetScriptCommand())
         self.report(
             {'INFO'},
             "command for "+scene.bfu_file_import_asset_script_name +
@@ -145,7 +145,7 @@ class BFU_OT_CopyImportSequencerScriptCommand(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        bfu_basics.setWindowsClipboard(bfu_utils.GetImportSequencerScriptCommand())
+        bfu_basics.set_windows_clipboard(bfu_utils.GetImportSequencerScriptCommand())
         self.report(
             {'INFO'},
             "command for "+scene.bfu_file_import_sequencer_script_name +

@@ -33,7 +33,7 @@ class BFU_OT_ShowAssetToExport(bpy.types.Operator):
         obj = context.object
         if obj:
             if obj.type == "ARMATURE":
-                animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
+                animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_animation_asset_cache(obj)
                 animation_asset_cache.UpdateActionCache()
                 
 
@@ -55,7 +55,7 @@ class BFU_OT_OpenShowAssetToExport(bpy.types.Operator):
     
     def draw(self, context: bpy.types.Context):
         layout = self.layout
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
+        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
         final_asset_list_to_export = final_asset_cache.get_final_asset_list(search_mode=AssetDataSearchMode.FULL)
         bfu_asset_preview_ui.draw(layout, context, final_asset_list_to_export)
 

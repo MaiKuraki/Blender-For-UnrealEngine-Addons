@@ -16,12 +16,8 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_base_object
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_ArmatureModData(bfu_checker):
 
@@ -29,29 +25,16 @@ class BFU_Checker_ArmatureModData(bfu_checker):
         super().__init__()
         self.check_name = "Armature Modifier Data"
 
-    # Prepare list of mesh objects to check
-    def get_mesh_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        return [obj for obj in obj_to_check if obj.type == 'MESH']
-
+    
     # Check the parameters of ARMATURE modifiers
-    def run_check(self):
-        mesh_type_to_check = self.get_mesh_to_check()
-        for obj in mesh_type_to_check:
+    def run_asset_check(self, asset: AssetToExport):
+        if not asset.asset_type.is_skeletal():
+            return
+
+        for obj in self.get_objects_to_check(asset):
             for mod in obj.modifiers:
-                if mod.type == "ARMATURE":
-                    if mod.use_deform_preserve_volume:
+                if mod.type == "ARMATURE":  # type: ignore
+                    if mod.use_deform_preserve_volume:  # type: ignore
                         my_po_error = self.add_potential_error()
                         my_po_error.name = obj.name
                         my_po_error.type = 2
@@ -61,6 +44,6 @@ class BFU_Checker_ArmatureModData(bfu_checker):
                             'This parameter must be set to False.'
                         )
                         my_po_error.object = obj
-                        my_po_error.itemName = mod.name
-                        my_po_error.correctRef = "PreserveVolume"
-                        my_po_error.correctlabel = 'Set Preserve Volume to False'
+                        my_po_error.item_name = mod.name
+                        my_po_error.correct_ref = "PreserveVolume"
+                        my_po_error.correct_label = 'Set Preserve Volume to False'

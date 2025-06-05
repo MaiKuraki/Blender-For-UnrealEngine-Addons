@@ -20,14 +20,16 @@ import bpy
 import os
 import importlib
 import inspect
+from typing import List, Any
 from ..bfu_check_types import bfu_checker
 from .. import bfu_check_utils
-from ... import bbpl
 from ... import bpl
+from ... import bfu_cached_assets
+from ...bfu_cached_assets.bfu_cached_assets_blender_class import AssetDataSearchMode
 
 # Dynamic import and reload for layers.
-def get_modules_from_directory(directory):
-    module_names = []
+def get_modules_from_directory(directory: str):
+    module_names: List[str] = []
     if os.path.isdir(directory):
         for file in os.listdir(directory):
             if file.endswith(".py") and file != "__init__.py":
@@ -41,8 +43,8 @@ types_dir = os.path.join(os.path.dirname(__file__), "types")
 # Import and reload modules dynamically
 module_names = get_modules_from_directory(types_dir)
 
-modules = {}
-all_classes = []
+modules: dict[str, Any] = {}
+all_classes: List[Any] = []
 for module_name in module_names:
     module = importlib.import_module(f".types.{module_name}", package=__package__)
     importlib.reload(module)
@@ -50,7 +52,7 @@ for module_name in module_names:
 
     # Get all classes in the current module and avoid duplicates
     all_classes.extend([
-        obj for name, obj in inspect.getmembers(module) 
+        obj for _, obj in inspect.getmembers(module) 
         if inspect.isclass(obj) and obj.__module__ == module.__name__ and obj not in all_classes
     ])
 
@@ -63,24 +65,35 @@ def run_all_check():
         cls for cls in all_classes
         if issubclass(cls, bfu_checker)
         and cls is not bfu_checker
-        and hasattr(cls, "run_check")
+        and (hasattr(cls, "run_asset_check") or hasattr(cls, "run_scene_check"))
     ]
 
     total = len(checker_classes)
 
     bpl.advprint.print_simple_title("Run check potential issues.")
+    final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
+    final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetDataSearchMode.FULL)
 
-    for index, cls in enumerate(checker_classes, start=1):
+    print(checker_classes)
+
+    for index, my_check_cls in enumerate(checker_classes, start=1):
         counter = bpl.utils.CounterTimer()
-
-        instance = cls()
+        instance = my_check_cls()
         check_name = instance.check_name
         print(f"Check {index}/{total}: {check_name}...")
 
         # Count errors before and after to determine how many were added by this check
-        before = len(bpy.context.scene.bfu_export_potential_errors)
-        instance.run_check()
-        after = len(bpy.context.scene.bfu_export_potential_errors)
+        before = len(bpy.context.scene.bfu_export_potential_errors)  # type: ignore
+
+        # First run the scene check
+        instance.run_scene_check(scene=bpy.context.scene)  # type: ignore
+
+        # Then run the asset check for each asset in the final asset list
+        for asset in final_asset_list_to_export:
+            instance.run_asset_check(asset)
+
+
+        after = len(bpy.context.scene.bfu_export_potential_errors)  # type: ignore
         new_issues = after - before
 
         # Display result with appropriate color

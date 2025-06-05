@@ -106,7 +106,7 @@ def valid_file_name(filename: str) -> str:
     return filename
 
 
-def GetIfActionIsAssociated(action, bone_names):
+def get_if_action_can_associate_bone(action: bpy.types.Action, bone_names: list[str]) -> bool:
     for group in action.groups:
         for fcurve in group.channels:
             s = fcurve.data_path
@@ -119,7 +119,7 @@ def GetIfActionIsAssociated(action, bone_names):
     return False
 
 
-def GetSurfaceArea(obj):
+def get_surface_area(obj: bpy.types.Object) -> float:
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     area = sum(f.calc_area() for f in bm.faces)
@@ -127,6 +127,6 @@ def GetSurfaceArea(obj):
     return area
 
 
-def setWindowsClipboard(text):
+def set_windows_clipboard(text):
     bpy.context.window_manager.clipboard = text
     # bpy.context.window_manager.clipboard.encode('utf8')

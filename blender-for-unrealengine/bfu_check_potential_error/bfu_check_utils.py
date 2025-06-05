@@ -20,7 +20,7 @@
 import bpy
 import fnmatch
 import math
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Set
 
 from . import bfu_check_props
 from .. import bbpl
@@ -66,18 +66,17 @@ def process_general_fix():
     time_log.end_time_log()
     return fix_info
 
-def get_vertices_with_zero_weight(Armature, Mesh):
-    vertices = []
-    
+def get_vertices_with_zero_weight(Armature: bpy.types.Object, Mesh: bpy.types.Object) -> List[bpy.types.MeshVertex]:
+    vertices: List[bpy.types.MeshVertex] = []
+
     # Créez un ensemble des noms des os de l'armature pour une recherche plus rapide
-    armature_bone_names = set(bone.name for bone in Armature.data.bones)
-    
-    
-    for vertex in Mesh.data.vertices: #MeshVertex(bpy_struct)
+    armature_bone_names: Set[str] = set(bone.name for bone in Armature.data.bones)
+
+    for vertex in Mesh.data.vertices:  # MeshVertex(bpy_struct)
         cumulateWeight = 0
-        
+
         if vertex.groups:
-            for group_elem in vertex.groups: #VertexGroupElement(bpy_struct)
+            for group_elem in vertex.groups:  # VertexGroupElement(bpy_struct)
                 if group_elem.weight > 0:
                     group_index = group_elem.group
                     group_len = len(Mesh.vertex_groups)
@@ -128,7 +127,7 @@ def select_potential_issue_vertices(issue_index):
     bpy.ops.mesh.select_all(action='DESELECT')
 
     bbpl.utils.safe_mode_set('OBJECT')
-    if my_po_error.selectOption == "VertexWithZeroWeight":
+    if my_po_error.select_option == "VertexWithZeroWeight":
         for vertex in get_vertices_with_zero_weight(obj.parent, obj):
             vertex.select = True
     bbpl.utils.safe_mode_set('EDIT')
@@ -143,7 +142,7 @@ def select_potential_issue_pose_bone(issue_index):
     scene = bpy.context.scene
     my_po_error = get_potential_error_by_index(issue_index)
     obj = my_po_error.object
-    bone = obj.data.bones[my_po_error.itemName]
+    bone = obj.data.bones[my_po_error.item_name]
 
     # Make bone visible if hide in a layer
     for x, layer in enumerate(bone.layers):
@@ -181,29 +180,29 @@ def try_to_correct_potential_issues(issue_index):
 
     # Correction list
 
-    if my_po_error.correctRef == "SetUnrealUnit":
+    if my_po_error.correct_ref == "SetUnrealUnit":
         bpy.context.scene.unit_settings.scale_length = 0.01
         successCorrect = True
 
-    if my_po_error.correctRef == "ConvertToMesh":
+    if my_po_error.correct_ref == "ConvertToMesh":
         obj = my_po_error.object
         SelectObj(obj)
         bpy.ops.object.convert(target='MESH')
         successCorrect = True
 
-    if my_po_error.correctRef == "SetKeyRangeMin":
+    if my_po_error.correct_ref == "SetKeyRangeMin":
         obj = my_po_error.object
-        key = obj.data.shape_keys.key_blocks[my_po_error.itemName]
+        key = obj.data.shape_keys.key_blocks[my_po_error.item_name]
         key.slider_min = -5
         successCorrect = True
 
-    if my_po_error.correctRef == "SetKeyRangeMax":
+    if my_po_error.correct_ref == "SetKeyRangeMax":
         obj = my_po_error.object
-        key = obj.data.shape_keys.key_blocks[my_po_error.itemName]
+        key = obj.data.shape_keys.key_blocks[my_po_error.item_name]
         key.slider_max = 5
         successCorrect = True
 
-    if my_po_error.correctRef == "CreateUV":
+    if my_po_error.correct_ref == "CreateUV":
         obj = my_po_error.object
         SelectObj(obj)
         if bbpl.utils.safe_mode_set("EDIT", obj):
@@ -212,27 +211,27 @@ def try_to_correct_potential_issues(issue_index):
         else:
             successCorrect = False
 
-    if my_po_error.correctRef == "RemoveModfier":
+    if my_po_error.correct_ref == "RemoveModfier":
         obj = my_po_error.object
-        mod = obj.modifiers[my_po_error.itemName]
+        mod = obj.modifiers[my_po_error.item_name]
         obj.modifiers.remove(mod)
         successCorrect = True
 
-    if my_po_error.correctRef == "PreserveVolume":
+    if my_po_error.correct_ref == "PreserveVolume":
         obj = my_po_error.object
-        mod = obj.modifiers[my_po_error.itemName]
+        mod = obj.modifiers[my_po_error.item_name]
         mod.use_deform_preserve_volume = False
         successCorrect = True
 
-    if my_po_error.correctRef == "BoneSegments":
+    if my_po_error.correct_ref == "BoneSegments":
         obj = my_po_error.object
-        bone = obj.data.bones[my_po_error.itemName]
+        bone = obj.data.bones[my_po_error.item_name]
         bone.bbone_segments = 1
         successCorrect = True
 
-    if my_po_error.correctRef == "InheritScale":
+    if my_po_error.correct_ref == "InheritScale":
         obj = my_po_error.object
-        bone = obj.data.bones[my_po_error.itemName]
+        bone = obj.data.bones[my_po_error.item_name]
         bone.use_inherit_scale = True
         successCorrect = True
 
@@ -244,7 +243,7 @@ def try_to_correct_potential_issues(issue_index):
     # ----------------------------------------
 
     if successCorrect:
-        print("end correct, Error: " + my_po_error.correctRef)
+        print("end correct, Error: " + my_po_error.correct_ref)
         remove_potential_by_index(issue_index)
         return "Corrected"
     print("end correct, Error not found")

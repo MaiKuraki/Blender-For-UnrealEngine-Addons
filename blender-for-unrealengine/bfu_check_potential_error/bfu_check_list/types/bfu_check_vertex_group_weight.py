@@ -17,12 +17,9 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List
 from ...bfu_check_types import bfu_checker
 from ... import bfu_check_utils
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_skeletal_mesh
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 
 class BFU_Checker_VertexGroupWeight(bfu_checker):
@@ -32,54 +29,36 @@ class BFU_Checker_VertexGroupWeight(bfu_checker):
         self.check_name = "Vertex Group Weight"
 
     # Prepare the list of objects to check
-    def get_objects_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-        return obj_to_check
-
-    def get_skeleton_meshs(self, obj):
-        meshes = []
-        if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-            childs = bfu_utils.GetExportDesiredChilds(obj)
-            for child in childs:
-                if child.type == "MESH":
-                    meshes.append(child)
-        return meshes
     
-    def contains_armature_modifier(self, obj):
+    def contains_armature_modifier(self, obj: bpy.types.Object) -> bool:
         for mod in obj.modifiers:
-            if mod.type == "ARMATURE":
+            if mod.type == "ARMATURE":  # type: ignore
                 return True
         return False
 
     # Check that all vertices have a weight
-    def run_check(self):
-        for obj in self.get_objects_to_check():
-            meshes = self.get_skeleton_meshs(obj)
-            for mesh in meshes:
-                if mesh.type == "MESH" and self.contains_armature_modifier(mesh):
-                    # Get vertices with zero weight
-                    vertices_with_zero_weight = bfu_check_utils.get_vertices_with_zero_weight(obj, mesh)
-                    if vertices_with_zero_weight:
-                        my_po_error = self.add_potential_error()
-                        my_po_error.name = mesh.name
-                        my_po_error.type = 1
-                        my_po_error.text = (
-                            f'Object "{mesh.name}" contains {len(vertices_with_zero_weight)} '
-                            'vertices with zero cumulative valid weight.'
-                        )
-                        my_po_error.text += (
-                            '\nNote: Vertex groups must have a bone with the same name to be valid.'
-                        )
-                        my_po_error.object = mesh
-                        my_po_error.selectVertexButton = True
-                        my_po_error.selectOption = "VertexWithZeroWeight"
+    def run_asset_check(self, asset: AssetToExport):
+        if not asset.asset_type.is_skeletal():
+            return
+
+        main_obj = asset.get_primary_asset_package()
+        if main_obj:
+            for mesh in self.get_meshes_to_check(asset):
+                if mesh.type == "MESH":# type: ignore
+                    if self.contains_armature_modifier(mesh):
+                        # Get vertices with zero weight
+                        vertices_with_zero_weight = bfu_check_utils.get_vertices_with_zero_weight(main_obj, mesh)
+                        if vertices_with_zero_weight:
+                            my_po_error = self.add_potential_error()
+                            my_po_error.name = mesh.name
+                            my_po_error.type = 1
+                            my_po_error.text = (
+                                f'Object "{mesh.name}" contains {len(vertices_with_zero_weight)} '
+                                'vertices with zero cumulative valid weight.'
+                            )
+                            my_po_error.text += (
+                                '\nNote: Vertex groups must have a bone with the same name to be valid.'
+                            )
+                            my_po_error.object = mesh
+                            my_po_error.select_vertex_button = True
+                            my_po_error.select_option = "VertexWithZeroWeight"

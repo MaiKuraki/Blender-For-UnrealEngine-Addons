@@ -16,13 +16,9 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
+
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_skeletal_mesh
-from .... import bfu_base_object
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport, AssetType
 
 class BFU_Checker_ZeroScaleKeyframe(bfu_checker):
 
@@ -30,30 +26,17 @@ class BFU_Checker_ZeroScaleKeyframe(bfu_checker):
         super().__init__()
         self.check_name = "Zero Scale Keyframe"
 
-    # Préparer les objets à tester
-    def get_skeletal_objects(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        return [obj for obj in obj_to_check if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)]
-
     # Check that animations do not use an invalid scale value
-    def run_check(self):
-        for obj in self.get_skeletal_objects():
-            animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetAnimationAssetCache(obj)
-            animations_to_export = animation_asset_cache.GetAnimationAssetList()
+    def run_asset_check(self, asset: AssetToExport):
+        if asset.asset_type not in [AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
+            # This check is only relevant for skeletal assets with animations
+            return
 
-            for action in animations_to_export:
-                for fcurve in action.fcurves:
+        for packages in asset.asset_packages:
+            action = packages.action
+            action_name = action.name  # type: ignore
+            for obj in self.get_armatures_to_check(asset):
+                for fcurve in action.fcurves:  # type: ignore
                     # Detect scale curves
                     if fcurve.data_path.split(".")[-1] == "scale":
                         for key in fcurve.keyframe_points:
@@ -63,7 +46,7 @@ class BFU_Checker_ZeroScaleKeyframe(bfu_checker):
                                 my_po_error = self.add_potential_error()
                                 my_po_error.type = 2
                                 my_po_error.text = (
-                                    f'In action "{action.name}" at frame {x_curve}, '
+                                    f'In action "{action_name}" used with object "{obj.name}" at frame {x_curve}, '
                                     f'the bone named "{bone_name}" has a zero value in the scale '
                                     'transform. This is invalid in Unreal.'
                                 )

@@ -16,12 +16,8 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_skeletal_mesh
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_ArmatureScale(bfu_checker):
 
@@ -29,34 +25,21 @@ class BFU_Checker_ArmatureScale(bfu_checker):
         super().__init__()
         self.check_name = "Armature Scale"
 
-    # Prepare the list of objects to check
-    def get_objects_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-        return obj_to_check
-
     # Check if the armature uses the same value on all scale axes
-    def run_check(self):
-        obj_to_check = self.get_objects_to_check()
+    def run_asset_check(self, asset: AssetToExport):
+        if not asset.asset_type.is_skeletal():
+            return
+
+        obj_to_check = self.get_armatures_to_check(asset)
         for obj in obj_to_check:
-            if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                if obj.scale.z != obj.scale.y or obj.scale.z != obj.scale.x:
-                    my_po_error = self.add_potential_error()
-                    my_po_error.name = obj.name
-                    my_po_error.type = 2
-                    my_po_error.text = (
-                        f'In object "{obj.name}", the scale values are not consistent across all axes.'
-                    )
-                    my_po_error.text += (
-                        f'\nScale x: {obj.scale.x}, y: {obj.scale.y}, z: {obj.scale.z}'
-                    )
-                    my_po_error.object = obj
+            if obj.scale.z != obj.scale.y or obj.scale.z != obj.scale.x:
+                my_po_error = self.add_potential_error()
+                my_po_error.name = obj.name
+                my_po_error.type = 2
+                my_po_error.text = (
+                    f'In object "{obj.name}", the scale values are not consistent across all axes.'
+                )
+                my_po_error.text += (
+                    f'\nScale x: {obj.scale.x}, y: {obj.scale.y}, z: {obj.scale.z}'
+                )
+                my_po_error.object = obj

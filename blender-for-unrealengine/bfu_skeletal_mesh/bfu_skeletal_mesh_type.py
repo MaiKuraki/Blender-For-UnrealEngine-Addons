@@ -149,7 +149,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
         if scene.bfu_use_skeletal_export:
             # Export the armature and all mesh as a single skeletal mesh
             if obj.bfu_modular_skeletal_mesh_mode == "all_in_one":
-                asset = AssetToExport(obj.name, AssetType.SKELETAL_MESH)
+                asset = AssetToExport(self, obj.name, AssetType.SKELETAL_MESH)
                 asset_list.append(asset)
 
                 import_dirpath = self.get_asset_import_directory_path(obj)
@@ -180,7 +180,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
             elif obj.bfu_modular_skeletal_mesh_mode == "every_meshs":
                 for mesh in bbpl.basics.get_obj_childs(obj):
                     asset_name = obj.name + obj.bfu_modular_skeletal_mesh_every_meshs_separate + mesh.name
-                    asset = AssetToExport(asset_name, AssetType.SKELETAL_MESH)
+                    asset = AssetToExport(self, asset_name, AssetType.SKELETAL_MESH)
                     asset_list.append(asset)
 
                     import_dirpath = self.get_asset_import_directory_path(obj)
@@ -213,7 +213,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
                 template = bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_modular_skeletal_specified_parts_meshs_template(obj)
                 for part in template.get_template_collection():
                     if part.enabled:
-                        asset = AssetToExport(part.name, AssetType.SKELETAL_MESH)
+                        asset = AssetToExport(self, part.name, AssetType.SKELETAL_MESH)
                         asset_list.append(asset)
                         
                         import_dirpath = self.get_asset_import_directory_path(obj, part.sub_folder)

@@ -91,7 +91,16 @@ class ExportAssetType(Enum):
         return ExportAssetType.UNKNOWN
     
     def is_skeletal(self) -> bool:
-        return self in (ExportAssetType.SKELETAL_MESH, ExportAssetType.ANIM_ACTION, ExportAssetType.ANIM_POSE, ExportAssetType.ANIM_NLA)
+        return self in [
+            ExportAssetType.SKELETAL_MESH, 
+            ExportAssetType.ANIM_ACTION, 
+            ExportAssetType.ANIM_POSE, 
+            ExportAssetType.ANIM_NLA
+        ]
     
     def is_skeletal_animation(self) -> bool:
-        return self in (ExportAssetType.ANIM_ACTION, ExportAssetType.ANIM_POSE, ExportAssetType.ANIM_NLA)
+        return self in [
+            ExportAssetType.ANIM_ACTION, 
+            ExportAssetType.ANIM_POSE, 
+            ExportAssetType.ANIM_NLA
+        ]

@@ -18,7 +18,6 @@
 
 import bpy
 from ...bfu_check_types import bfu_checker
-from .... import bfu_basics
 
 class BFU_Checker_SceneFrameRate(bfu_checker):
 
@@ -26,9 +25,8 @@ class BFU_Checker_SceneFrameRate(bfu_checker):
         super().__init__()
         self.check_name = "Scene Frame Rate"
 
-    def run_check(self):
+    def run_scene_check(self, scene: bpy.types.Scene):
         # Check Scene Frame Rate.
-        scene = bpy.context.scene
         denominator = scene.render.fps_base
         numerator = scene.render.fps
 
@@ -48,4 +46,4 @@ class BFU_Checker_SceneFrameRate(bfu_checker):
             my_po_error.name = scene.name
             my_po_error.type = 2
             my_po_error.text = message
-            my_po_error.docsOcticon = 'scene-frame-rate'
+            my_po_error.docs_octicon = 'scene-frame-rate'

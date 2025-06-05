@@ -17,12 +17,8 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_skeletal_mesh
-from .... import bfu_base_object
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_ArmatureNoDeformBone(bfu_checker):
 
@@ -30,26 +26,15 @@ class BFU_Checker_ArmatureNoDeformBone(bfu_checker):
         super().__init__()
         self.check_name = "Armature No Deform Bone"
 
-    # Prepare the list of armatures to check
-    def get_armatures_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        return [obj for obj in obj_to_check if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)]
-
     # Check that the skeleton has at least one deform bone
-    def run_check(self):
-        for obj in self.get_armatures_to_check():
-            if obj.bfu_export_deform_only:
+    def run_asset_check(self, asset: AssetToExport):
+        if not asset.asset_type.is_skeletal():
+            return
+
+        for obj in self.get_armatures_to_check(asset):
+            if obj.bfu_export_deform_only:  # type: ignore
+                if not isinstance(obj.data, bpy.types.Armature):
+                    continue
                 has_deform_bone = any(bone.use_deform for bone in obj.data.bones)
                 if not has_deform_bone:
                     my_po_error = self.add_potential_error()

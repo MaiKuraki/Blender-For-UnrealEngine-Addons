@@ -30,7 +30,7 @@ def process_generic_export_from_asset(
 
     new_log = bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog(asset)
     new_log.start_asset_export()
-    for package in asset.asset_pakages:
+    for package in asset.asset_packages:
         new_log.start_package_export(package)
         # Check folder before export
         if package.file:

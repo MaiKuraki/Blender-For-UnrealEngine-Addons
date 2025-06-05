@@ -16,11 +16,10 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
+
 from ...bfu_check_types import bfu_checker
 from .... import bfu_utils
-from .... import bfu_cached_assets
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_UVMaps(bfu_checker):
 
@@ -28,32 +27,16 @@ class BFU_Checker_UVMaps(bfu_checker):
         super().__init__()
         self.check_name = "UV Maps"
 
-    # Prepare the list of mesh objects without collision to check
-    def get_mesh_without_collision(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        mesh_type_to_check = [obj for obj in obj_to_check if obj.type == 'MESH']
-        return [obj for obj in mesh_type_to_check if not bfu_utils.CheckIsCollision(obj)]
-
     # Check that the objects have at least one valid UV map
-    def run_check(self):
-        mesh_type_without_col = self.get_mesh_without_collision()
-        for obj in mesh_type_without_col:
-            if len(obj.data.uv_layers) < 1:
-                my_po_error = self.add_potential_error()
-                my_po_error.name = obj.name
-                my_po_error.type = 1
-                my_po_error.text = f'Object "{obj.name}" does not have any UV Layer.'
-                my_po_error.object = obj
-                my_po_error.correctRef = "CreateUV"
-                my_po_error.correctlabel = 'Create Smart UV Project'
+    def run_asset_check(self, asset: AssetToExport):
+        for obj in self.get_meshes_to_check(asset):
+            if obj.data:
+                if not bfu_utils.check_is_collision(obj):
+                    if len(obj.data.uv_layers) < 1:  # type: ignore
+                        my_po_error = self.add_potential_error()
+                        my_po_error.name = obj.name
+                        my_po_error.type = 1
+                        my_po_error.text = f'Object "{obj.name}" does not have any UV Layer.'
+                        my_po_error.object = obj
+                        my_po_error.correct_ref = "CreateUV"
+                        my_po_error.correct_label = 'Create Smart UV Project'

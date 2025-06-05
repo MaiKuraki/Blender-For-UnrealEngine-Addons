@@ -35,7 +35,7 @@ def draw_asset_preview_bar(
     context: bpy.types.Context,
 ) -> None:
     
-    final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
+    final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
     final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetDataSearchMode.ASSET_NUMBER)
 
     asset_count = len(final_asset_list_to_export)
@@ -71,7 +71,7 @@ def draw(
         # Asset Pakages
         packages_col = asset_row.column()
         packages_col.alignment = 'EXPAND'
-        for package in asset.asset_pakages:
+        for package in asset.asset_packages:
             package_row = packages_col.row()
             package_row.alignment = "EXPAND"
             package_content_col = package_row.column()

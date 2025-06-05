@@ -16,12 +16,8 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-from typing import List
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
-from .... import bfu_cached_assets
-from .... import bfu_base_object
+from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_ArmatureConstData(bfu_checker):
 
@@ -29,27 +25,8 @@ class BFU_Checker_ArmatureConstData(bfu_checker):
         super().__init__()
         self.check_name = "Armature Constraint Data"
 
-    # Prepare list of mesh objects to check
-    def get_mesh_to_check(self) -> List[bpy.types.Object]:
-        final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetfinalAssetCache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list()
-
-        obj_to_check = []
-        for asset in final_asset_list_to_export:
-            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
-                if asset.obj not in obj_to_check:
-                    obj_to_check.append(asset.obj)
-                for child in bfu_utils.GetExportDesiredChilds(asset.obj):
-                    if child not in obj_to_check:
-                        obj_to_check.append(child)
-
-        return [obj for obj in obj_to_check if obj.type == 'MESH']
-
     # Check the parameters of ARMATURE constraints
-    def run_check(self):
-        mesh_type_to_check = self.get_mesh_to_check()
-        for obj in mesh_type_to_check:
-            for const in obj.constraints:
-                if const.type == "ARMATURE":
-                    # TO DO.
-                    pass
+    def run_asset_check(self, asset: AssetToExport):
+        pass
+        # @TODO.
+

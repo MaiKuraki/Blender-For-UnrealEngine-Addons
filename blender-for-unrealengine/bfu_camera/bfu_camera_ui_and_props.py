@@ -122,7 +122,7 @@ class BFU_OT_CopyActiveCameraOperator(bpy.types.Operator):
         obj = context.object
         result = bfu_camera_write_paste_commands.GetImportCameraScriptCommand([obj])
         if result[0]:
-            bfu_basics.setWindowsClipboard(result[1])
+            bfu_basics.set_windows_clipboard(result[1])
             self.report({'INFO'}, result[2])
         else:
             self.report({'WARNING'}, result[2])
@@ -138,7 +138,7 @@ class BFU_OT_CopySelectedCamerasOperator(bpy.types.Operator):
         objs = context.selected_objects
         result = bfu_camera_write_paste_commands.GetImportCameraScriptCommand(objs)
         if result[0]:
-            bfu_basics.setWindowsClipboard(result[1])
+            bfu_basics.set_windows_clipboard(result[1])
             self.report({'INFO'}, result[2])
         else:
             self.report({'WARNING'}, result[2])

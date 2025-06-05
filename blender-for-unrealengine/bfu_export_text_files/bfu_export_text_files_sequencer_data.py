@@ -51,7 +51,7 @@ def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset
         asset_type = asset.exported_asset.asset_type
         if asset_type == AssetType.CAMERA:
             asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog
-            main_camera = asset.exported_asset.asset_pakages[0].objects[0]
+            main_camera = asset.exported_asset.asset_packages[0].objects[0]
             
 
             camera_data = {}

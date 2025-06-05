@@ -30,21 +30,21 @@ class AssetDataSearchMode(Enum):
     ASSET_NUMBER = "AssetNumber" # Search for asset number.
     
     def search_packages(self):
-        if self == AssetDataSearchMode.FULL:
+        if self.value == AssetDataSearchMode.FULL.value:
             return True
-        elif self == AssetDataSearchMode.PREVIEW:
+        elif self.value == AssetDataSearchMode.PREVIEW.value:
             return True
-        elif self == AssetDataSearchMode.ASSET_NUMBER:
+        elif self.value == AssetDataSearchMode.ASSET_NUMBER.value:
             return False
         else:
             return False
         
     def search_package_content(self):
-        if self == AssetDataSearchMode.FULL:
+        if self.value == AssetDataSearchMode.FULL.value:
             return True
-        elif self == AssetDataSearchMode.PREVIEW:
+        elif self.value == AssetDataSearchMode.PREVIEW.value:
             return False
-        elif self == AssetDataSearchMode.ASSET_NUMBER:
+        elif self.value == AssetDataSearchMode.ASSET_NUMBER.value:
             return False
         else:
             return False
@@ -63,56 +63,58 @@ class AssetType(Enum):
     ANIM_ALEMBIC = "AlembicAnimation" # Alembic animations.
 
     def get_friendly_name(self):
-        if self == AssetType.UNKNOWN:
+        if self.value == AssetType.UNKNOWN.value:
             return "Unknown Asset Type"
-        elif self == AssetType.SKELETAL_MESH:
+        elif self.value == AssetType.SKELETAL_MESH.value:
             return "Skeletal Mesh"
-        elif self == AssetType.STATIC_MESH:
+        elif self.value == AssetType.STATIC_MESH.value:
             return "Static Mesh"
-        elif self == AssetType.COLLECTION_AS_STATIC_MESH:
+        elif self.value == AssetType.COLLECTION_AS_STATIC_MESH.value:
             return "Collection Static Mesh"
-        elif self == AssetType.CAMERA:
+        elif self.value == AssetType.CAMERA.value:
             return "Camera"
-        elif self == AssetType.GROOM_SIMULATION:
+        elif self.value == AssetType.GROOM_SIMULATION.value:
             return "Groom Simulation"
-        elif self == AssetType.SPLINE:
+        elif self.value == AssetType.SPLINE.value:
             return "Spline"
-        elif self == AssetType.ANIM_ACTION:
+        elif self.value == AssetType.ANIM_ACTION.value:
             return "Action Animation"
-        elif self == AssetType.ANIM_POSE:
+        elif self.value == AssetType.ANIM_POSE.value:
             return "Pose Animation"
-        elif self == AssetType.ANIM_NLA:
+        elif self.value == AssetType.ANIM_NLA.value:
             return "Non Linear Animation"
-        elif self == AssetType.ANIM_ALEMBIC:
+        elif self.value == AssetType.ANIM_ALEMBIC.value:
             return "Alembic Animation"
         else:
             return "Unknown"    
         
     def get_type_as_string(self):
-        if self == AssetType.UNKNOWN:
+        if self.value == AssetType.UNKNOWN.value:
             return "Unknown"
-        elif self == AssetType.SKELETAL_MESH:
+        elif self.value == AssetType.SKELETAL_MESH.value:
             return "SkeletalMesh"
-        elif self == AssetType.STATIC_MESH:
+        elif self.value == AssetType.STATIC_MESH.value:
             return "StaticMesh"
-        elif self == AssetType.COLLECTION_AS_STATIC_MESH:
+        elif self.value == AssetType.COLLECTION_AS_STATIC_MESH.value:
             return "CollectionStaticMesh"
-        elif self == AssetType.CAMERA:
+        elif self.value == AssetType.CAMERA.value:
             return "Camera"
-        elif self == AssetType.GROOM_SIMULATION:
+        elif self.value == AssetType.GROOM_SIMULATION.value:
             return "GroomSimulation"
-        elif self == AssetType.SPLINE:
+        elif self.value == AssetType.SPLINE.value:
             return "Spline"
-        elif self == AssetType.ANIM_ACTION:
+        elif self.value == AssetType.ANIM_ACTION.value:
             return "Action"
-        elif self == AssetType.ANIM_POSE:
+        elif self.value == AssetType.ANIM_POSE.value:
             return "Pose"
-        elif self == AssetType.ANIM_NLA:
+        elif self.value == AssetType.ANIM_NLA.value:
             return "NonLinearAnimation"
-        elif self == AssetType.ANIM_ALEMBIC:
+        elif self.value == AssetType.ANIM_ALEMBIC.value:
             return "AlembicAnimation"
         else:
             return "Unknown"
+
+    
 
     def can_use_frame_range(self) -> bool:
         return self in [
@@ -130,6 +132,20 @@ class AssetType(Enum):
             AssetType.COLLECTION_AS_STATIC_MESH,
         ]
 
+    def is_skeletal(self) -> bool:
+        return self in [
+            AssetType.SKELETAL_MESH, 
+            AssetType.ANIM_ACTION, 
+            AssetType.ANIM_POSE, 
+            AssetType.ANIM_NLA
+        ]
+    
+    def is_skeletal_animation(self) -> bool:
+        return self in [
+            AssetType.ANIM_ACTION, 
+            AssetType.ANIM_POSE, 
+            AssetType.ANIM_NLA
+        ]
 
 class PackageFile:
     def __init__(self, dirpath: Path, filename: str, file_type: BFU_FileTypeEnum = BFU_FileTypeEnum.UNKNOWN):
@@ -193,6 +209,7 @@ class AdditionalAssetData:
 class AssetToExport:
     def __init__(
         self,
+        asset_class: "BFU_BaseAssetClass",
         asset_name: str,
         asset_type: AssetType
     ):
@@ -201,9 +218,10 @@ class AssetToExport:
         self.asset_type: AssetType = asset_type
         self.import_name: str = ""
         self.import_dirpath: Path = Path()
+        self.original_asset_class: BFU_BaseAssetClass = asset_class
 
         # Asset Pakages
-        self.asset_pakages: List[AssetPackage] = []
+        self.asset_packages: List[AssetPackage] = []
 
         # Asset Additional Data:
         self.additional_data: Optional[AdditionalAssetData] = None
@@ -211,7 +229,7 @@ class AssetToExport:
     def add_asset_package(self, package_name: str, details: Optional[List[str]] = None) -> AssetPackage:
         # Create a new asset package and add it to the list
         new_package = AssetPackage(package_name, details)
-        self.asset_pakages.append(new_package)
+        self.asset_packages.append(new_package)
         return new_package
 
     def set_asset_additional_data(self, data: Dict[str, Any]) -> AdditionalAssetData:
@@ -219,11 +237,20 @@ class AssetToExport:
         self.additional_data = AdditionalAssetData(data)
         return self.additional_data
     
+    def get_primary_asset_package(self) -> Optional[bpy.types.Object]:
+        # Get the primary asset package, which is the first one in the list
+        if self.asset_packages:
+            if len(self.asset_packages) > 0:
+                if len(self.asset_packages[0].objects) > 0:
+                    return self.asset_packages[0].objects[0]
+        return None
+
     def set_import_name(self, new_import_name: str) -> None:
         self.import_name = new_import_name
 
     def set_import_dirpath(self, new_import_dirpath: Path) -> None:
         self.import_dirpath = new_import_dirpath
+
     
 class BFU_BaseAssetClass(ABC):
     def __init__(self):

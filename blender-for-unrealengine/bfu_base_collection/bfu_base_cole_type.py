@@ -123,7 +123,7 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
         scene = bpy.context.scene
         addon_prefs = bfu_basics.GetAddonPrefs()
         if scene.bfu_use_static_collection_export:
-            asset = AssetToExport(col.name, AssetType.COLLECTION_AS_STATIC_MESH)
+            asset = AssetToExport(self, col.name, AssetType.COLLECTION_AS_STATIC_MESH)
 
             import_dirpath = self.get_asset_import_directory_path(col)
             asset.set_import_name(self.get_package_file_name(col, without_extension=True))
