@@ -103,6 +103,19 @@ class BFU_Spline(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
     def can_export_asset(self, obj):
         return self.can_export_asset_type()
 
+####################################################################
+# UI
+####################################################################
+
+    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object) -> bpy.types.UILayout:
+        return bfu_export_procedure.draw_object_export_procedure(layout, obj)
+    
+
+# --------------------------------------------
+# Register and Unregister functions
+# --------------------------------------------
+
+
 def register():
     bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_Spline())
 

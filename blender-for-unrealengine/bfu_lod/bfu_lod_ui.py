@@ -25,9 +25,10 @@ from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_assets_manager
 from .. import bfu_static_mesh
+from .. import bfu_base_object
 
 
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     if obj is None:
         return
@@ -42,7 +43,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     if addon_prefs.useGeneratedScripts is False:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
     
     # Draw UI

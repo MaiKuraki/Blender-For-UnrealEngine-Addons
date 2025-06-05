@@ -23,10 +23,11 @@ from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_skeletal_mesh
+from .. import bfu_base_object
 
 
 
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
     addon_prefs = bfu_basics.GetAddonPrefs()
@@ -35,7 +36,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
     # Hide filters
     if obj is None:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
     is_skeletal_mesh = bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
     

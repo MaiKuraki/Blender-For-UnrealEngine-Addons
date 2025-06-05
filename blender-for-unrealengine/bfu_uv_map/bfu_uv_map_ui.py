@@ -22,9 +22,10 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
+from .. import bfu_base_object
 
 
-def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_obj_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
 
@@ -33,7 +34,7 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     if not bfu_utils.draw_proxy_propertys(obj):
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):

@@ -22,6 +22,7 @@ from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_unreal_utils
+from .. import bfu_base_object
 
 
 def IsACollision(obj):
@@ -68,8 +69,8 @@ def fix_export_type_on_collision(list=None):
 
     fixed_collisions = 0
     for obj in objs:
-        if obj.bfu_export_type == "export_recursive":
-            obj.bfu_export_type = "auto"
+        if bfu_base_object.bfu_export_type.is_export_recursive(obj):
+            bfu_base_object.bfu_export_type.set_auto(obj)
             fixed_collisions += 1
     return fixed_collisions
 

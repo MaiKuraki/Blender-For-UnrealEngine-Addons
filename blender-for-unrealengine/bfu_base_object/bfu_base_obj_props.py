@@ -49,28 +49,7 @@ def register():
 
     bpy.types.Scene.bfu_object_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Object Properties")
 
-    bpy.types.Object.bfu_export_type = bpy.props.EnumProperty(
-        name="Export type",
-        description="Export procedure",
-        override={'LIBRARY_OVERRIDABLE'},
-        items=[
-            ("auto",
-                "Auto",
-                "Export with the parent if the parents is \"Export recursive\"",
-                "BOIDS",
-                1),
-            ("export_recursive",
-                "Export recursive",
-                "Export self object and all children",
-                "KEYINGSET",
-                2),
-            ("dont_export",
-                "Not exported",
-                "Will never export",
-                "CANCEL",
-                3)
-            ]
-        )
+
     
     bpy.types.Object.bfu_export_folder_name = bpy.props.StringProperty(
         name="Sub folder name",
@@ -106,6 +85,5 @@ def unregister():
     del bpy.types.Object.bfu_use_custom_export_name
 
     del bpy.types.Object.bfu_export_folder_name
-    del bpy.types.Object.bfu_export_type
 
     del bpy.types.Scene.bfu_object_properties_expanded

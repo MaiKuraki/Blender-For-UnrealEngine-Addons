@@ -19,6 +19,7 @@
 import bpy
 import importlib
 
+from . import bfu_export_procedure
 from . import bfu_camera_utils
 from . import bfu_camera_unreal_utils
 from . import bfu_camera_data
@@ -29,6 +30,8 @@ from . import bfu_camera_ui_and_props
 from . import bfu_camera_type
 from . import bfu_camera_config
 
+if "bfu_export_procedure" in locals():
+    importlib.reload(bfu_export_procedure)
 if "bfu_camera_utils" in locals():
     importlib.reload(bfu_camera_utils)
 if "bfu_camera_unreal_utils" in locals():
@@ -57,6 +60,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    bfu_export_procedure.register()
     bfu_camera_ui_and_props.register()
     bfu_camera_type.register()
 
@@ -66,3 +70,4 @@ def unregister():
 
     bfu_camera_type.unregister()
     bfu_camera_ui_and_props.unregister()
+    bfu_export_procedure.unregister()

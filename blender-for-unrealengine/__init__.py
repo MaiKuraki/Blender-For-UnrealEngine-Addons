@@ -69,7 +69,6 @@ try:
     from . import bfu_export_nomenclature
     from . import bfu_export_filter
     from . import bfu_export_process
-    from . import bfu_export_procedure
     from . import bfu_addon_pref
     from . import bfu_export_logs
     from . import bfu_ui
@@ -161,8 +160,6 @@ if "bfu_export_filter" in locals():
     importlib.reload(bfu_export_filter)
 if "bfu_export_process" in locals():
     importlib.reload(bfu_export_process)
-if "bfu_export_procedure" in locals():
-    importlib.reload(bfu_export_procedure)
 if "bfu_addon_pref" in locals():
     importlib.reload(bfu_addon_pref)
 if "bfu_export_logs" in locals():
@@ -189,14 +186,6 @@ if "bfu_backward_compatibility" in locals():
     importlib.reload(bfu_backward_compatibility)
 if "bfu_cached_assets" in locals():
     importlib.reload(bfu_cached_assets)
-
-    
-class BFUCachedAction(bpy.types.PropertyGroup):
-    """
-    Represents a cached action for Blender File Utils (BFU).
-    """
-    name: bpy.props.StringProperty()
-
 
 classes = (
 )
@@ -238,7 +227,6 @@ def register():
     bfu_export_nomenclature.register()
     bfu_export_filter.register()
     bfu_export_process.register()
-    bfu_export_procedure.register()
     bfu_addon_pref.register()
     bfu_export_logs.register()
     bfu_ui.register()
@@ -256,7 +244,6 @@ def unregister():
     bfu_ui.unregister()
     bfu_export_logs.unregister()
     bfu_addon_pref.unregister()
-    bfu_export_procedure.unregister()
     bfu_export_process.unregister()
     bfu_export_filter.unregister()
     bfu_export_nomenclature.unregister()

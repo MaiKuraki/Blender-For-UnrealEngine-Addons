@@ -25,6 +25,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_static_mesh
 from .. import bfu_export_logs
+from .. import bfu_base_object
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
@@ -106,7 +107,7 @@ def UpdateAreaLightMapList(objects_to_update=None):
         objs = objects_to_update
     else:
         objs = []
-        export_recu_objs = bfu_utils.get_all_objects_by_export_type("export_recursive")
+        export_recu_objs = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
         for export_recu_obj in export_recu_objs:
 
             if bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(export_recu_obj):

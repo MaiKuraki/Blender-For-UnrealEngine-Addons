@@ -144,7 +144,7 @@ def create_template_list_class(TemplateItem, TemplateItemDraw):  # type: ignore
                 prop_name = self.path_from_id()
                 return prop_name
 
-        def draw(self, layout: bpy.types.UILayout):
+        def draw(self, layout: bpy.types.UILayout, context: bpy.types.Context) -> bpy.types.UILayout:
             template_row = layout.row()
             if self.template_collection_uilist_class_name == "":
                 print("template_collection_uilist_class_name was not set!")

@@ -25,6 +25,7 @@
 import bpy
 import re
 
+from typing import Tuple, Union
 from . import utils
 from .. import layout_utils
 from ... import __internal__
@@ -54,7 +55,7 @@ class CustomAccordionUI_PropertyGroup(bpy.types.PropertyGroup):
         return False
 
 
-    def draw(self, layout: bpy.types.UILayout, text = None):
+    def draw(self, layout: bpy.types.UILayout, text = None) -> Tuple[bpy.types.UILayout, Union[bpy.types.UILayout, None]]:
         """Similar to layout.panel_prop(...) Use panel_prop() in Blender 4.1 and new versions.
                 :param layout: layout body
                 :type layout: bpy.types.UILayout

@@ -25,6 +25,7 @@ from .. import bfu_basics
 from .. import bfu_ui
 from .. import bbpl
 from .. import languages
+from .. import bfu_base_object
 from ..bbpl.blender_layout import layout_doc_button
 
 def get_preset_values():
@@ -36,7 +37,7 @@ def get_preset_values():
         ]
     return preset_values
 
-def draw_ui_object_spline(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
   
 
     if obj is None:
@@ -57,7 +58,7 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 spline_ui_as_static_mesh = spline_ui_pop.column()
                 spline_ui_as_static_mesh.prop(obj, 'bfu_export_spline_as_static_mesh')
                 spline_ui_as_static_mesh.prop(obj, 'bfu_export_fbx_spline')
-                spline_ui_as_static_mesh.enabled = obj.bfu_export_type == "export_recursive"
+                spline_ui_as_static_mesh.enabled = bfu_base_object.bfu_export_type.is_export_recursive(obj)
                 
                 spline_ui_spline_type = spline_ui_pop.column()
                 spline_ui_spline_type.prop(obj, 'bfu_desired_spline_type')

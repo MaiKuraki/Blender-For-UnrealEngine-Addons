@@ -28,10 +28,11 @@ from .. import bfu_export_text_files
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bbpl
+from .. import bfu_static_mesh
+from .. import bfu_skeletal_mesh
 from .. import bfu_addon_parts
 from .. import bfu_camera
 from .. import bfu_vertex_color
-from .. import bfu_export_procedure
 from .. import bfu_collision
 from .. import bfu_socket
 from .. import bfu_export_logs
@@ -634,49 +635,49 @@ def get_final_fbx_export_primary_bone_axis(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_primary_bone_axis
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["primary_bone_axis"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["primary_bone_axis"]
 
 def get_final_fbx_export_secondary_bone_axis(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_secondary_bone_axis
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["secondary_bone_axis"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["secondary_bone_axis"]
 
 def get_skeleton_fbx_export_use_space_transform(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_use_space_transform
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["use_space_transform"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["use_space_transform"]
 
 def get_skeleton_export_axis_forward(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_axis_forward
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_forward"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_forward"]
 
 def get_skeleton_export_axis_up(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_axis_up
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_up"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_up"]
     
 def get_static_fbx_export_use_space_transform(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_use_space_transform
     else:
-        return bfu_export_procedure.bfu_static_export_procedure.get_obj_static_fbx_procedure_preset(obj)["use_space_transform"]
+        return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["use_space_transform"]
 
 def get_static_fbx_export_axis_forward(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_axis_forward
     else:
-        return bfu_export_procedure.bfu_static_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_forward"]
+        return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_forward"]
 
 def get_static_fbx_export_axis_up(obj):
     if obj.bfu_override_procedure_preset:
         return obj.bfu_fbx_export_axis_up
     else:
-        return bfu_export_procedure.bfu_static_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_up"]
+        return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_up"]
     
 class SaveTransformObjects():
     def __init__(self, obj: bpy.types.Object):

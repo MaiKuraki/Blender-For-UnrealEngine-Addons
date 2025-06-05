@@ -21,13 +21,9 @@ import bpy
 from typing import List
 from . import bfu_export_single_generic
 from . import bfu_export_single_alembic_animation
-from . import bfu_export_single_fbx_action
 from . import bfu_export_single_camera
 from . import bfu_export_single_spline
 from . import bfu_export_single_fbx_nla_anim
-from . import bfu_export_single_skeletal_mesh
-from . import bfu_export_single_static_mesh
-from . import bfu_export_single_static_mesh_collection
 from . import bfu_export_single_groom_simulation
 from .. import bfu_cached_assets
 from .. import bbpl
@@ -37,8 +33,7 @@ from .. import bfu_basics
 from .. import bfu_camera
 from .. import bfu_spline
 from .. import bfu_export_logs
-
-
+from .. import bfu_base_object
 
 
 def IsValidActionForExport(scene, obj, animType):
@@ -157,26 +152,6 @@ def export_all_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_
 
 # @TODO all following export function are deprecated, remove them in future releases
 
-
-def export_collection_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-
-    print("Start Export collection(s)")
-    exported_asset_log = []
-    for asset in asset_list:
-        if asset.asset_type == AssetType.COLLECTION_AS_STATIC_MESH:
-            export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as Collection Static Mesh.", 1)
-            # Save current start/end frame
-            UserStartFrame = scene.frame_start
-            UserEndFrame = scene.frame_end
-
-            exported_asset_log.extend(bfu_export_single_static_mesh_collection.process_static_mesh_collection_export_from_asset(op, asset))
-
-            # Resets previous start/end frame
-            scene.frame_start = UserStartFrame
-            scene.frame_end = UserEndFrame
-            export_time_log.end_time_log()
-    return exported_asset_log
     
 def export_camera_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
     scene = bpy.context.scene
@@ -195,7 +170,7 @@ def export_camera_from_asset_list(op, asset_list: List[AssetToExport]) -> List[b
     for asset in asset_list:
         if asset.asset_type == AssetType.CAMERA:
             obj = asset.obj
-            if obj.bfu_export_type == "export_recursive":
+            if bfu_base_object.bfu_export_type.is_export_recursive(obj):
                 if bfu_camera.bfu_camera_utils.is_camera(obj) and IsValidDataForExport(scene, obj):                    
                     camera_list.append(obj)
                     multi_camera_tracks.add_camera_to_evaluate(obj)
@@ -237,7 +212,7 @@ def export_spline_from_asset_list(op, asset_list: List[AssetToExport]) -> List[b
     for asset in asset_list:
         if asset.asset_type == AssetType.SPLINE:
             obj = asset.obj
-            if obj.bfu_export_type == "export_recursive":
+            if bfu_base_object.bfu_export_type.is_export_recursive(obj):
                 if bfu_spline.bfu_spline_utils.is_spline(obj) and IsValidDataForExport(scene, obj):                    
                     spline_list.append(obj)
                     multi_spline_tracks.add_spline_to_evaluate(obj)
@@ -253,25 +228,6 @@ def export_spline_from_asset_list(op, asset_list: List[AssetToExport]) -> List[b
         else:
             spline_tracks = None
         bfu_export_single_spline.process_spline_export(op, obj, spline_tracks)
-    return exported_asset_log
-
-def export_skeletal_mesh_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-
-    print("Start Export SkeletalMesh(s)")
-    exported_asset_log = []
-    for asset in asset_list:
-        if asset.asset_type == AssetType.SKELETAL_MESH:
-            export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as Static Mesh.", 1)
-            # Save current start/end frame
-            UserStartFrame = scene.frame_start
-            UserEndFrame = scene.frame_end
-            exported_asset_log.extend(bfu_export_single_skeletal_mesh.process_skeletal_mesh_export_from_asset(op, asset))
-
-            # Resets previous start/end frame
-            scene.frame_start = UserStartFrame
-            scene.frame_end = UserEndFrame
-            export_time_log.end_time_log()
     return exported_asset_log
 
 def export_alembic_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
@@ -305,26 +261,6 @@ def export_groom_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bf
             UserStartFrame = scene.frame_start
             UserEndFrame = scene.frame_end
             exported_asset_log.extend(bfu_export_single_groom_simulation.process_groom_simulation_export_from_asset(op, asset))
-
-            # Resets previous start/end frame
-            scene.frame_start = UserStartFrame
-            scene.frame_end = UserEndFrame
-            export_time_log.end_time_log()
-    return exported_asset_log
-
-def export_animation_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-
-    print("Start Export Action(s)")
-    exported_asset_log = []
-    for asset in asset_list:
-        if asset.asset_type in (AssetType.ANIM_ACTION, AssetType.ANIM_POSE):
-            export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as Action and Pose Animation.", 1)
-            # Save current start/end frame
-            UserStartFrame = scene.frame_start
-            UserEndFrame = scene.frame_end
-
-            exported_asset_log.extend(bfu_export_single_fbx_action.process_fbx_action_export_from_asset(op, asset))
 
             # Resets previous start/end frame
             scene.frame_start = UserStartFrame

@@ -1,12 +1,12 @@
 import bpy
+from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
-from .. import bfu_export_procedure
 
 def draw_ui_custom_property(layout: bpy.types.UILayout, obj: bpy.types.Object):
     if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-        export_type = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_export_type(obj)
+        export_type = bfu_skeletal_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
     else:
-        export_type = bfu_export_procedure.bfu_static_export_procedure.get_obj_export_type(obj)
+        export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
 
     if export_type == "FBX":
         layout.prop(obj, "bfu_fbx_export_with_custom_props")

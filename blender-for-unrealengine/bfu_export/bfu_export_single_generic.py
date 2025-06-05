@@ -29,7 +29,6 @@ from .. import bfu_vertex_color
 from .. import bfu_export_logs
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
-from .. import bfu_export_procedure
 
 
 def process_generic_export_from_asset(

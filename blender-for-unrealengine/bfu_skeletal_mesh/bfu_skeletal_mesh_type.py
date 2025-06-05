@@ -18,7 +18,7 @@
 
 import bpy
 from pathlib import Path
-from typing import List
+from typing import List, Any, Dict
 from . import bfu_export_skeletal_mesh_package
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode
@@ -26,13 +26,14 @@ from .. import bfu_utils
 from .. import bfu_basics
 from .. import bbpl
 from .. import bfu_modular_skeletal_mesh
-from .. import bfu_export_procedure
+from . import bfu_export_procedure
 from .. import bfu_socket
 from .. import bfu_light_map
 from .. import bfu_nanite
 from .. import bfu_vertex_color
 from .. import bfu_material
 from .. import bfu_lod
+from .. import bfu_base_object
 
 
 class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
@@ -40,7 +41,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
         super().__init__()
         self.use_materials = True
 
-    def support_asset_type(self, obj: bpy.types.Object, details: any = None) -> bool:
+    def support_asset_type(self, obj: bpy.types.Object, details: Any = None) -> bool:
         if not isinstance(obj, bpy.types.Object):
             return False
         if obj.type == "ARMATURE" and not obj.bfu_export_skeletal_mesh_as_static_mesh:
@@ -48,22 +49,22 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
                 return True
         return False
 
-    def get_asset_type(self, obj: bpy.types.Object, details: any = None) -> AssetType:
+    def get_asset_type(self, obj: bpy.types.Object, details: Any = None) -> AssetType:
         return AssetType.SKELETAL_MESH
 
-    def get_asset_export_name(self, obj):
+    def get_asset_export_name(self, obj: bpy.types.Object) -> str:
         if not isinstance(obj, bpy.types.Object):
             return False
         if bfu_utils.GetExportAsProxy(obj):
             proxy_child = bfu_utils.GetExportProxyChild(obj)
             if proxy_child is not None:
                 return bfu_basics.ValidFilename(proxy_child.name)
-        return super().get_asset_export_name(obj)
-            
-    def get_asset_file_type(self, obj):
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_export_type(obj)
+        return bfu_basics.ValidFilename(obj.name)
 
-    def get_asset_file_name(self, obj: bpy.types.Object, details: any = None, desired_name: str = "", without_extension: bool = False) -> str:
+    def get_asset_file_type(self, obj: bpy.types.Object, details: Any = None) -> str:
+        return bfu_export_procedure.get_obj_export_file_type(obj)
+
+    def get_asset_file_name(self, obj: bpy.types.Object, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
         # Generate assset file name for skeletal mesh
         scene = bpy.context.scene
         if obj.bfu_use_custom_export_name:
@@ -140,7 +141,7 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
     def can_export_asset(self, obj):
         return self.can_export_asset_type()
     
-    def get_asset_export_data(self, obj: bpy.types.Object, details: any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
+    def get_asset_export_data(self, obj: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
         asset_list = []
         scene = bpy.context.scene
         addon_prefs = bfu_basics.GetAddonPrefs()
@@ -240,12 +241,12 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
                                     if skeletal_part.enabled:
                                         if skeletal_part.target_type == 'OBJECT':  # Utilisez l'attribut target_type
                                             if skeletal_part.obj:
-                                                if skeletal_part.obj.bfu_export_type != "dont_export":
+                                                if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(skeletal_part.obj):
                                                     pak.add_object(skeletal_part.obj)
                                         elif skeletal_part.target_type == 'COLLECTION':
                                             if skeletal_part.collection:
                                                 for collection_obj in skeletal_part.collection.objects:
-                                                    if collection_obj.bfu_export_type != "dont_export":
+                                                    if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(collection_obj):
                                                         pak.add_object(collection_obj)
                         
                                 pak.export_function = bfu_export_skeletal_mesh_package.process_skeletal_mesh_export_from_package
@@ -256,13 +257,13 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
         desired_obj_list = []
         desired_obj_list.append(obj)
         for child in bbpl.basics.get_recursive_obj_childs(obj):
-            if child.bfu_export_type != "dont_export":
+            if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(child):
                 if child.name in bpy.context.window.view_layer.objects:
                     desired_obj_list.append(child)
 
         return desired_obj_list
 
-    def get_asset_additional_data(self, obj: bpy.types.Object) -> dict:
+    def get_asset_additional_data(self, obj: bpy.types.Object) -> Dict[str, Any]:
         data = {}
         # Sockets
         if obj:
@@ -275,6 +276,19 @@ class BFU_SkeletalMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetCl
         data.update(bfu_light_map.bfu_light_map_utils.get_light_map_additional_data(obj, AssetType.STATIC_MESH))
         data.update(bfu_nanite.bfu_nanite_utils.get_nanite_asset_additional_data(obj, AssetType.STATIC_MESH))
         return data
+
+####################################################################
+# UI
+####################################################################
+
+    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object) -> bpy.types.UILayout:
+        return bfu_export_procedure.draw_object_export_procedure(layout, obj)
+    
+
+# --------------------------------------------
+# Register and Unregister functions
+# --------------------------------------------
+
 
 def register():
     bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_SkeletalMesh())

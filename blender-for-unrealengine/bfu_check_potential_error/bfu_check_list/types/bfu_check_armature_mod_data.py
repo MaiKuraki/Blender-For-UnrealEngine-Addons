@@ -21,6 +21,7 @@ from typing import List
 from ...bfu_check_types import bfu_checker
 from .... import bfu_utils
 from .... import bfu_cached_assets
+from .... import bfu_base_object
 
 class BFU_Checker_ArmatureModData(bfu_checker):
 
@@ -35,7 +36,7 @@ class BFU_Checker_ArmatureModData(bfu_checker):
 
         obj_to_check = []
         for asset in final_asset_list_to_export:
-            if asset.obj in bfu_utils.get_all_objects_by_export_type("export_recursive"):
+            if asset.obj in bfu_base_object.bfu_export_type.get_all_export_recursive_objects():
                 if asset.obj not in obj_to_check:
                     obj_to_check.append(asset.obj)
                 for child in bfu_utils.GetExportDesiredChilds(asset.obj):

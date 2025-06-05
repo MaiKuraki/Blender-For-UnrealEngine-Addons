@@ -25,9 +25,10 @@ from .. import bbpl
 from .. import bfu_skeletal_mesh
 from .. import bfu_alembic_animation
 from .. import bfu_camera
+from .. import bfu_base_object
 
 
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
     addon_prefs = bfu_basics.GetAddonPrefs()
@@ -35,7 +36,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
     # Hide filters
     if obj is None:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
     is_skeletal_mesh = bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
     is_camera = bfu_camera.bfu_camera_utils.is_camera(obj)
@@ -71,7 +72,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             # Action Time
             if obj.type != "CAMERA":
                 ActionTimeProperty = panel.column()
-                ActionTimeProperty.enabled = obj.bfu_anim_action_export_enum != 'dont_export'
+                ActionTimeProperty.enabled = obj.bfu_anim_action_export_enum != "dont_export"
                 ActionTimeProperty.prop(obj, 'bfu_anim_action_start_end_time_enum')
                 if obj.bfu_anim_action_start_end_time_enum == "with_customframes":
                     OfsetTime = ActionTimeProperty.row()
@@ -92,7 +93,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             # Nomenclature
             if is_skeletal_mesh:
                 export_anim_naming = panel.column()
-                export_anim_naming.enabled = obj.bfu_anim_action_export_enum != 'dont_export'
+                export_anim_naming.enabled = obj.bfu_anim_action_export_enum != "dont_export"
                 export_anim_naming.prop(obj, 'bfu_anim_naming_type')
                 if obj.bfu_anim_naming_type == "include_custom_name":
                     export_anim_naming_text = export_anim_naming.column()

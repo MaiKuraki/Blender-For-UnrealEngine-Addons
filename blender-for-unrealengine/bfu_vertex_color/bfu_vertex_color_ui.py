@@ -20,15 +20,15 @@
 import bpy
 from . import bfu_vertex_color_utils
 from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
+from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
-from .. import bfu_export_procedure
+from .. import bfu_base_object
 
 
 
-def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
     addon_prefs = bfu_basics.GetAddonPrefs()
@@ -38,7 +38,7 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     if addon_prefs.useGeneratedScripts is False:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
     if obj.bfu_export_as_lod_mesh:
         return
@@ -80,9 +80,9 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
             blender_version = bpy.app.version
 
             if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                export_type = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_export_type(obj)
+                export_type = bfu_skeletal_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
             else:
-                export_type = bfu_export_procedure.bfu_static_export_procedure.get_obj_export_type(obj)
+                export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
 
             if export_type == "FBX":
                 if blender_version >= (3, 4, 0):

@@ -18,14 +18,14 @@
 
 import bpy
 from pathlib import Path
-from typing import List
+from typing import List, Any, Dict
 from . import bfu_export_collection_as_static_mesh_package
+from . import bfu_export_procedure
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode
 from .. import bbpl
-from .. import bfu_export_procedure
 from .. import bfu_socket
 from .. import bfu_light_map
 from .. import bfu_nanite
@@ -42,18 +42,18 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
         self.use_lods = True
         self.use_materials = True
 
-    def support_asset_type(self, col: bpy.types.Collection, details: any = None) -> bool:
+    def support_asset_type(self, col: bpy.types.Collection, details: Any = None) -> bool:
         if not isinstance(col, bpy.types.Collection):
             return False
         return True
 
-    def get_asset_type(self, col: bpy.types.Collection, details: any = None) -> AssetType:
+    def get_asset_type(self, col: bpy.types.Collection, details: Any = None) -> AssetType:
         return AssetType.COLLECTION_AS_STATIC_MESH
 
     def get_asset_file_type(self, col: bpy.types.Collection) -> str:
-        return bfu_export_procedure.bfu_collection_export_procedure.get_col_export_type(col)
+        return bfu_export_procedure.get_col_export_type(col)
 
-    def get_asset_file_name(self, col: bpy.types.Collection, details: any = None, desired_name: str = "", without_extension: bool = False) -> str:
+    def get_asset_file_name(self, col: bpy.types.Collection, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
         # Generate assset file name for skeletal mesh
         scene = bpy.context.scene
 
@@ -114,12 +114,12 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
     def can_export_asset(self, obj):
         return self.can_export_asset_type()
 
-    def get_asset_export_data(self, col: bpy.types.Collection, details: any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
+    def get_asset_export_data(self, col: bpy.types.Collection, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
         asset_list = []
         scene = bpy.context.scene
         addon_prefs = bfu_basics.GetAddonPrefs()
         if scene.bfu_use_static_collection_export:
-            asset = AssetToExport(col, None, AssetType.COLLECTION_AS_STATIC_MESH)
+            asset = AssetToExport(col.name, AssetType.COLLECTION_AS_STATIC_MESH)
 
             import_dirpath = self.get_asset_import_directory_path(col)
             asset.set_import_name(self.get_asset_file_name(col, without_extension=True))
@@ -151,7 +151,7 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
         return asset_list
 
 
-    def get_asset_additional_data(self, col: bpy.types.Collection) -> dict:
+    def get_asset_additional_data(self, col: bpy.types.Collection) -> Dict[str, Any]:
         data = {}
 
         data.update(bfu_vertex_color.bfu_vertex_color_utils.get_vertex_color_additional_data(col, AssetType.COLLECTION_AS_STATIC_MESH))
@@ -160,7 +160,17 @@ class BFU_StaticMesh_Collection(bfu_assets_manager.bfu_asset_manager_type.BFU_Ba
         data.update(bfu_nanite.bfu_nanite_utils.get_nanite_asset_additional_data(col, AssetType.COLLECTION_AS_STATIC_MESH))
         return data
 
+####################################################################
+# UI
+####################################################################
 
+    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, col: bpy.types.Collection) -> bpy.types.UILayout:
+        return bfu_export_procedure.draw_col_export_procedure(layout, col)
+
+
+# --------------------------------------------
+# Register and Unregister functions
+# --------------------------------------------
 
 def register():
     bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_StaticMesh_Collection())

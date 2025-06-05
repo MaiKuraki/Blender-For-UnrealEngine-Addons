@@ -5,6 +5,7 @@
 		}
 	],
 	"settings": {
+		"python.analysis.typeCheckingMode": "strict"
 
 	},
 	"extensions": {

@@ -19,14 +19,14 @@
 
 import bpy
 import fnmatch
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from . import bfu_cached_assets_types
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode, AssetType
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_assets_manager
-
+from .. import bfu_base_object
 
 
 
@@ -125,9 +125,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Returns all assets that will be exported
         # WARNING: the assets not to be ordered. First asset are exported first.
 
-        def get_have_parent_to_export(obj: bpy.types.Object) -> bpy.types.Object:
+        def get_have_parent_to_export(obj: bpy.types.Object) -> Optional[bpy.types.Object]:
             if obj.parent is not None:
-                if obj.parent.bfu_export_type == 'export_recursive':
+                if bfu_base_object.bfu_export_type.is_export_recursive(obj.parent):
                     return obj.parent
                 else:
                     return get_have_parent_to_export(obj.parent)
@@ -159,10 +159,10 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Search for objects
         obj_list: List[bpy.types.Object] = []
         if export_filter == "default":
-            obj_list = bfu_utils.get_all_objects_by_export_type("export_recursive")  
+            obj_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
 
         elif export_filter in ["only_object", "only_object_action"]:
-            recursive_list = bfu_utils.get_all_objects_by_export_type("export_recursive")
+            recursive_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
 
             for obj in bpy.context.selected_objects:
                 if obj in recursive_list:
@@ -183,9 +183,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Search for armatures and their actions
         armature_list: List[bpy.types.Object] = []
         if export_filter == "default":
-            armature_list = bfu_utils.get_all_objects_by_export_type("export_recursive")
+            armature_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
         elif export_filter in ["only_object", "only_object_action"]:
-            armature_recursive_list = bfu_utils.get_all_objects_by_export_type("export_recursive")
+            armature_recursive_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
 
             for obj in bpy.context.selected_objects:
                 if obj in armature_recursive_list:

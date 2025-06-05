@@ -24,10 +24,11 @@ from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_assets_manager
+from .. import bfu_base_object
 
 
 
-def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
     addon_prefs = bfu_basics.GetAddonPrefs()
@@ -37,7 +38,7 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     if addon_prefs.useGeneratedScripts is False:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
     if obj.bfu_export_as_lod_mesh:
         return

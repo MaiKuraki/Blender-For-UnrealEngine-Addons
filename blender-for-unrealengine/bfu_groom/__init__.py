@@ -19,12 +19,15 @@
 import bpy
 import importlib
 
+from . import bfu_export_procedure
 from . import bfu_groom_props
 from . import bfu_groom_ui
 from . import bfu_groom_utils
 from . import bfu_groom_type
 from . import bfu_groom_config
 
+if "bfu_export_procedure" in locals():
+    importlib.reload(bfu_export_procedure)  
 if "bfu_groom_props" in locals():
     importlib.reload(bfu_groom_props)
 if "bfu_groom_ui" in locals():
@@ -45,6 +48,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    bfu_export_procedure.register()
     bfu_groom_props.register()
     bfu_groom_type.register()
 
@@ -54,3 +58,4 @@ def unregister():
 
     bfu_groom_type.unregister()
     bfu_groom_props.unregister()
+    bfu_export_procedure.unregister()

@@ -21,7 +21,9 @@ from . import bfu_export_text_files_utils
 from .. import languages
 from .. import bfu_export_logs
 from .. import bfu_utils
+from .. import bfu_base_object
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
+
 
 
 def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog):
@@ -95,7 +97,8 @@ def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset
         marker_sections["start_time"] = section[0]
         marker_sections["end_time"] = section[1]
         if section[2]:
-            if section[2].bfu_export_type == "export_recursive" or section[2].bfu_export_type == "auto":
+
+            if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(section[2]):
                 marker_sections["has_camera"] = True
                 marker_sections["camera_name"] = section[2].name
             else:

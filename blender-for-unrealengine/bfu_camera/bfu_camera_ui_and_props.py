@@ -26,6 +26,7 @@ from .. import bfu_basics
 from .. import bfu_ui
 from .. import bbpl
 from .. import languages
+from .. import bfu_base_object
 
 
 def get_preset_values():
@@ -39,7 +40,7 @@ def get_preset_values():
         ]
     return preset_values
 
-def draw_ui_object_camera(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui_object_camera(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
   
 
     if obj is None:
@@ -97,7 +98,7 @@ def draw_ui_object_camera(layout: bpy.types.UILayout, obj: bpy.types.Object):
                                     icon='INFO'
                                 )
 
-                camera_ui_pop.enabled = obj.bfu_export_type == "export_recursive"
+                camera_ui_pop.enabled = bfu_base_object.bfu_export_type.is_export_recursive(obj)
                 camera_ui.operator("object.bfu_copy_active_camera_data", icon="COPYDOWN")
 
 

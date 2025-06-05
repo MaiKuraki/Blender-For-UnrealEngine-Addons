@@ -19,6 +19,7 @@
 import bpy
 import importlib
 
+from . import bfu_export_procedure
 from . import bfu_skeletal_mesh_props
 from . import bfu_skeletal_mesh_ui
 from . import bfu_skeletal_mesh_utils
@@ -28,6 +29,8 @@ from . import bfu_skeletal_mesh_config
 from . import bfu_export_skeletal_mesh_package
 from . import bfu_export_action_animation_package
 
+if "bfu_export_procedure" in locals():
+    importlib.reload(bfu_export_procedure)  
 if "bfu_skeletal_mesh_props" in locals():
     importlib.reload(bfu_skeletal_mesh_props)
 if "bfu_skeletal_mesh_ui" in locals():
@@ -54,6 +57,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    bfu_export_procedure.register()
     bfu_skeletal_mesh_props.register()
     bfu_skeletal_mesh_type.register()
     bfu_skeletal_animation_type.register()
@@ -66,3 +70,4 @@ def unregister():
     bfu_skeletal_animation_type.unregister()
     bfu_skeletal_mesh_type.unregister()
     bfu_skeletal_mesh_props.unregister()
+    bfu_export_procedure.unregister()

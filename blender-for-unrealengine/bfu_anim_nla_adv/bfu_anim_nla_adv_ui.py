@@ -23,10 +23,11 @@ from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_alembic_animation
+from .. import bfu_base_object
 
 
 
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
     addon_prefs = bfu_basics.GetAddonPrefs()
@@ -34,7 +35,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
     # Hide filters
     if obj is None:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
     if bfu_alembic_animation.bfu_alembic_animation_utils.is_alembic_animation(obj):
         return

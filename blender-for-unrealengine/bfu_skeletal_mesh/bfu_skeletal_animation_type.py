@@ -18,15 +18,16 @@
 
 import bpy
 import fnmatch
-from typing import List
+from typing import List, Any
 from pathlib import Path
 from . import bfu_export_action_animation_package
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode
 from .. import bfu_utils
 from .. import bfu_basics
-from .. import bfu_export_procedure
+from . import bfu_export_procedure
 from .. import bbpl
+from .. import bfu_base_object
 
 
 
@@ -51,15 +52,15 @@ class BFU_SkeletalAnimation(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAs
         else:
             return AssetType.ANIM_ACTION
 
-    def get_asset_file_type(self, obj):
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_export_type(obj)
+    def get_asset_file_type(self, obj: bpy.types.Object) -> str:
+        return bfu_export_procedure.get_obj_export_file_type(obj)
 
-    def get_asset_export_name(self, obj):
+    def get_asset_export_name(self, obj: bpy.types.Object) -> str:
         if bfu_utils.GetExportAsProxy(obj):
             proxy_child = bfu_utils.GetExportProxyChild(obj)
             if proxy_child is not None:
                 return bfu_basics.ValidFilename(proxy_child.name)
-        return super().get_asset_export_name(obj)
+        return bfu_basics.ValidFilename(obj.name)
 
     def get_asset_file_name(self, obj: bpy.types.Object, action: bpy.types.Action = None, desired_name: str = "", without_extension: bool = False) -> str:
         # Generate assset file name for skeletal mesh
@@ -197,11 +198,24 @@ class BFU_SkeletalAnimation(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAs
             desired_obj_list = []
             desired_obj_list.append(obj)
             for child in bbpl.basics.get_recursive_obj_childs(obj):
-                if child.bfu_export_type != "dont_export":
+                if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(child):
                     if child.name in bpy.context.window.view_layer.objects:
                         desired_obj_list.append(child)
 
         return desired_obj_list
+
+####################################################################
+# UI
+####################################################################
+
+    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object) -> bpy.types.UILayout:
+        return bfu_export_procedure.draw_object_export_procedure(layout, obj)
+    
+
+# --------------------------------------------
+# Register and Unregister functions
+# --------------------------------------------
+
 
 def register():
     bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_SkeletalAnimation())

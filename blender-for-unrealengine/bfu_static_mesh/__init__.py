@@ -19,6 +19,7 @@
 import bpy
 import importlib
 
+from . import bfu_export_procedure
 from . import bfu_static_mesh_props
 from . import bfu_static_mesh_ui
 from . import bfu_static_mesh_utils
@@ -26,6 +27,8 @@ from . import bfu_static_mesh_type
 from . import bfu_static_mesh_config
 from . import bfu_export_static_mesh_package
 
+if "bfu_export_procedure" in locals():
+    importlib.reload(bfu_export_procedure)
 if "bfu_static_mesh_props" in locals():
     importlib.reload(bfu_static_mesh_props)
 if "bfu_static_mesh_ui" in locals():
@@ -40,6 +43,7 @@ if "bfu_export_static_mesh_package" in locals():
     importlib.reload(bfu_export_static_mesh_package)
 
 
+
 classes = (
 )
 
@@ -48,6 +52,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    bfu_export_procedure.register()
     bfu_static_mesh_props.register()
     bfu_static_mesh_type.register()
 
@@ -57,3 +62,4 @@ def unregister():
 
     bfu_static_mesh_type.unregister()
     bfu_static_mesh_props.unregister()
+    bfu_export_procedure.unregister()

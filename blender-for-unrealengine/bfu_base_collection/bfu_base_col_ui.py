@@ -20,13 +20,12 @@
 import bpy
 from .. import bfu_ui
 from .. import bbpl
-from .. import bfu_export_procedure
+from . import bfu_export_procedure
 from .. import bfu_cached_assets
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
 
-    
     scene = bpy.context.scene 
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("SCENE", "GENERAL"):
@@ -55,7 +54,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
                     col = bpy.data.collections[col_name]
                     col_prop = panel
                     col_prop.prop(col, 'bfu_export_folder_name', icon='FILE_FOLDER')
-                    bfu_export_procedure.bfu_export_procedure_ui.draw_collection_export_procedure(panel, col)
+                    bfu_export_procedure.draw_col_export_procedure(panel, col)
 
             collectionPropertyInfo = panel.row().box().split(factor=0.75)
             collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.GetCollectionAssetCache()

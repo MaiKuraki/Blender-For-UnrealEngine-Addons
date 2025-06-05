@@ -25,12 +25,13 @@ from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_alembic_animation
 from .. import bfu_camera
+from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
-from .. import bfu_export_procedure
 from .. import bfu_custom_property
+from .. import bfu_base_object
 
 
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
     addon_prefs = bfu_basics.GetAddonPrefs()
@@ -40,7 +41,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     if not bfu_utils.draw_proxy_propertys(obj):
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
@@ -59,8 +60,8 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             transformProp_scale = transformProp.row()
             transformProp_scale.prop(obj, 'bfu_export_global_scale')
             if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_not_skeletal_mesh(obj):
-                preset = bfu_export_procedure.bfu_static_export_procedure.get_obj_static_fbx_procedure_preset(obj)
-                if(bfu_export_procedure.bfu_static_export_procedure.get_obj_can_edit_scale(obj) == False):
+                preset = bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)
+                if(bfu_static_mesh.bfu_export_procedure.get_obj_can_edit_scale(obj) == False):
                     transformProp_scale.enabled = False
             
             if bfu_camera.bfu_camera_utils.is_camera(obj):
@@ -69,9 +70,9 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
             AxisProperty = panel.column()
             
             if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                export_type = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_export_type(obj)
+                export_type = bfu_skeletal_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
             else:
-                export_type = bfu_export_procedure.bfu_static_export_procedure.get_obj_export_type(obj)
+                export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
 
             if export_type == "FBX":
                 AxisProperty.prop(obj, 'bfu_override_procedure_preset')
@@ -87,9 +88,9 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
                 else:
                     box = panel.box()
                     if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                        preset = bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)
+                        preset = bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)
                     else:
-                        preset = bfu_export_procedure.bfu_static_export_procedure.get_obj_static_fbx_procedure_preset(obj)
+                        preset = bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)
                     var_lines = box.column()
                     for key, value in preset.items():
                         display_key = bpl.utils.format_property_name(key)

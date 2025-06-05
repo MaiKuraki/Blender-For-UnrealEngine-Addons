@@ -24,6 +24,8 @@ from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_unreal_utils
+from .. import bfu_base_object
+
 
 
 
@@ -145,8 +147,8 @@ def fix_export_type_on_socket(list=None):
 
     fixed_sockets = 0
     for obj in objs:
-        if obj.bfu_export_type == "export_recursive":
-            obj.bfu_export_type = "auto"
+        if bfu_base_object.bfu_export_type.is_export_recursive(obj):
+            bfu_base_object.bfu_export_type.set_auto(obj)
             fixed_sockets += 1
     return fixed_sockets
 

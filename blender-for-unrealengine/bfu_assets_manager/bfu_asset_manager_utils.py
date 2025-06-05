@@ -16,10 +16,11 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+from typing import Any, Optional
 from . import bfu_asset_manager_type
 from . import bfu_asset_manager_registred_assets
 
-def get_all_supported_asset_class(data: any, details: any = None) -> list[bfu_asset_manager_type.BFU_BaseAssetClass]:
+def get_all_supported_asset_class(data: Any, details: Any = None) -> list[bfu_asset_manager_type.BFU_BaseAssetClass]:
     """
     Returns a list of all asset classes that support the given data and details.
     :param data: The data to check for supported asset classes.
@@ -33,13 +34,14 @@ def get_all_supported_asset_class(data: any, details: any = None) -> list[bfu_as
             supported_classes.append(asset)
     return supported_classes
 
-def get_primary_supported_asset_class(data: any, details: any = None) -> bfu_asset_manager_type.BFU_BaseAssetClass:
+def get_primary_supported_asset_class(data: Any, details: Any = None) -> Optional[bfu_asset_manager_type.BFU_BaseAssetClass]:
     for asset in bfu_asset_manager_registred_assets.get_registred_asset_class():
         asset: bfu_asset_manager_type.BFU_BaseAssetClass
         if asset.support_asset_type(data, details):
             return asset
+    return None
 
-def get_asset_type(data: any, details: any = None) -> bfu_asset_manager_type.AssetType:
+def get_asset_type(data: Any, details: Any = None) -> bfu_asset_manager_type.AssetType:
     asset_class = get_primary_supported_asset_class(data, details)
     if asset_class:
         return asset_class.get_asset_type(data)

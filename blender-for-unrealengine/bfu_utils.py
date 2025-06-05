@@ -27,6 +27,7 @@ import os
 from typing import List, Tuple
 from . import bbpl
 from . import bfu_basics
+from . import bfu_base_object
 
 
 class SavedBones():
@@ -205,7 +206,7 @@ def CleanDeleteObjects(objs):
 
     return removed_objects
 
-
+# @TODO: @Deprecated use bfu_base_object.bfu_export_type.get_all_xxx_objects instead
 def get_all_objects_by_export_type(exportType) -> List[bpy.types.Object]:
     # Find all objects with a specific bfu_export_type property
     targetObj = []
@@ -215,6 +216,7 @@ def get_all_objects_by_export_type(exportType) -> List[bpy.types.Object]:
             targetObj.append(obj)
     return (targetObj)
 
+# @TODO: @Deprecated use bfu_base_object.bfu_export_type.get_all_xxx_armatures instead
 def get_all_armatures_by_export_type(exportType) -> List[bpy.types.Object]:
     # Find all armature objects with a specific bfu_export_type property
     targetObj = []
@@ -248,7 +250,7 @@ def GetExportDesiredChilds(obj: bpy.types.Object) -> List[bpy.types.Object]:
 
     DesiredObj = []
     for child in bbpl.basics.get_recursive_obj_childs(obj):
-        if child.bfu_export_type != "dont_export":
+        if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(child):
             if child.name in bpy.context.window.view_layer.objects:
                 DesiredObj.append(child)
 
@@ -620,7 +622,7 @@ def SelectCollectionObjects(collection):
     selectedObjs = []
     bpy.ops.object.select_all(action='DESELECT')
     for selectObj in collection.all_objects:
-        if selectObj.bfu_export_type != "dont_export":
+        if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(selectObj):
             if selectObj.name in bpy.context.view_layer.objects:
                 selectObj.select_set(True)
                 selectedObjs.append(selectObj)

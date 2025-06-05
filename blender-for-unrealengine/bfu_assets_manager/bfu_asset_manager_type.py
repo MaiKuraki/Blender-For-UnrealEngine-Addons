@@ -19,7 +19,7 @@
 import bpy
 from enum import Enum
 import pathlib
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable, Any, Dict
 from .. import bfu_basics
 
 class AssetDataSearchMode(Enum):
@@ -142,12 +142,12 @@ class PackageFile:
 class AssetPackage:
     def __init__(self, name: str, details: Optional[List[str]] = None):
         self.name: str = name
-        self.details: List[str] = details
+        self.details: Optional[List[str]] = details
         self.file: Optional[PackageFile] = None
         self.objects: List[bpy.types.Object] = []
         self.collection: Optional[bpy.types.Collection] = None
         self.action: Optional[bpy.types.Action] = None  # Action for animations
-        self.export_function: Optional[callable] = None
+        self.export_function: Optional[Callable[..., Any]] = None
         self.frame_range: Optional[Tuple[float, float]] = None  # Frame range for animations, e.g., (start, end)
 
     def set_file(self, dirpath: str, filename: str, file_type: str) -> PackageFile:
@@ -176,8 +176,8 @@ class AssetPackage:
         self.frame_range = (start, end)
 
 class AdditionalAssetData:
-    def __init__(self, data: dict):
-        self.data: dict = data
+    def __init__(self, data: Dict[str, Any]):
+        self.data: Dict[str, Any] = data
         self.file: Optional[PackageFile] = None
 
     def set_file(self, dirpath: str, filename: str) -> PackageFile:
@@ -205,13 +205,13 @@ class AssetToExport:
         # Asset Additional Data:
         self.additional_data: Optional[AdditionalAssetData] = None
 
-    def add_asset_package(self, package_name, details: Optional[List[str]] = None) -> AssetPackage:
+    def add_asset_package(self, package_name: str, details: Optional[List[str]] = None) -> AssetPackage:
         # Create a new asset package and add it to the list
         new_package = AssetPackage(package_name, details)
         self.asset_pakages.append(new_package)
         return new_package
-    
-    def set_asset_additional_data(self, data: dict) -> AdditionalAssetData:
+
+    def set_asset_additional_data(self, data: Dict[str, Any]) -> AdditionalAssetData:
         # Set the additional data for the asset
         self.additional_data = AdditionalAssetData(data)
         return self.additional_data
@@ -228,35 +228,43 @@ class BFU_BaseAssetClass:
         self.use_materials = False
         self.use_sockets = False
 
-    def support_asset_type(self, data: any, details: any = None) -> bool:
+    def support_asset_type(self, data: Any, details: Any = None) -> bool:
         return False
 
-    def get_asset_type(self, data: any) -> AssetType:
-        return None
+    def get_asset_type(self, data: Any) -> AssetType:
+        return AssetType.UNKNOWN
 
-    def get_asset_export_name(self, data: any)-> str:
-        return bfu_basics.ValidFilename(data.name)
-
-    def get_asset_file_name(self, data: any, details: any = None, desired_name="") -> str:
+    def get_asset_export_name(self, data: Any) -> str:
         return ""
 
-    def get_asset_export_directory_path(self, data: any, details: any = None, extra_path = "", absolute = True) -> str:
+    def get_asset_file_name(self, data: Any, details: Any = None, desired_name: str = "") -> str:
         return ""
 
-    def get_asset_import_directory_path(self, data: any, details: any = None, extra_path = "") -> str:
+    def get_asset_export_directory_path(self, data: Any, details: Any = None, extra_path: str = "", absolute: bool = True) -> str:
+        return ""
+
+    def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: str = "") -> str:
         return ""
 
     def can_export_asset_type(self) -> bool:
         return False
 
-    def can_export_asset(self, data: any) -> bool:
+    def can_export_asset(self, data: Any) -> bool:
         return False
 
-    def get_asset_export_data(self, data: any, details: any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
+    def get_asset_export_data(self, data: Any, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
         return []
 
-    def get_asset_export_content(self, data: any) -> List[bytes]:
+    def get_asset_export_content(self, data: Any) -> List[bytes]:
         return []
 
-    def get_asset_additional_data(self, data: any) -> dict:
+    def get_asset_additional_data(self, data: Any) -> Dict[str, Any]:
         return {}
+    
+####################################################################
+# UI
+####################################################################
+
+    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, data: Any) -> bpy.types.UILayout:
+        # If object supports export procedure, draw the UI for it
+        return layout
