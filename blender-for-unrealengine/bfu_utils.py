@@ -877,7 +877,7 @@ def CorrectExtremeUV(step_scale=2, move_to_absolute=False):
 
             obj.data.update()
 
-def ApplyExportTransform(obj: bpy.types.Object, use_type: str = "Object"):
+def apply_export_transform(obj: bpy.types.Object, use_type: str = "Object"):
 
     newMatrix = obj.matrix_world @ mathutils.Matrix.Translation((0, 0, 0))
     saveScale = obj.scale * 1

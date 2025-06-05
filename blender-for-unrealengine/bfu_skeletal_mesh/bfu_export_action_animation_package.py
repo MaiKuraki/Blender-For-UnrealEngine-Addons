@@ -105,7 +105,7 @@ def export_as_action_animation(
     if addon_prefs.bakeArmatureAction:
         bfu_export.bfu_export_utils.BakeArmatureAnimation(active, scene.frame_start, scene.frame_end)
 
-    bfu_utils.ApplyExportTransform(active, "Action")  # Apply export transform before rescale
+    bfu_utils.apply_export_transform(active, "Action")  # Apply export transform before rescale
 
     # This will rescale the rig and unit scale to get a root bone egal to 1
     ShouldRescaleRig = bfu_export.bfu_export_utils.GetShouldRescaleRig(active)

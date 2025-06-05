@@ -60,10 +60,16 @@ def export_as_static_mesh(
     
 
     # Export a single Mesh
-    active = objs[0]
     prepare_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare export", 2)
     scene = bpy.context.scene
 
+    bbpl.utils.safe_mode_set('OBJECT')
+    bbpl.utils.select_specific_object_list(objs[0], objs)
+    asset_name = bfu_export.bfu_export_utils.PrepareExportName(objs[0], False)
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
+
+    # Duplicated active that should be used for export
+    active = bpy.context.active_object
     if TYPE_CHECKING:
         class FakeObject(bpy.types.Object):
             bfu_static_export_procedure: str
@@ -78,10 +84,6 @@ def export_as_static_mesh(
             bfu_fbx_export_with_custom_props: bool
         active = FakeObject()  # type: ignore
 
-    bbpl.utils.safe_mode_set('OBJECT')
-    bbpl.utils.select_specific_object_list(objs[0], objs)
-    asset_name = bfu_export.bfu_export_utils.PrepareExportName(objs[0], False)
-    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
     bfu_export.bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
 
     bfu_export.bfu_export_utils.ConvertSelectedToMesh()
@@ -98,7 +100,7 @@ def export_as_static_mesh(
         bfu_export.bfu_export_utils.SetSocketsExportName(selected_obj)
 
     asset_name.target_object = active
-    bfu_utils.ApplyExportTransform(active, "Object")
+    bfu_utils.apply_export_transform(active, "Object")
     asset_name.set_export_name()
     static_export_procedure = active.bfu_static_export_procedure
 

@@ -92,7 +92,7 @@ def export_as_skeletal_mesh(
     if export_as_proxy:
         bfu_export.bfu_export_utils.ApplyProxyData(active)
 
-    bfu_utils.ApplyExportTransform(active, "Object")  # Apply export transform before rescale
+    bfu_utils.apply_export_transform(active, "Object")  # Apply export transform before rescale
 
     # This will rescale the rig and unit scale to get a root bone egal to 1
     ShouldRescaleRig = bfu_export.bfu_export_utils.GetShouldRescaleRig(active)
