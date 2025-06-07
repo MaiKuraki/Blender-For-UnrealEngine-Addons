@@ -107,7 +107,7 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
         #main_collection = unreal_exported_asset.exported_asset.asset_pakages[0].collection
         #main_obj_data = main_collection
     else:
-        main_object = unreal_exported_asset.exported_asset.asset_packages[0].objects[0]
+        main_object = unreal_exported_asset.exported_asset.get_primary_asset_package()
         if main_object:
             if asset_type in [AssetType.STATIC_MESH]:
                 asset_data["auto_generate_collision"] = main_object.bfu_auto_generate_collision

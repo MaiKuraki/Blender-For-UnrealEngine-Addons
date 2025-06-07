@@ -28,16 +28,19 @@ class BFU_OT_ShowAssetToExport(bpy.types.Operator):
     bl_idname = "object.showasset"
     bl_description = "Click to show assets that are to be exported."
 
-    def execute(self, context: bpy.types.Context):
+    def execute(self, context: bpy.types.Context | None):
 
+        if context is None:
+            return {'CANCELLED'}
+        
         obj = context.object
         if obj:
-            if obj.type == "ARMATURE":
+            if obj.type == "ARMATURE":  # type: ignore
                 animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_animation_asset_cache(obj)
                 animation_asset_cache.UpdateActionCache()
                 
 
-        bpy.ops.object.openshowassettoexport("INVOKE_DEFAULT")
+        bpy.ops.object.openshowassettoexport("INVOKE_DEFAULT")  # type: ignore
         return {'FINISHED'}
 
 
@@ -46,18 +49,25 @@ class BFU_OT_OpenShowAssetToExport(bpy.types.Operator):
     bl_idname = "object.openshowassettoexport"
     bl_description = "Open the list of assets to export."
 
-    def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
+    def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[str]:
+        if context is None:
+            return {'CANCELLED'}
+        
         wm = context.window_manager
-        return wm.invoke_popup(self, width=1200)
-    
-    def execute(self, context: bpy.types.Context):
+        return wm.invoke_popup(self, width=1200)  # type: ignore
+
+    def execute(self, context: bpy.types.Context | None):
+        if context is None:
+            return {'CANCELLED'}
         return {'FINISHED'}
-    
-    def draw(self, context: bpy.types.Context):
+
+    def draw(self, context: bpy.types.Context | None):
+        if context is None:
+            return
         layout = self.layout
         final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
         final_asset_list_to_export = final_asset_cache.get_final_asset_list(search_mode=AssetDataSearchMode.FULL)
-        bfu_asset_preview_ui.draw(layout, context, final_asset_list_to_export)
+        bfu_asset_preview_ui.draw_assets_list(layout, context, final_asset_list_to_export)
 
 
 # -------------------------------------------------------------------
@@ -72,10 +82,10 @@ classes = (
 
 def register():
     for cls in classes:
-        bpy.utils.register_class(cls)
+        bpy.utils.register_class(cls)  # type: ignore
 
 
 def unregister():
     for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+        bpy.utils.unregister_class(cls)  # type: ignore
 

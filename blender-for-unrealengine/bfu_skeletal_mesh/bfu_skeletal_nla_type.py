@@ -45,7 +45,7 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
     def support_asset_type(self, data: Any, details: Any = None) -> bool:
         if not isinstance(data, bpy.types.Object):
             return False
-        if not isinstance(details, bpy.types.Action):
+        if details is not None:
             return False
         if data.type == "ARMATURE" and data.bfu_anim_nla_use:  # type: ignore[attr-defined]
             return True
@@ -118,7 +118,7 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
         asset.set_import_dirpath(self.get_asset_import_directory_path(data))
 
         if search_mode.search_packages():
-            pak = asset.add_asset_package(details.name, ["NLA"])
+            pak = asset.add_asset_package(data.bfu_anim_nla_export_name, ["NLA"])  # type: ignore[attr-defined]
             self.set_package_file(pak, data, details)
 
             if search_mode.search_package_content():

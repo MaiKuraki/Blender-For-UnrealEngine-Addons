@@ -139,7 +139,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                 return None
 
         scene = bpy.context.scene
-        export_filter = scene.bfu_export_selection_filter
+        export_filter = scene.bfu_export_selection_filter  # type: ignore[attr-defined]
 
         target_asset_to_export: List[AssetToExport] = []
 

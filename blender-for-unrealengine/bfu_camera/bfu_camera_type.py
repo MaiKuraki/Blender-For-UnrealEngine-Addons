@@ -102,7 +102,7 @@ class BFU_Camera(BFU_ObjectAssetClass):
         asset.set_import_dirpath(self.get_asset_import_directory_path(data))
     
         if search_mode.search_packages():
-            if data.export_fbx_camera:  # type: ignore[attr-defined]
+            if data.bfu_export_fbx_camera:  # type: ignore[attr-defined]
                 pak = asset.add_asset_package(data.name, ["Alembic"])
                 self.set_package_file(pak, data, details)
 
@@ -122,7 +122,6 @@ class BFU_Camera(BFU_ObjectAssetClass):
         if search_mode.value == AssetDataSearchMode.FULL.value:
             pre_bake_camera = bfu_camera.bfu_camera_data.BFU_CameraTracks(data)
             additional_data.update(bfu_camera.bfu_camera_write_text.WriteCameraAnimationTracks(data, pre_bake_camera=pre_bake_camera))
-
         return additional_data
     
 # --------------------------------------------

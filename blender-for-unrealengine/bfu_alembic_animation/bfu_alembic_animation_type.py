@@ -115,7 +115,7 @@ class BFU_AlembicAnimation(BFU_ObjectAssetClass):
         asset_list: List[AssetToExport] = []
 
         # One asset per alembic animation pack
-        asset = AssetToExport(self, data.name, AssetType.STATIC_MESH)
+        asset = AssetToExport(self, data.name, AssetType.ANIM_ALEMBIC)
         asset.set_import_name(self.get_package_file_name(data, without_extension=True))
         asset.set_import_dirpath(self.get_asset_import_directory_path(data))
     

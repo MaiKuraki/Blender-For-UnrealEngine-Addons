@@ -596,23 +596,8 @@ def get_desired_alembic_start_end_range(obj: bpy.types.Object) -> Tuple[float, f
     if bpy.context is None:
         return (0.0, 1.0)
     scene = bpy.context.scene
+    return (scene.frame_start, scene.frame_end)
 
-    if obj.bfu_anim_alembic_start_end_time_enum == "with_sceneframes":
-        startTime = scene.frame_start + obj.bfu_anim_alembic_start_frame_offset
-        endTime = scene.frame_end + obj.bfu_anim_alembic_end_frame_offset
-        if endTime <= startTime:
-            endTime = startTime
-
-        return (startTime, endTime)
-
-    elif obj.bfu_anim_alembic_start_end_time_enum == "with_customframes":
-        startTime = obj.bfu_anim_alembic_custom_start_frame
-        endTime = obj.bfu_anim_alembic_custom_end_frame
-        if endTime <= startTime:
-            endTime = startTime
-
-        return (startTime, endTime)
-    
 def get_desired_camera_start_end_range(obj: bpy.types.Object)-> Tuple[float, float]:
     # Returns desired action or camera anim start/end time
     

@@ -32,7 +32,7 @@ def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:
     return get_export_file_type(get_object_export_procedure(obj))
 
 def get_export_file_type(procedure: BFU_CameraExportProcedure) -> BFU_FileTypeEnum:
-    return BFU_FileTypeEnum.ALEMBIC
+    return BFU_FileTypeEnum.FBX
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_CameraExportProcedure:
     for export_type in BFU_CameraExportProcedure:
