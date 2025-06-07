@@ -25,7 +25,7 @@ from .. import bbpl
 from .. import bfu_skeletal_mesh
 from .. import bfu_alembic_animation
 from .. import bfu_camera
-from .. import bfu_base_object
+from .. import bfu_export_control
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
@@ -36,7 +36,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
     # Hide filters
     if obj is None:
         return
-    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     is_skeletal_mesh = bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
     is_camera = bfu_camera.bfu_camera_utils.is_camera(obj)

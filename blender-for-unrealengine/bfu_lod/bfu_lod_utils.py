@@ -23,6 +23,10 @@ from pathlib import Path
 from .. import bfu_assets_manager
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
+def get_last_lod_index() -> int:
+    # Support 5 LODs, this can be increased if needed.
+    # LOD 0 is the main mesh, so we start from 1
+    return 5
 
 def get_lod_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
     asset_data: Dict[str, Any] = {}

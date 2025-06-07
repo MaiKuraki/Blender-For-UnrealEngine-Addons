@@ -19,10 +19,13 @@
 import bpy
 from enum import Enum
 import pathlib
-from typing import List, Optional, Tuple, Callable, Any, Dict
+from typing import List, Optional, Tuple, Callable, Any, Dict, TYPE_CHECKING
 from abc import ABC, abstractmethod
 from pathlib import Path
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
+from .. import bfu_basics
+from .. import bfu_export_nomenclature
+from .. import bfu_addon_prefs
 
 class AssetDataSearchMode(Enum):
     FULL = "Full" # Search for all assets data.
@@ -258,21 +261,22 @@ class BFU_BaseAssetClass(ABC):
         self.use_materials = False
         self.use_sockets = False
 
-    
+        self.asset_folder_name: str = ""  # Sub folder name. Can be empty. You can also overide get_asset_folder_path() to provide a custom path.
+
 # ###################################################################
 # # Asset Root Class
 # ###################################################################
 
-    #@abstractmethod
+    @abstractmethod
     def support_asset_type(self, data: Any, details: Any = None) -> bool:
         # Used to detect if the data is supported by this asset type.
         return False
 
-    #@abstractmethod
+    @abstractmethod
     def get_asset_type(self, data: Any, details: Any = None) -> AssetType:
         return AssetType.UNKNOWN
 
-    #@abstractmethod
+    @abstractmethod
     def can_export_asset_type(self) -> bool:
         # Can export the asset for this asset type.
         # Used with scene filters. Export Static Meshes ? Export Skeletal Meshes ? etc.
@@ -286,7 +290,7 @@ class BFU_BaseAssetClass(ABC):
 
         return True
 
-    #@abstractmethod
+    @abstractmethod
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
         return Path()
 
@@ -294,17 +298,57 @@ class BFU_BaseAssetClass(ABC):
 # # Asset Package Management
 # ###################################################################
 
-    #@abstractmethod
+    def get_package_file_prefix(self, data: Any, details: Any = None) -> str:
+        # Prefix for the package file. Can be empty.
+        # Get the package file prefix, used for naming the package files.
+        return ""
+    
+    def get_package_file_suffix(self, data: Any, details: Any = None) -> str:
+        # Get the package file suffix, used for naming the package files.
+        # Suffix for the package file. Can be empty.
+        return ""
+
+    def get_export_file_path(self, data: Any, details: Any = None) -> str:
+        # Get the export file path
+        return ""
+    
+# ---------------------------------------------------
+
+    @abstractmethod
     def get_package_file_type(self, data: Any, details: Any = None) -> BFU_FileTypeEnum:
         return BFU_FileTypeEnum.UNKNOWN
 
-    #@abstractmethod
-    def get_package_file_name(self, data: Any, details: Any = None, desired_name: str = "") -> str:
+    @abstractmethod
+    def get_package_file_name(self, data: Any, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
         return "<Unknown>"
 
-    #@abstractmethod
-    def get_package_export_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None, absolute: bool = True) -> Path:
+    def get_asset_folder_path(self, data: Any, details: Any = None) -> Path:
+        # Add subfolder path if provided
+        if self.asset_folder_name: 
+            return Path(self.asset_folder_name)
         return Path()
+
+    def get_package_export_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None, absolute: bool = True) -> Path:
+        # Asset root Path
+        export_file_path = self.get_export_file_path(data, details)
+        if absolute:
+            dirpath = Path(bpy.path.abspath(export_file_path))  # type: ignore
+        else:
+            dirpath = Path(export_file_path)
+        
+        # Add asset folder path
+        dirpath /= Path(bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_export_folder(data))
+        
+        # Add subfolder path if provided
+        asset_folder_name = self.get_asset_folder_path(data, details)
+        if asset_folder_name:
+            dirpath /= asset_folder_name
+
+        # Add extra path if provided
+        if extra_path: 
+            dirpath /= extra_path
+
+        return dirpath
 
 # ###################################################################
 # # UI
@@ -318,11 +362,107 @@ class BFU_BaseAssetClass(ABC):
 # # Asset Construction
 # ####################################################################
 
-    def get_asset_export_content(self, data: Any) -> List[Any]:
-        return []
+    def set_package_file(self, package: AssetPackage, data: Any, details: Any) -> None:
+        dirpath = self.get_package_export_directory_path(data, absolute=True)
+        file_name = self.get_package_file_name(data, details)
+        file_type = self.get_package_file_type(data, details)
+        package.set_file(dirpath, file_name, file_type)
 
+    def set_additional_data_file(self, additional_data: AdditionalAssetData, data: Any, details: Any) -> None:
+        dirpath = self.get_package_export_directory_path(data, absolute=True)
+        file_name = self.get_package_file_name(data, details, without_extension=True) + "_additional_data.json"
+        additional_data.set_file(dirpath, file_name)
+
+    def set_additional_data_in_asset(self, asset_to_export: AssetToExport, data: Any, details: Any, search_mode: AssetDataSearchMode) -> None:
+        if search_mode.search_packages():
+            if bpy.context is None:
+                return
+            scene = bpy.context.scene
+            addon_prefs = bfu_addon_prefs.get_addon_prefs()
+            if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):  # type: ignore[attr-defined]
+
+                # Set additional data for the asset to export.
+                additional_data_data = self.get_asset_additional_data(data, details, search_mode)
+                additional_data = asset_to_export.set_asset_additional_data(additional_data_data)
+                if additional_data:
+                    self.set_additional_data_file(additional_data, data, details)
+
+    @abstractmethod
     def get_asset_export_data(self, data: Any, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
+        # Direct access asset export data. without checking can_export_asset()
+        # Include data from additional data.
         return []
     
-    def get_asset_additional_data(self, data: Any) -> Dict[str, Any]:
+    def get_asset_additional_data(self, data: Any, details: Any, search_mode: AssetDataSearchMode) -> Dict[str, Any]:
         return {}
+    
+class BFU_ObjectAssetClass(BFU_BaseAssetClass):
+
+    def __init__(self):
+        super().__init__()
+
+    def get_package_file_name(self, data: bpy.types.Object, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
+
+        # Use custom export name if set
+        if TYPE_CHECKING:
+            class FakeObject(bpy.types.Object): 
+                bfu_use_custom_export_name: str = ""
+                bfu_custom_export_name: str = ""
+            data = FakeObject()
+        
+
+        if data.bfu_use_custom_export_name and data.bfu_custom_export_name:
+            if without_extension:
+                return bfu_basics.valid_file_name(data.bfu_custom_export_name)
+            else:
+                return bfu_basics.valid_file_name(data.bfu_custom_export_name + self.get_package_file_type(data).get_file_extension())
+
+        # Use desired name if provided and add prefix and suffix
+        base_name = desired_name if desired_name else data.name
+        file_prefix = self.get_package_file_prefix(data, details)
+        file_suffix = self.get_package_file_suffix(data, details)
+        base_name = file_prefix + base_name + file_suffix
+
+        # Validate the base name and add file extension if needed
+        if without_extension:
+            return bfu_basics.valid_file_name(base_name)
+        else:
+            file_extension = self.get_package_file_type(data).get_file_extension()
+            return bfu_basics.valid_file_name(base_name + file_extension)
+        
+    def get_asset_folder_path(self, data: bpy.types.Object, details: Any = None) -> Path:
+        # Add object folder path
+        obj_folder_path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_export_folder(data)
+        if obj_folder_path:
+            return Path(obj_folder_path)
+        return Path()
+
+
+class BFU_CollectionAssetClass(BFU_BaseAssetClass):
+    
+    def __init__(self):
+        super().__init__()
+
+    def get_package_file_name(self, data: bpy.types.Collection, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
+
+        # Use desired name if provided and add prefix and suffix
+        base_name = desired_name if desired_name else data.name
+        file_prefix = self.get_package_file_prefix(data, details)
+        file_suffix = self.get_package_file_suffix(data, details)
+        base_name = file_prefix + base_name + file_suffix
+
+
+        # Validate the base name and add file extension if needed
+        if without_extension:
+            return bfu_basics.valid_file_name(base_name)
+        else:
+            file_extension = self.get_package_file_type(data).get_file_extension()
+            return bfu_basics.valid_file_name(base_name + file_extension)
+        
+    def get_asset_folder_path(self, data: bpy.types.Collection, details: Any = None) -> Path:
+        # Add collection folder path
+        col_folder_path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_col_export_folder(data)
+        if col_folder_path:
+            return Path(col_folder_path)
+        return Path()
+

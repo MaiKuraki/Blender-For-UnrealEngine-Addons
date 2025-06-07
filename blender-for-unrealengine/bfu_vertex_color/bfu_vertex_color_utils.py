@@ -22,8 +22,6 @@ from typing import Dict, Any, Optional, TYPE_CHECKING
 from . import bfu_vertex_color_utils
 from .. import bbpl
 from .. import bfu_utils
-from .. import bfu_static_mesh
-from .. import bfu_skeletal_mesh
 from .. import bfu_assets_manager
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 

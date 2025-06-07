@@ -18,8 +18,6 @@
 
 
 import bpy
-import fnmatch
-import pathlib
 from typing import List
 
 

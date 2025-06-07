@@ -32,7 +32,7 @@ def get_preset_values():
         'scene.bfu_use_static_export',
         'scene.bfu_use_static_collection_export',
         'scene.bfu_use_skeletal_export',
-        'scene.bfu_use_anim_export',
+        'scene.bfu_use_animation_export',
         'scene.bfu_use_alembic_export',
         'scene.bfu_use_groom_simulation_export',
         'scene.bfu_use_camera_export',
@@ -82,7 +82,7 @@ def register():
         default=True
         )
 
-    bpy.types.Scene.bfu_use_anim_export = bpy.props.BoolProperty(
+    bpy.types.Scene.bfu_use_animation_export = bpy.props.BoolProperty(
         name="Animation(s)",
         description="Check mark to export Animation(s)",
         default=True
@@ -168,7 +168,7 @@ def unregister():
     del bpy.types.Scene.bfu_use_camera_export
     del bpy.types.Scene.bfu_use_groom_simulation_export
     del bpy.types.Scene.bfu_use_alembic_export
-    del bpy.types.Scene.bfu_use_anim_export
+    del bpy.types.Scene.bfu_use_animation_export
     del bpy.types.Scene.bfu_use_skeletal_export
     del bpy.types.Scene.bfu_use_static_collection_export
     del bpy.types.Scene.bfu_use_static_export

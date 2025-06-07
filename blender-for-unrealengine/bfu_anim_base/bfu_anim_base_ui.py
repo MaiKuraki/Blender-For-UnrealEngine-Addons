@@ -25,7 +25,7 @@ from .. import bbpl
 from .. import bfu_skeletal_mesh
 from .. import bfu_alembic_animation
 from .. import bfu_cached_assets
-from .. import bfu_base_object
+from .. import bfu_export_control
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
@@ -36,7 +36,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
     # Hide filters
     if obj is None:
         return
-    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
@@ -62,7 +62,7 @@ def draw_animation_tab_footer_ui(layout: bpy.types.UILayout, context: bpy.types.
         return
     if not bfu_utils.draw_proxy_propertys(obj):
         return
-    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_not_skeletal_mesh(obj):
         return

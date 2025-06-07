@@ -19,8 +19,6 @@
 
 import bpy
 from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 
 

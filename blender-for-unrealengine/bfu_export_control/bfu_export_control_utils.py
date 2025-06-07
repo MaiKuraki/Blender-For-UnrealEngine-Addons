@@ -17,40 +17,9 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List, Tuple
-from enum import Enum
+from .bfu_export_control_type import BFU_ExportTypeEnum
 
 
-class BFU_ExportTypeEnum(Enum):
-    AUTO = "auto"
-    EXPORT_RECURSIVE = "export_recursive"
-    DONT_EXPORT = "dont_export"
-
-    @staticmethod
-    def default() -> "BFU_ExportTypeEnum":
-        return BFU_ExportTypeEnum.AUTO
-
-def get_blender_default() -> str:
-    return BFU_ExportTypeEnum.default().value
-
-def get_blender_enum_property_list() -> List[Tuple[str, str, str, str, int]]:
-    return [
-        (BFU_ExportTypeEnum.AUTO.value,
-            "Auto",
-            "Export with the parent if the parents is \"Export recursive\"",
-            "BOIDS",
-            1),
-        (BFU_ExportTypeEnum.EXPORT_RECURSIVE.value,
-            "Export recursive",
-            "Export self object and all children",
-            "KEYINGSET",
-            2),
-        (BFU_ExportTypeEnum.DONT_EXPORT.value,
-            "Not exported",
-            "Will never export",
-            "CANCEL",
-            3),
-        ]
 
 def get_object_export_type(obj: bpy.types.Object) -> BFU_ExportTypeEnum:
     for export_type in BFU_ExportTypeEnum:
@@ -110,24 +79,3 @@ def get_all_export_recursive_armatures() -> list[bpy.types.Object]:
                 found_objects.append(obj)
     return found_objects
 
-classes = (
-)
-
-
-def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)  # type: ignore
-
-    bpy.types.Object.bfu_export_type = bpy.props.EnumProperty(  # type: ignore
-        name="Export type",
-        description="Export procedure",
-        override={'LIBRARY_OVERRIDABLE'},
-        items=get_blender_enum_property_list(),
-        default=get_blender_default(),
-        )
-
-def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)  # type: ignore
-
-    del bpy.types.Object.bfu_export_type # type: ignore

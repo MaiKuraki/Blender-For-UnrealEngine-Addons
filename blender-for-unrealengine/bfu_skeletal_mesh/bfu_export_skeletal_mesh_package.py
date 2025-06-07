@@ -19,31 +19,36 @@
 
 import bpy
 from typing import List
+from pathlib import Path
+from typing import TYPE_CHECKING
 from .. import bbpl
-from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_skeletal_mesh
 from .. import bfu_vertex_color
 from .. import bfu_export
-from .. import bfu_export_logs
+from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
+
 
 def process_skeletal_mesh_export_from_package(
     op: bpy.types.Operator,
     package: AssetPackage
 ) -> bool:
 
-    return export_as_skeletal_mesh(
-        op,
-        fullpath=package.file.get_full_path(),
-        armature=package.objects[0],
-        mesh_parts=package.objects[1:]
-    )
+    if package.file:
+        return export_as_skeletal_mesh(
+            op=op,
+            fullpath=package.file.get_full_path(),
+            armature=package.objects[0],
+            mesh_parts=package.objects[1:]
+        )
+    else:
+        return False
 
 
 def export_as_skeletal_mesh(
     op: bpy.types.Operator,
-    fullpath: str,
+    fullpath: Path,
     armature: bpy.types.Object,
     mesh_parts: List[bpy.types.Object]
 ) -> bool:
@@ -53,79 +58,103 @@ def export_as_skeletal_mesh(
             #SKELETAL MESH
     #####################################################
     '''
+
+    if bpy.context is None:
+        return False
+
     # Export a single Mesh
-    prepare_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare export", 2)
-
+    my_timer_group = SafeTimeGroup(2)
+    my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
-    addon_prefs = bfu_basics.GetAddonPrefs()
-    export_as_proxy = bfu_utils.GetExportAsProxy(armature)
-    export_proxy_child = bfu_utils.GetExportProxyChild(armature)
 
+    # [SAVE ASSET DATA]
+    # Save asset data before export like transforms, animation data, etc.
+    # So can be restored after export.
+    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
+    saved_selection_names.save_new_name(armature)
+    saved_selection_names.save_new_names(mesh_parts)
+    saved_unit_scale = scene.unit_settings.scale_length
+
+
+    # [SELECT AND DUPLICATE] 
+    # Select and duplicate objects for export (Export the duplicated objects)
     bbpl.utils.safe_mode_set('OBJECT')
-
-    bfu_utils.SelectParentAndSpecificChilds(armature, mesh_parts)
+    bbpl.utils.select_specific_object_list(armature, mesh_parts)
+    # Deselect sockets because Unreal Engine detect them as bones
     bfu_skeletal_mesh.bfu_skeletal_mesh_utils.deselect_socket(armature) 
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
+    duplicate_data.set_duplicate_name_for_export()
 
-    asset_name = bfu_export.bfu_export_utils.PrepareExportName(armature, True)
-    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export()
-    bfu_export.bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
+    # Duplicated active that should be used for export.
+    if bpy.context.active_object is None:
+        raise ValueError("No active object found after duplicate!")
+    active: bpy.types.Object = bpy.context.active_object
+    bfu_export.bfu_export_utils.set_duplicated_object_export_name(
+        duplicated_obj=active, 
+        original_obj=armature, 
+        is_skeletal=True
+    )
 
-    bfu_export.bfu_export_utils.ConvertSelectedToMesh()
-    bfu_export.bfu_export_utils.MakeSelectVisualReal()
+    if TYPE_CHECKING:
+        class FakeObject(bpy.types.Object):
+            bfu_skeleton_export_procedure: str
+            bfu_convert_geometry_node_attribute_to_uv: bool
+            bfu_convert_geometry_node_attribute_to_uv_name: str
+            bfu_fbx_export_with_custom_props: bool
+            bfu_export_deform_only: bool
+            bfu_export_with_meta_data: bool
+            bfu_mirror_symmetry_right_side_bones: bool
+            bfu_use_ue_mannequin_bone_alignment: bool
+            bfu_disable_free_scale_animation: bool
+            bfu_fbx_export_with_custom_props: bool
+        active = FakeObject()  # type: ignore
+
+    # [MAKE REAL COPY] Make objects real to be able to edit before export
+    bfu_export.bfu_export_utils.convert_selected_to_mesh()
+    bfu_export.bfu_export_utils.make_select_visual_real()
 
     bfu_utils.ApplyNeededModifierToSelect()
     for selected_obj in bpy.context.selected_objects:
-        if armature.bfu_convert_geometry_node_attribute_to_uv:
-            attrib_name = armature.bfu_convert_geometry_node_attribute_to_uv_name
+        if active.bfu_convert_geometry_node_attribute_to_uv:
+            attrib_name: str = str(active.bfu_convert_geometry_node_attribute_to_uv_name)
             bfu_export.bfu_export_utils.ConvertGeometryNodeAttributeToUV(selected_obj, attrib_name)
         bfu_vertex_color.bfu_vertex_color_utils.SetVertexColorForUnrealExport(selected_obj)
         bfu_export.bfu_export_utils.CorrectExtremUVAtExport(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportTransform(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportName(selected_obj)
 
-    saved_base_transforms = bfu_export.bfu_export_utils.SaveTransformObjects(armature)
-    active = bpy.context.view_layer.objects.active
-    asset_name.target_object = active
-
-    skeleton_export_procedure = active.bfu_skeleton_export_procedure
-
-    if export_as_proxy:
-        bfu_export.bfu_export_utils.ApplyProxyData(active)
-
     bfu_utils.apply_export_transform(active, "Object")  # Apply export transform before rescale
 
     # This will rescale the rig and unit scale to get a root bone egal to 1
-    ShouldRescaleRig = bfu_export.bfu_export_utils.GetShouldRescaleRig(active)
-
-    if ShouldRescaleRig:
-
-        rrf = bfu_export.bfu_export_utils.GetRescaleRigFactor()  # rigRescaleFactor
-        my_scene_unit_settings = bfu_utils.SceneUnitSettings(bpy.context.scene)
-        my_scene_unit_settings.SetUnitForUnrealEngineExport()
+    should_rescale_rig = bfu_export.bfu_export_utils.get_should_rescale_skeleton_for_fbx_export(active) 
+    if should_rescale_rig:
+        rrf = bfu_export.bfu_export_utils.get_rescale_rig_factor()  # rigRescaleFactor
+        scene.unit_settings.scale_length = 0.01
         my_skeletal_export_scale = bfu_utils.SkeletalExportScale(active)
-        my_skeletal_export_scale.ApplySkeletalExportScale(rrf, is_a_proxy=export_as_proxy)
-        my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf, is_a_proxy=export_as_proxy)
-        my_modifiers_data_scale.ResacleForUnrealEngine()
+        my_skeletal_export_scale.apply_skeletal_export_scale(rrf)
+        my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf)
+        my_modifiers_data_scale.RescaleForUnrealEngine()
 
     # Set rename temporarily the Armature as "Armature"
     bfu_utils.disable_all_bones_consraints(active)
-    bpy.context.object.data.pose_position = 'REST'
-
+    bpy.context.object.data.pose_position = 'REST'  # type: ignore
     bfu_export.bfu_export_utils.ConvertArmatureConstraintToModifiers(active)
 
-    asset_name.set_export_name()
-
-    save_use_simplify = bbpl.utils.SaveUserRenderSimplify()
+    # [PREPARE SCENE]
+    # Prepare scene for export (frame range, simplefying, etc.)
     scene.render.use_simplify = False
 
-    prepare_export_time_log.end_time_log()
+    my_timer_group.end_last_timer()
 
-    process_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Process export", 2)
+    # Process export
+    my_timer_group.start_timer(f"Process export")
+    skeleton_export_procedure = active.bfu_skeleton_export_procedure
     if (skeleton_export_procedure == "ue-standard"):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
-            filepath=fullpath,
+            filepath=str(fullpath),
             check_existing=False,
             use_selection=True,
             use_active_collection=False,
@@ -164,7 +193,7 @@ def export_as_skeletal_mesh(
             )
     elif (skeleton_export_procedure == "blender-standard"):
         bfu_export.bfu_fbx_export.export_scene_fbx(
-            filepath=fullpath,
+            filepath=str(fullpath),
             check_existing=False,
             use_selection=True,
             use_active_collection=False,
@@ -197,32 +226,33 @@ def export_as_skeletal_mesh(
             axis_up=bfu_export.bfu_export_utils.get_skeleton_export_axis_up(active),
             bake_space_transform=False
             )
-    process_export_time_log.end_time_log()
+    else:
+        print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
+    my_timer_group.end_last_timer()
 
-    post_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean after export", 2)
+    # [RESTORE ASSET DATA]
+    # Restore asset data after export like transforms, animation data, etc.
+    my_timer_group.start_timer(f"Clean after export")
+    scene.unit_settings.scale_length = saved_unit_scale
+    saved_selection_names.restore_names()
+    scene.render.use_simplify = save_use_simplify
 
     # This will rescale the rig and unit scale to get a root bone egal to 1
-    if ShouldRescaleRig:
+    if should_rescale_rig:
         # Reset Curve an unit
-        my_scene_unit_settings.ResetUnit()
-        my_modifiers_data_scale.ResetScaleAfterExport()
+        my_modifiers_data_scale.ResetScaleAfterExport()  # type: ignore
 
-    # Reset Transform
-    saved_base_transforms.reset_object_transforms()
-
-    save_use_simplify.LoadUserRenderSimplify()
-    asset_name.ResetNames()
     bfu_vertex_color.bfu_vertex_color_utils.clear_vertex_color_for_unreal_export(active)
     bfu_export.bfu_export_utils.ResetArmatureConstraintToModifiers(active)
     bfu_export.bfu_export_utils.reset_sockets_export_name(active)
     bfu_export.bfu_export_utils.reset_sockets_transform(active)
     bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     for data in duplicate_data.data_to_remove:
-        data.RemoveData()
+        data.remove_data()
 
-    bfu_export.bfu_export_utils.ResetDuplicateNameAfterExport(duplicate_data)
+    duplicate_data.reset_duplicate_name_after_export()
 
-    for armature in scene.objects:
-        bfu_utils.clear_all_bfu_temp_vars(armature)
-    post_export_time_log.end_time_log()
+    for obj in scene.objects:
+        bfu_utils.clear_all_bfu_temp_vars(obj)
+    my_timer_group.end_last_timer()
     return True

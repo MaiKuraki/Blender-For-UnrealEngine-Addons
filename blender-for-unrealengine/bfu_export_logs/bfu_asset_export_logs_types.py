@@ -1,7 +1,6 @@
 import bpy
-import os
 import time
-from typing import TYPE_CHECKING, List, Dict
+from typing import Dict
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetPackage
 
 class ExportedPackageLog():

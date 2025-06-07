@@ -16,15 +16,11 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
 from pathlib import Path
-from typing import List, Any, Dict, Optional, TYPE_CHECKING
-from . import bfu_export_static_mesh_package
-from . import bfu_export_procedure
-from .. import bfu_basics
+from typing import List, Any, Dict, Optional
+import bpy
 from .. import bfu_assets_manager
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode
-from .. import bbpl
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_ObjectAssetClass
 from .. import bfu_socket
 from .. import bfu_light_map
 from .. import bfu_nanite
@@ -34,20 +30,14 @@ from .. import bfu_lod
 from .. import bfu_base_object
 from .. import bfu_export_nomenclature
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
-from .. import bfu_addon_pref
+from . import bfu_export_static_mesh_package
+from . import bfu_export_procedure
 
-
-
-
-
-class BFU_StaticMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
+class BFU_StaticMesh(BFU_ObjectAssetClass):
     def __init__(self):
         super().__init__()
         self.use_lods = True
         self.use_materials = True
-
-    def test_abstract_method(self) -> str:
-        return "This is a test method for BFU_StaticMesh class."
 
 # ###################################################################
 # # Asset Root Class
@@ -68,79 +58,36 @@ class BFU_StaticMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClas
             return False
         return True
 
-    def get_asset_type(self, data: bpy.types.Object, details: Any = None) -> AssetType:
+    def get_asset_type(self, data: Any, details: Any = None) -> AssetType:
         return AssetType.STATIC_MESH
 
     def can_export_asset_type(self) -> bool:
-        # Can export the asset for this asset type.
         if bpy.context is None:
             return False
-
-        return bpy.context.scene.bfu_use_static_export  # type: ignore
+        scene = bpy.context.scene
+        return scene.bfu_use_static_export  # type: ignore
 
     def get_asset_import_directory_path(self, data: bpy.types.Object, details: Any = None, extra_path: Optional[Path] = None) -> Path:
         dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
-        return dirpath if extra_path is None else dirpath / extra_path # Add extra path if provided
-
+        return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
 # ###################################################################
 # # Asset Package Management
 # ###################################################################
 
+    def get_package_file_prefix(self, data: Any, details: Any = None) -> str:
+        if bpy.context:
+            return bpy.context.scene.bfu_static_mesh_prefix_export_name  # type: ignore
+        return ""
+
+    def get_export_file_path(self, data: Any, details: Any = None) -> str:
+        if bpy.context:
+            scene = bpy.context.scene
+            return scene.bfu_export_static_file_path  # type: ignore[attr-defined]
+        return ""
+
     def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
         return bfu_export_procedure.get_obj_export_file_type(data)
-
-    def get_package_file_name(self, data: bpy.types.Object, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
-        # Generate assset file name for skeletal mesh
-        
-        if TYPE_CHECKING:
-            class FakeObject(bpy.types.Object): 
-                bfu_use_custom_export_name: str = ""
-                bfu_custom_export_name: str = ""
-            data = FakeObject()
-
-        # Use custom export name if set
-        if data.bfu_use_custom_export_name and data.bfu_custom_export_name:
-            if without_extension:
-                return bfu_basics.valid_file_name(data.bfu_custom_export_name)
-            else:
-                return bfu_basics.valid_file_name(data.bfu_custom_export_name + self.get_package_file_type(data).get_file_extension())
-
-        if bpy.context is None:
-            return "<Unknown>"
-        scene = bpy.context.scene
-
-        if TYPE_CHECKING:
-            class FakeScene(bpy.types.Scene):
-                bfu_static_mesh_prefix_export_name: str = ""
-            scene = FakeScene()
-
-        prefix = scene.bfu_static_mesh_prefix_export_name
-        base_name = prefix + (desired_name if desired_name else data.name)
-
-        if without_extension:
-            return bfu_basics.valid_file_name(base_name)
-        else:
-            return bfu_basics.valid_file_name(base_name + self.get_package_file_type(data).get_file_extension())
-
-
-    def get_package_export_directory_path(self, data: bpy.types.Object, details: Any = None, extra_path: Optional[Path] = None, absolute: bool = True) -> Path:
-
-        if bpy.context is None:
-            return Path("<Unknown>")
-        scene = bpy.context.scene
-        if TYPE_CHECKING:
-            class FakeScene(bpy.types.Scene):
-                bfu_export_static_file_path: str = ""
-            scene = FakeScene()
-
-        if absolute:
-            dirpath = Path(bpy.path.abspath(scene.bfu_export_static_file_path))  # type: ignore
-        else:
-            dirpath = scene.bfu_export_static_file_path
-        dirpath /= Path(bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_export_folder(data))
-        return dirpath if extra_path is None else dirpath / extra_path # Add extra path if provided
-
 
 # ###################################################################
 # # UI
@@ -153,82 +100,51 @@ class BFU_StaticMesh(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClas
 # # Asset Construction
 # ####################################################################
 
-    def get_asset_export_content(self, data: bpy.types.Object) -> List[bpy.types.Object]:
-        desired_obj_list: List[bpy.types.Object] = []
-        desired_obj_list.append(data)
-        for child in bbpl.basics.get_recursive_obj_childs(data):
-            if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(child):
-                if bpy.context:
-                    if child.name in bpy.context.window.view_layer.objects:
-                        desired_obj_list.append(child)
-
-        return desired_obj_list
 
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode)-> List[AssetToExport]:
         
+        if data.bfu_export_as_lod_mesh: # type: ignore[attr-defined]
+            # Asset exported as Lod will be included as package content in the Lod0 Asset.
+            return []
+        
         if bpy.context is None:
             return []
-        scene = bpy.context.scene
-        addon_prefs = bfu_addon_pref.get_addon_prefs()
-
-        if TYPE_CHECKING:
-            class FakeScene(bpy.types.Scene):
-                bfu_use_static_export: bool = False
-                bfu_use_text_additional_data: bool = False
-            scene = FakeScene()
-
-            class FakeObject(bpy.types.Object):
-                bfu_export_as_lod_mesh: bool = False
-            data = FakeObject()
+        
         asset_list: List[AssetToExport] = []
-        if scene.bfu_use_static_export:
-            if data.bfu_export_as_lod_mesh == False:
-                asset = AssetToExport(self, data.name, AssetType.STATIC_MESH)
-                asset_list.append(asset)
 
-                import_dirpath = self.get_asset_import_directory_path(data)
-                asset.set_import_name(self.get_package_file_name(data, without_extension=True))
-                asset.set_import_dirpath(import_dirpath)
+        # One asset per static mesh and on package per LOD
+        asset = AssetToExport(self, data.name, AssetType.STATIC_MESH)
+        asset.set_import_name(self.get_package_file_name(data, without_extension=True))
+        asset.set_import_dirpath(self.get_asset_import_directory_path(data))
+
+        if search_mode.search_packages():
+            pak = asset.add_asset_package(data.name, ["Lod0"])
+            self.set_package_file(pak, data, details)
+
+            if search_mode.search_package_content():
+                pak.add_objects(bfu_base_object.bfu_base_obj_utils.get_exportable_objects(data))
+                pak.export_function = bfu_export_static_mesh_package.process_static_mesh_export_from_package
+
+
+        for i in range(1, bfu_lod.bfu_lod_utils.get_last_lod_index() + 1):
+            target = getattr(data, f"bfu_lod_target{i}", None)
+            if target and target.name in bpy.data.objects:
+
                 if search_mode.search_packages():
-                    pak = asset.add_asset_package(data.name, ["Lod0"])
-
-                    # Set the export dirpath
-                    dirpath = self.get_package_export_directory_path(data, absolute=True)
-                    file_name = self.get_package_file_name(data)
-                    file_type = self.get_package_file_type(data)
-                    pak.set_file(dirpath, file_name, file_type)
-
-                    if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):
-                        file_name_without_extension = self.get_package_file_name(data, without_extension=True)
-                        additional_data = asset.set_asset_additional_data(self.get_asset_additional_data(data))
-                        additional_data.set_file(dirpath, f"{file_name_without_extension}_additional_data.json")
+                    target_pak = asset.add_asset_package(target.name, [f"Lod{i}"])
+                    self.set_package_file(target_pak, data, details)
 
                     if search_mode.search_package_content():
-                        pak.add_objects(self.get_asset_export_content(data))
+                        target_pak.add_objects(bfu_base_object.bfu_base_obj_utils.get_exportable_objects(target))
+                        target_pak.export_function = bfu_export_static_mesh_package.process_static_mesh_export_from_package
 
-                        pak.export_function = bfu_export_static_mesh_package.process_static_mesh_export_from_package
-
-                for i in range(1, 6):
-                    target = getattr(data, f"bfu_lod_target{i}", None)
-                    if target and target.name in bpy.data.objects:
-
-                        if search_mode.search_packages():
-                            target_pak = asset.add_asset_package(target.name, [f"Lod{i}"])
-
-                            if search_mode.search_package_content():
-                                target_pak.add_objects(self.get_asset_export_content(target))
-
-                                # Set the export dirpath
-                                dirpath = self.get_package_export_directory_path(target, absolute=True)
-                                file_name = self.get_package_file_name(target)
-                                file_type = self.get_package_file_type(target)
-                                target_pak.set_file(dirpath, file_name, file_type)
-
-                                target_pak.export_function = bfu_export_static_mesh_package.process_static_mesh_export_from_package
-                            
+        
+        # Set the additional data in the asset, add asset to the list and return the list.
+        self.set_additional_data_in_asset(asset, data, details, search_mode)
+        asset_list.append(asset)
         return asset_list
 
-    def get_asset_additional_data(self, data: bpy.types.Object) -> Dict[str, Any]:
+    def get_asset_additional_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> Dict[str, Any]:
         additional_data: Dict[str, Any] = {}
         # Sockets
         if data:

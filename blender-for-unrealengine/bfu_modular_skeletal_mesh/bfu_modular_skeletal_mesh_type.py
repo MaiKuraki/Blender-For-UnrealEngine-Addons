@@ -55,6 +55,12 @@ class BFU_UI_ModularSkeletalSpecifiedPartsTargetItem(BBPL_UI_TemplateItem): # It
         type=bpy.types.Collection,
     )
 
+    if TYPE_CHECKING:
+        enabled: bool
+        target_type: str
+        obj: bpy.types.Object
+        collection: bpy.types.Collection
+
 class BFU_UL_ModularSkeletalSpecifiedPartsTargetItemDraw(BBPL_UL_TemplateItemDraw): # Draw Item class (bpy.types.UIList)
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
 

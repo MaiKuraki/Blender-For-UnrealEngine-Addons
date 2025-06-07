@@ -1,13 +1,10 @@
-import bpy
-from typing import List
-from .. import bfu_utils
+from typing import List, Dict
 from .. import bpl
-
-from . import bfu_asset_export_logs
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
+from . import bfu_asset_export_logs_types
 
 
-def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs.ExportedAssetLog], console_use = False) -> str:
+def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs_types.ExportedAssetLog], console_use: bool = False) -> str:
     """
     Generate a detailed export log for assets exported in the scene.
     The log includes counts and details for each asset type.
@@ -15,15 +12,12 @@ def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs
     Returns:
         str: The formatted export log.
     """
+    asset_counts: Dict[AssetType, int] = {}
 
     # Initialize variables
-    scene = bpy.context.scene
-
-    asset_counts = {}
     for asset_type_key in AssetType:
         if asset_type_key != AssetType.UNKNOWN:
             asset_counts[asset_type_key] = 0
-
 
     # Count assets by type
     for asset in exported_asset_log:
@@ -33,7 +27,7 @@ def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs
 
 
     # Build asset type summary with color formatting
-    def colorize_count(count, text):
+    def colorize_count(count: int, text: str) -> str:
         if console_use:
             if count == 0:
                 return bpl.color_set.red(text)
@@ -41,10 +35,12 @@ def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs
         else:
             return text
 
-    asset_summary = " | ".join(
-        colorize_count(count, f"{count} {asset_type.get_friendly_name()}(s)") for asset_type, count in asset_counts.items()
-    )
-
+    asset_strings: List[str] = []
+    for asset_type, count in asset_counts.items():
+        asset_type_str = colorize_count(count, f"{count} {asset_type.get_friendly_name()}(s)")
+        asset_strings.append(asset_type_str)
+        
+    asset_summary = " | ".join(asset_str for asset_str in asset_strings)
 
 
     # Build export log
@@ -68,7 +64,8 @@ def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs
             elif asset_type == asset_type.COLLECTION_AS_STATIC_MESH:
                 primary_info = f"Collection ({asset_type.get_friendly_name()})"
             else:
-                primary_info = f"{asset_type.get_friendly_name()} (LOD)" if package.objects[0] and package.objects[0].bfu_export_as_lod_mesh else asset_type.get_friendly_name()
+                export_as_lod: bool = package.objects[0].bfu_export_as_lod_mesh  # type: ignore[attr-defined]
+                primary_info = f"{asset_type.get_friendly_name()} (LOD)" if package.objects[0] and export_as_lod else asset_type.get_friendly_name()
 
             export_time = bpl.utils.get_formatted_time(asset.get_package_export_time(package))
             if console_use:
@@ -87,7 +84,10 @@ def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs
             export_log += f" -> Package [{primary_info}] '{package.name}' {export_sucess_status} ({export_time})\r\n"
 
             # Append file details
-            fullpath = package.file.get_full_path()
+            if package.file:
+                fullpath = str(package.file.get_full_path())
+            else:
+                fullpath = "No file path set"
             export_log += f"    {fullpath}\n"
 
     return export_log

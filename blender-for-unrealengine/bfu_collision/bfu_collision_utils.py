@@ -18,16 +18,14 @@
 
 import bpy
 import fnmatch
-from .. import bbpl
 from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_unreal_utils
-from .. import bfu_base_object
+from .. import bfu_export_control
 
 
-def IsACollision(obj):
+def is_a_collision(obj: bpy.types.Object) -> bool:
     '''
-    Retrun True is object is an Collision.
+    Return True is object is an Collision.
     https://docs.unrealengine.com/en-US/WorkingWithContent/Importing/FBX/StaticMeshes/#collision
     '''
     if obj.type == "MESH":
@@ -69,8 +67,8 @@ def fix_export_type_on_collision(list=None):
 
     fixed_collisions = 0
     for obj in objs:
-        if bfu_base_object.bfu_export_type.is_export_recursive(obj):
-            bfu_base_object.bfu_export_type.set_auto(obj)
+        if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
+            bfu_export_control.bfu_export_control_utils.set_auto(obj)
             fixed_collisions += 1
     return fixed_collisions
 

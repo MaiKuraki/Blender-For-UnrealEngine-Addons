@@ -68,7 +68,7 @@ def select_specific_object_list(active: Optional[bpy.types.Object], objs: List[b
 
     return selected_objs
 
-def select_specific_object(active: Optional[bpy.types.Object]):
+def select_specific_object(active: bpy.types.Object):
     """
     - Deselect all
     - Selects a specific object in Blender.
@@ -410,6 +410,7 @@ def recursive_delete_collection(collection: bpy.types.Collection):
     if collection.name in bpy.data.collections:
         bpy.data.collections.remove(collection)  # type: ignore
 
+# @TODO @DEPRECATED
 class SaveUserRenderSimplify():
     def __init__(self):
         if bpy.context:

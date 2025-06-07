@@ -25,6 +25,7 @@ from . import bfu_alembic_animation_ui
 from . import bfu_alembic_animation_utils
 from . import bfu_alembic_animation_type
 from . import bfu_alembic_animation_config
+from . import bfu_export_alembic_package
 
 if "bfu_export_procedure" in locals():
     importlib.reload(bfu_export_procedure)
@@ -38,6 +39,8 @@ if "bfu_alembic_animation_type" in locals():
     importlib.reload(bfu_alembic_animation_type)
 if "bfu_alembic_animation_config" in locals():
     importlib.reload(bfu_alembic_animation_config)
+if "bfu_export_alembic_package" in locals():
+    importlib.reload(bfu_export_alembic_package)    
 
 
 

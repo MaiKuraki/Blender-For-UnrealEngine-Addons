@@ -19,13 +19,10 @@
 import bpy
 import importlib
 
-from . import bfu_export_type
 from . import bfu_base_obj_props
 from . import bfu_base_obj_ui
 from . import bfu_base_obj_utils
 
-if "bfu_export_type" in locals():
-    importlib.reload(bfu_export_type)
 if "bfu_base_obj_props" in locals():
     importlib.reload(bfu_base_obj_props)
 if "bfu_base_obj_ui" in locals():
@@ -39,14 +36,12 @@ classes = (
 
 def register():
     for cls in classes:
-        bpy.utils.register_class(cls)
+        bpy.utils.register_class(cls)  # type: ignore
 
-    bfu_export_type.register()
     bfu_base_obj_props.register()
 
 def unregister():
     for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+        bpy.utils.unregister_class(cls)  # type: ignore
 
     bfu_base_obj_props.unregister()
-    bfu_export_type.unregister()

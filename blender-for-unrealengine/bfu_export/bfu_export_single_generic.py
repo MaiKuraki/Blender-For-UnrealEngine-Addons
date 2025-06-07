@@ -26,9 +26,9 @@ from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
 def process_generic_export_from_asset(
     op: bpy.types.Operator,
     asset: AssetToExport
-) -> bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog:
+) -> bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog:
 
-    new_log = bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog(asset)
+    new_log = bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog(asset)
     new_log.start_asset_export()
     for package in asset.asset_packages:
         new_log.start_package_export(package)

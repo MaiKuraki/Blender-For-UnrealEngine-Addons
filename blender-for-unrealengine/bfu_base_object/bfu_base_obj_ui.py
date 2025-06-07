@@ -26,7 +26,7 @@ from .. import bfu_assets_manager
 from .. import bfu_alembic_animation
 from .. import bfu_groom
 from .. import bfu_skeletal_mesh
-from .. import bfu_base_object
+from .. import bfu_export_control
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
@@ -58,7 +58,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                 if asset_class:
                     asset_class.draw_ui_export_procedure(export_type, context, obj)
 
-                if bfu_base_object.bfu_export_type.is_export_recursive(obj):
+                if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
 
                     folderNameProperty = panel.column()
                     folderNameProperty.prop(obj, 'bfu_export_folder_name', icon='FILE_FOLDER')

@@ -17,16 +17,16 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from . import bfu_export_text_files_utils
 from .. import languages
 from .. import bfu_export_logs
 from .. import bfu_utils
-from .. import bfu_base_object
+from .. import bfu_export_control
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
+from . import bfu_export_text_files_utils
 
 
 
-def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog):
+def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog):
     scene = bpy.context.scene
 
     data = {}
@@ -50,7 +50,7 @@ def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset
     for asset in unreal_exported_asset:
         asset_type = asset.exported_asset.asset_type
         if asset_type == AssetType.CAMERA:
-            asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog
+            asset: bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog
             main_camera = asset.exported_asset.asset_packages[0].objects[0]
             
 
@@ -98,7 +98,7 @@ def write_sequencer_tracks_data(unreal_exported_asset: bfu_export_logs.bfu_asset
         marker_sections["end_time"] = section[1]
         if section[2]:
 
-            if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(section[2]):
+            if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(section[2]):
                 marker_sections["has_camera"] = True
                 marker_sections["camera_name"] = section[2].name
             else:

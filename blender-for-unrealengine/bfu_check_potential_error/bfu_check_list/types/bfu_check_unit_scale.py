@@ -20,7 +20,7 @@ import bpy
 from ...bfu_check_types import bfu_checker
 from .... import bfu_utils
 from ....bfu_simple_file_type_enum import BFU_FileTypeEnum
-from .... import bfu_addon_pref
+from .... import bfu_addon_prefs
 from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
 
 class BFU_Checker_UnitScale(bfu_checker):
@@ -30,7 +30,7 @@ class BFU_Checker_UnitScale(bfu_checker):
         self.check_name = "Unit Scale"
 
     def run_asset_check(self, asset: AssetToExport):
-        addon_prefs = bfu_addon_pref.get_addon_prefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         if bpy.context is None:
             return

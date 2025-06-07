@@ -1,7 +1,7 @@
 # Unreal Engine Assets Exporter - Release Log
 Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Release-Logs
 
-### Version 4.3.13
+### Version 4.4.0
 
 - Full refactorig about asset management and addon in general.
 - New: Sub folder support for modular skeletal meshs.

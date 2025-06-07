@@ -39,7 +39,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
         AssetsCol.prop(scene, 'bfu_use_static_export')
         AssetsCol.prop(scene, 'bfu_use_static_collection_export')
         AssetsCol.prop(scene, 'bfu_use_skeletal_export')
-        AssetsCol.prop(scene, 'bfu_use_anim_export')
+        AssetsCol.prop(scene, 'bfu_use_animation_export')
         AssetsCol.prop(scene, 'bfu_use_alembic_export')
         AssetsCol.prop(scene, 'bfu_use_groom_simulation_export')
         AssetsCol.prop(scene, 'bfu_use_camera_export')

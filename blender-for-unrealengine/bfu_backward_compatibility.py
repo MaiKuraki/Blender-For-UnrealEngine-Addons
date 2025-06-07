@@ -139,7 +139,7 @@ def update_old_variables():
         update_variable(scene, ["static_export"], "bfu_use_static_export")
         update_variable(scene, ["static_collection_export"], "bfu_use_static_collection_export")
         update_variable(scene, ["skeletal_export"], "bfu_use_skeletal_export")
-        update_variable(scene, ["anin_export", "bfu_use_anin_export"], "bfu_use_anim_export")
+        update_variable(scene, ["anin_export", "bfu_use_anin_export", "bfu_use_anim_export"], "bfu_use_animation_export")
         update_variable(scene, ["alembic_export"], "bfu_use_alembic_export")
         update_variable(scene, ["groom_simulation_export"], "bfu_use_groom_simulation_export")
         update_variable(scene, ["camera_export"], "bfu_use_camera_export")

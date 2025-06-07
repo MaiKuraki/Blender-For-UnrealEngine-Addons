@@ -24,11 +24,11 @@ import fnmatch
 import mathutils
 import math
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from . import bbpl
 from . import bfu_basics
-from . import bfu_base_object
-from . import bfu_addon_pref
+from . import bfu_export_control
+from . import bfu_addon_prefs
 
 
 class SavedBones():
@@ -129,7 +129,7 @@ class TimelineMarkerSequence():
                     return marker_sequence
         return None
 
-def UpdateProgress(job_title, progress, time=None):
+def update_progress(job_title: str, progress: float, time: Optional[float] = None):
 
     length = 20  # modify this to change the length
     block = int(round(length*progress))
@@ -145,18 +145,18 @@ def UpdateProgress(job_title, progress, time=None):
             msg += " DONE\r\n"
 
 
-def RemoveUselessSpecificData(name, data_type):
+def remove_useless_specific_data(name: str, data_type: str):
     if data_type == "MESH":
         if name in bpy.data.meshes:
             oldData = bpy.data.meshes[name]
             if oldData.users == 0:
-                bpy.data.meshes.remove(oldData)
+                bpy.data.meshes.remove(oldData)  # type: ignore
 
     if data_type == "ARMATURE":
         if name in bpy.data.armatures:
             oldData = bpy.data.armatures[name]
             if oldData.users == 0:
-                bpy.data.armatures.remove(oldData)
+                bpy.data.armatures.remove(oldData)  # type: ignore
 
 
 def CleanJoinSelect():
@@ -181,7 +181,7 @@ def CleanDeleteSelect():
     bpy.ops.object.delete()
 
     for data in oldDataToRemove:
-        RemoveUselessSpecificData(data[0], data[1])
+        remove_useless_specific_data(data[0], data[1])
 
     return removed_objects
 
@@ -203,11 +203,11 @@ def clean_delete_objects(objs: List[bpy.types.Object]) -> List[str]:
         bpy.data.objects.remove(obj)
 
         if souldRemoveData:
-            RemoveUselessSpecificData(oldDataToRemove, oldDataTypeToRemove)
+            remove_useless_specific_data(oldDataToRemove, oldDataTypeToRemove)
 
     return removed_objects
 
-# @TODO: @Deprecated use bfu_base_object.bfu_export_type.get_all_xxx_objects instead
+# @TODO: @Deprecated use bfu_export_control.bfu_export_type.get_all_xxx_objects instead
 def get_all_objects_by_export_type(exportType) -> List[bpy.types.Object]:
     # Find all objects with a specific bfu_export_type property
     targetObj = []
@@ -217,7 +217,7 @@ def get_all_objects_by_export_type(exportType) -> List[bpy.types.Object]:
             targetObj.append(obj)
     return (targetObj)
 
-# @TODO: @Deprecated use bfu_base_object.bfu_export_type.get_all_xxx_armatures instead
+# @TODO: @Deprecated use bfu_export_control.bfu_export_type.get_all_xxx_armatures instead
 def get_all_armatures_by_export_type(exportType) -> List[bpy.types.Object]:
     # Find all armature objects with a specific bfu_export_type property
     targetObj = []
@@ -251,20 +251,20 @@ def GetExportDesiredChilds(obj: bpy.types.Object) -> List[bpy.types.Object]:
 
     DesiredObj = []
     for child in bbpl.basics.get_recursive_obj_childs(obj):
-        if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(child):
+        if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(child):
             if child.name in bpy.context.window.view_layer.objects:
                 DesiredObj.append(child)
 
     return DesiredObj
 
 
-def disable_all_bones_consraints(obj):
+def disable_all_bones_consraints(obj: bpy.types.Object):
     for b in obj.pose.bones:
         for c in b.constraints:
             c.enabled = False
 
 
-def remove_all_bones_consraints(obj):
+def remove_all_bones_consraints(obj: bpy.types.Object):
     for b in obj.pose.bones:
         for c in b.constraints:
 
@@ -384,7 +384,7 @@ class ShapeKeysCurveScale():
             def __init__(self, modifier):
                 self.coefficients = modifier.coefficients
 
-    def ResacleForUnrealEngine(self):
+    def RescaleForUnrealEngine(self):
         scale = 1/self.rescale_rig_factor
         for proxy_driver in self.proxy_drivers:
             for key in proxy_driver.driver.keyframe_points:
@@ -452,7 +452,7 @@ class ModifiersDataScale():
         self.saved_data = {}
 
 
-    def ResacleForUnrealEngine(self):
+    def RescaleForUnrealEngine(self):
         for x, mod in enumerate(self.modifiers):
             if mod.type == "MIRROR":
                 self.saved_data[x] = mod.merge_threshold
@@ -541,16 +541,11 @@ def EvaluateCameraRotationForBlender(transform):
 
 def get_desired_action_start_end_range(obj: bpy.types.Object, action: bpy.types.Action)-> Tuple[float, float]:
     # Returns desired action or camera anim start/end time
-
+    if bpy.context is None:
+        return (0.0, 1.0)
     scene = bpy.context.scene
-    if obj.type == "CAMERA":
-        startTime = scene.frame_start
-        endTime = scene.frame_end
-        if endTime <= startTime:
-            endTime = startTime+1
-        return (startTime, endTime)
 
-    elif obj.bfu_anim_action_start_end_time_enum == "with_keyframes":
+    if obj.bfu_anim_action_start_end_time_enum == "with_keyframes":
         # GetFirstActionFrame + Offset
         startTime = int(action.frame_range.x) + obj.bfu_anim_action_start_frame_offset
         # GetLastActionFrame + Offset
@@ -576,7 +571,8 @@ def get_desired_action_start_end_range(obj: bpy.types.Object, action: bpy.types.
 
 def get_desired_nla_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
     # Returns desired nla anim start/end time
-
+    if bpy.context is None:
+        return (0.0, 1.0)
     scene = bpy.context.scene
 
     if obj.bfu_anim_nla_start_end_time_enum == "with_sceneframes":
@@ -594,6 +590,45 @@ def get_desired_nla_start_end_range(obj: bpy.types.Object) -> Tuple[float, float
             endTime = startTime
 
         return (startTime, endTime)
+
+def get_desired_alembic_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
+    # Returns desired alembic anim start/end time
+    if bpy.context is None:
+        return (0.0, 1.0)
+    scene = bpy.context.scene
+
+    if obj.bfu_anim_alembic_start_end_time_enum == "with_sceneframes":
+        startTime = scene.frame_start + obj.bfu_anim_alembic_start_frame_offset
+        endTime = scene.frame_end + obj.bfu_anim_alembic_end_frame_offset
+        if endTime <= startTime:
+            endTime = startTime
+
+        return (startTime, endTime)
+
+    elif obj.bfu_anim_alembic_start_end_time_enum == "with_customframes":
+        startTime = obj.bfu_anim_alembic_custom_start_frame
+        endTime = obj.bfu_anim_alembic_custom_end_frame
+        if endTime <= startTime:
+            endTime = startTime
+
+        return (startTime, endTime)
+    
+def get_desired_camera_start_end_range(obj: bpy.types.Object)-> Tuple[float, float]:
+    # Returns desired action or camera anim start/end time
+    
+    if obj.type != "CAMERA":  # type: ignore
+        return (0.0, 1.0)
+    
+    if bpy.context is None:
+        return (0.0, 1.0)
+    scene = bpy.context.scene
+    startTime = scene.frame_start
+    endTime = scene.frame_end
+    if endTime <= startTime:
+        endTime = startTime+1
+    return (startTime, endTime)
+
+
 
 # @TODO: @Deprecated use action_is_one_frame instead
 def GetActionType(action: bpy.types.Action):
@@ -623,28 +658,32 @@ def GetIsAnimation(animation_type):
         return True
     return False
 
+def get_export_collection_objects(collection: bpy.types.Collection) -> List[bpy.types.Object]:
+    # Found all objects that must be exported in a collection
+    found_objs = []
+    for select_obj in collection.all_objects:
+        if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(select_obj):
+            if select_obj.name in bpy.context.view_layer.objects:
+                found_objs.append(select_obj)
 
+    return found_objs
 
-
-
-
-
-
-def SelectCollectionObjects(collection):
-    # Selects only all objects that must be exported in a collection
-    selectedObjs = []
+# @TODO: @Deprecated use get_export_collection_objects() with select_specific_object_list() instead.
+def select_collection_objects(collection: bpy.types.Collection) -> List[bpy.types.Object]:
+    # Selects all objects that must be exported in a collection
+    selected_objs = []
     bpy.ops.object.select_all(action='DESELECT')
-    for selectObj in collection.all_objects:
-        if bfu_base_object.bfu_export_type.is_auto_or_export_recursive(selectObj):
-            if selectObj.name in bpy.context.view_layer.objects:
-                selectObj.select_set(True)
-                selectedObjs.append(selectObj)
+    for select_obj in collection.all_objects:
+        if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(select_obj):
+            if select_obj.name in bpy.context.view_layer.objects:
+                select_obj.select_set(True)
+                selected_objs.append(select_obj)
 
-    if len(selectedObjs) > 0:
-        if selectedObjs[0].name in bpy.context.view_layer.objects:
-            bpy.context.view_layer.objects.active = selectedObjs[0]
+    if len(selected_objs) > 0:
+        if selected_objs[0].name in bpy.context.view_layer.objects:
+            bpy.context.view_layer.objects.active = selected_objs[0]
 
-    return selectedObjs
+    return selected_objs
 
 def draw_proxy_propertys(obj):
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
@@ -890,6 +929,8 @@ def CorrectExtremeUV(step_scale=2, move_to_absolute=False):
 
             obj.data.update()
 
+
+
 def apply_export_transform(obj: bpy.types.Object, use_type: str = "Object"):
 
     newMatrix = obj.matrix_world @ mathutils.Matrix.Translation((0, 0, 0))
@@ -934,7 +975,7 @@ def apply_export_transform(obj: bpy.types.Object, use_type: str = "Object"):
     obj.matrix_world = newMatrix @ AddMat
     obj.scale = saveScale
 
-
+# @TODO @Deprecated
 class SceneUnitSettings():
     def __init__(self, scene):
         self.scene = scene
@@ -973,7 +1014,7 @@ class SkeletalExportScale():
         for child in self.childs:
             child.ResetObjTransform()
 
-    def ApplySkeletalExportScale(self, rescale, target_animation_data=None, is_a_proxy=False):
+    def apply_skeletal_export_scale(self, rescale: float, target_animation_data: bbpl.anim_utils.AnimationManagment=None):
         # This function will rescale the armature and applys the new scale
 
         armature = self.armature
@@ -990,12 +1031,6 @@ class SkeletalExportScale():
             armature_animation_data = bbpl.anim_utils.AnimationManagment()
             armature_animation_data.clear_animation_data(armature)
 
-        if is_a_proxy:
-            SavedSelect = bbpl.save_data.select_save.UserSelectSave()
-            SavedSelect.save_current_select()
-            bpy.ops.object.select_all(action='DESELECT')
-            armature.select_set(True)
-
         # Need break multi users for apply scale.
 
         # armature.make_local()
@@ -1009,8 +1044,6 @@ class SkeletalExportScale():
             rotation=True,
             properties=True
             )
-        if is_a_proxy:
-            SavedSelect.reset_select()
 
         # Apply armature location
         armature.location = old_location*rescale
@@ -1026,9 +1059,9 @@ class SkeletalExportScale():
         self.ResetArmatureChildsTransform()
 
 
-def RescaleSelectCurveHook(scale):
+def rescale_select_curve_hooks(scale: float):
 
-    def GetRescaledMatrix(matrix, scale):
+    def get_rescaled_matrix(matrix: mathutils.Matrix, scale: float) -> mathutils.Matrix:
         newMatrix = matrix.copy()
 
         newMatrix[0][0] *= 1  # Fix
@@ -1058,7 +1091,7 @@ def RescaleSelectCurveHook(scale):
             for mod in obj.modifiers:
                 if mod.type == "HOOK":
                     scale_factor = 100
-                    mod.matrix_inverse = GetRescaledMatrix(
+                    mod.matrix_inverse = get_rescaled_matrix(
                         mod.matrix_inverse,
                         scale_factor
                         )
@@ -1073,7 +1106,7 @@ class ActionCurveScale():
         self.rescale_factor = rescale_factor  # rigRescaleFactor
         self.default_unit_length = get_scene_unit_scale()
 
-    def ResacleForUnrealEngine(self):
+    def RescaleForUnrealEngine(self):
         rf = self.rescale_factor
         length = self.default_unit_length
 
@@ -1180,7 +1213,7 @@ def GetImportSequencerScriptCommand():
     return 'py "'+fullpath+'"'  # Vania
 
 
-def GetAnimSample(obj):
+def get_anim_sample(obj: bpy.types.Object) -> float:
     # return obj sample animation
     return obj.bfu_sample_anim_for_export
 
@@ -1203,8 +1236,8 @@ def get_armature_root_bones(armature: bpy.types.Object) -> List[bpy.types.EditBo
     return root_bones
 
 
-def GetDesiredExportArmatureName(obj: bpy.types.Object) -> str:
-    addon_prefs = bfu_addon_pref.get_addon_prefs()
+def get_desired_export_armature_name(obj: bpy.types.Object) -> str:
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     single_root = len(get_armature_root_bones(obj)) == 1
     if addon_prefs.add_skeleton_root_bone or single_root != 1:
         return addon_prefs.skeleton_root_bone_name

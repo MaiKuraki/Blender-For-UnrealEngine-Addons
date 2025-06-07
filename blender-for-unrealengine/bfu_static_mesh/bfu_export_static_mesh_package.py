@@ -25,7 +25,7 @@ from .. import bfu_export
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_vertex_color
-from .. import bfu_export_logs
+from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 
 
@@ -36,12 +36,13 @@ def process_static_mesh_export_from_package(
 
     if package.file:
         return export_as_static_mesh(
-            op,
+            op = op,
             fullpath=package.file.get_full_path(),
             objs=package.objects
         )
     else:
         return False
+
 
 def export_as_static_mesh(
     op: bpy.types.Operator,
@@ -58,18 +59,37 @@ def export_as_static_mesh(
     if bpy.context is None:
         return False
     
-
     # Export a single Mesh
-    prepare_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare export", 2)
+    my_timer_group = SafeTimeGroup(2)
+    my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
 
+    # [SAVE ASSET DATA]
+    # Save asset data before export like transforms, animation data, etc.
+    # So can be restored after export.
+    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
+    saved_selection_names.save_new_names(objs)
+
+
+    # [SELECT AND DUPLICATE] 
+    # Select and duplicate objects for export (Export the duplicated objects)
     bbpl.utils.safe_mode_set('OBJECT')
     bbpl.utils.select_specific_object_list(objs[0], objs)
-    asset_name = bfu_export.bfu_export_utils.PrepareExportName(objs[0], False)
     duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
+    duplicate_data.set_duplicate_name_for_export()
 
-    # Duplicated active that should be used for export
-    active = bpy.context.active_object
+    # Duplicated active that should be used for export.
+    if bpy.context.active_object is None:
+        raise ValueError("No active object found after duplicate!")
+    active: bpy.types.Object = bpy.context.active_object
+    bfu_export.bfu_export_utils.set_duplicated_object_export_name(
+        duplicated_obj=active, 
+        original_obj=objs[0], 
+        is_skeletal=False
+    )
+
+
     if TYPE_CHECKING:
         class FakeObject(bpy.types.Object):
             bfu_static_export_procedure: str
@@ -84,31 +104,32 @@ def export_as_static_mesh(
             bfu_fbx_export_with_custom_props: bool
         active = FakeObject()  # type: ignore
 
-    bfu_export.bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
-
-    bfu_export.bfu_export_utils.ConvertSelectedToMesh()
-    bfu_export.bfu_export_utils.MakeSelectVisualReal()
+    # [MAKE REAL COPY] 
+    # Make objects real to be able to edit before export.
+    bfu_export.bfu_export_utils.convert_selected_to_mesh()
+    bfu_export.bfu_export_utils.make_select_visual_real()
 
     bfu_utils.ApplyNeededModifierToSelect() 
     for selected_obj in bpy.context.selected_objects:
-        if selected_obj.bfu_convert_geometry_node_attribute_to_uv:  # type: ignore
-            attrib_name: str = selected_obj.bfu_convert_geometry_node_attribute_to_uv_name  # type: ignore
-            bfu_export.bfu_export_utils.ConvertGeometryNodeAttributeToUV(selected_obj, attrib_name)  # type: ignore
+        if active.bfu_convert_geometry_node_attribute_to_uv:
+            attrib_name: str = str(active.bfu_convert_geometry_node_attribute_to_uv_name)
+            bfu_export.bfu_export_utils.ConvertGeometryNodeAttributeToUV(selected_obj, attrib_name)
         bfu_vertex_color.bfu_vertex_color_utils.SetVertexColorForUnrealExport(selected_obj)
         bfu_export.bfu_export_utils.CorrectExtremUVAtExport(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportTransform(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportName(selected_obj)
 
-    asset_name.target_object = active
     bfu_utils.apply_export_transform(active, "Object")
-    asset_name.set_export_name()
-    static_export_procedure = active.bfu_static_export_procedure
 
-    save_use_simplify = bbpl.utils.SaveUserRenderSimplify()
+    # [PREPARE SCENE]
+    # Prepare scene for export (frame range, simplefying, etc.)
     scene.render.use_simplify = False
-    prepare_export_time_log.end_time_log()
 
-    process_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Process export", 2)
+    my_timer_group.end_last_timer()
+
+    # Process export
+    my_timer_group.start_timer(f"Process export")
+    static_export_procedure = active.bfu_static_export_procedure
     if (static_export_procedure == "custom_fbx_export"):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
@@ -177,22 +198,27 @@ def export_as_static_mesh(
             )
     else:
         print(f"Error: The export procedure '{static_export_procedure}' was not found!")
-    process_export_time_log.end_time_log()
+    my_timer_group.end_last_timer()
 
-    post_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean after export", 2)
-    save_use_simplify.LoadUserRenderSimplify()
-    asset_name.ResetNames()
+    # [RESTORE ASSET DATA]
+    # Restore asset data after export like transforms, animation data, etc.
+    my_timer_group.start_timer(f"Clean after export")
+    saved_selection_names.restore_names()
+    scene.render.use_simplify = save_use_simplify
+
+
+
 
     bfu_vertex_color.bfu_vertex_color_utils.clear_vertex_color_for_unreal_export(active)
     bfu_export.bfu_export_utils.reset_sockets_export_name(active)
     bfu_export.bfu_export_utils.reset_sockets_transform(active)
     bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     for data in duplicate_data.data_to_remove:
-        data.RemoveData()
+        data.remove_data()
 
-    bfu_export.bfu_export_utils.reset_duplicate_name_after_export(duplicate_data)
+    duplicate_data.reset_duplicate_name_after_export()
 
     for obj in scene.objects:
         bfu_utils.clear_all_bfu_temp_vars(obj)
-    post_export_time_log.end_time_log()
+    my_timer_group.end_last_timer()
     return True

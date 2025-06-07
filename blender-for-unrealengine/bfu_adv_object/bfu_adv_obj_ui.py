@@ -28,7 +28,7 @@ from .. import bfu_camera
 from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
 from .. import bfu_custom_property
-from .. import bfu_base_object
+from .. import bfu_export_control
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
@@ -41,9 +41,9 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
         return
     if not bfu_utils.draw_proxy_propertys(obj):
         return
-    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
-    
+
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_advanced_properties_expanded")
         header, panel = accordion.draw(layout)

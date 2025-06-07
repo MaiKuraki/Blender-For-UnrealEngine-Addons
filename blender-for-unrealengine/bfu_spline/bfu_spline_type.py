@@ -16,109 +16,120 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import bpy
-import fnmatch
 from pathlib import Path
-from .. import bfu_basics
-from .. import bfu_utils
+from typing import List, Any, Optional, Dict
+import bpy
+from .. import bfu_spline
 from .. import bfu_assets_manager
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, BFU_ObjectAssetClass, AssetDataSearchMode, AssetToExport
+from .. import bfu_export_nomenclature
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
+from . import bfu_export_procedure
+from . import bfu_export_spline_package
 
 
-class BFU_Spline(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
+
+class BFU_Spline(BFU_ObjectAssetClass):
     def __init__(self):
         super().__init__()
-        pass
 
-    def support_asset_type(self, obj: bpy.types.Object, details: any = None) -> bool:
-        if not isinstance(obj, bpy.types.Object):
+# ###################################################################
+# # Asset Root Class
+# ###################################################################
+
+    def support_asset_type(self, data: Any, details: Any = None) -> bool:
+        if not isinstance(data, bpy.types.Object):
             return False
-        if obj.type == "CURVE" and not obj.bfu_export_spline_as_static_mesh:
+        if details is not None:
+            return False
+        if data.bfu_export_spline_as_static_mesh:  # type: ignore
+            return False
+        if data.type == "CURVE":  # type: ignore
             return True
         return False
 
-    def get_asset_type(self, obj: bpy.types.Object, details: any = None) -> AssetType:
+    def get_asset_type(self, data: Any, details: Any = None) -> AssetType:
         return AssetType.SPLINE
     
-    def get_package_file_name(self, obj: bpy.types.Object, details: any = None, desired_name: str = "", without_extension: bool = False) -> str:
-        # Generate assset file name for skeletal mesh
+    def can_export_asset_type(self) -> bool:
+        if bpy.context is None:
+            return False
         scene = bpy.context.scene
-        if obj.bfu_use_custom_export_name:
-            if obj.bfu_custom_export_name:
-                return obj.bfu_custom_export_name
-            
-        if without_extension:
-            fileType = ""
-        else:
-            asset_type = self.get_package_file_type(obj)
-            if asset_type == "FBX":
-                fileType = ".fbx"
-            elif asset_type == "GLTF":
-                fileType = ".glb"
+        return scene.bfu_use_spline_export  # type: ignore
 
-        if desired_name:
-            return bfu_basics.valid_file_name(scene.bfu_spline_prefix_export_name+desired_name+fileType)
-        return bfu_basics.valid_file_name(scene.bfu_spline_prefix_export_name+obj.name+fileType)
+    def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
+        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+        return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
-    def get_package_export_directory_path(self, obj: bpy.types.Object, extra_path: str = "", absolute: bool = True) -> str:
-        scene = bpy.context.scene
+####################################################################
+# Asset Package Management
+####################################################################
 
-        # Get root path
-        if absolute:
-            root_path = Path(bpy.path.abspath(scene.bfu_export_spline_file_path))
-        else:
-            root_path = Path(scene.bfu_export_spline_file_path)
+    def get_package_file_prefix(self, data: Any, details: Any = None) -> str:
+        if bpy.context:
+            return bpy.context.scene.bfu_spline_prefix_export_name  # type: ignore
+        return ""
 
-        # Add obj folder path
-        folder_name = bfu_utils.get_export_folder_name(obj)
-        dirpath = root_path / folder_name
+    def get_export_file_path(self, data: Any, details: Any = None) -> str:
+        if bpy.context:
+            scene = bpy.context.scene
+            self.package_file_path = scene.bfu_export_spline_file_path  # type: ignore[attr-defined]
+        return ""
 
-        # Add extra path if provided
-        if extra_path:
-            dirpath = dirpath / extra_path
-
-        # Clean path and return as string
-        return str(dirpath)
-    
-    def get_asset_import_directory_path(self, obj, extra_path = ""):
-        scene = bpy.context.scene
-
-        # Get root path
-        root_path = Path(scene.bfu_unreal_import_module)
-
-        # Add skeletal subfolder path
-        dirpath = root_path / scene.bfu_unreal_import_location / obj.bfu_export_folder_name
-
-        # Add extra path if provided
-        if extra_path:
-            dirpath = dirpath / extra_path
-
-        # Clean path and return as string
-        return str(dirpath)
-    
-    def can_export_asset_type(self):
-        scene = bpy.context.scene
-        return scene.bfu_use_spline_export
-
-    def can_export_asset(self, obj):
-        return self.can_export_asset_type()
+    def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
+        return bfu_export_procedure.get_obj_export_file_type(data)
 
 ####################################################################
 # UI
 ####################################################################
 
-    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object) -> bpy.types.UILayout:
-        return bfu_export_procedure.draw_object_export_procedure(layout, obj)
+    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, data: bpy.types.Object) -> bpy.types.UILayout:
+        return bfu_export_procedure.draw_object_export_procedure(layout, data)
     
+# ####################################################################
+# # Asset Construction
+# ####################################################################
+
+    def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
+        if bpy.context is None:
+            return []
+
+        asset_list: List[AssetToExport] = []
+
+        # One asset per alembic animation pack
+        asset = AssetToExport(self, data.name, AssetType.STATIC_MESH)
+        asset.set_import_name(self.get_package_file_name(data, without_extension=True))
+        asset.set_import_dirpath(self.get_asset_import_directory_path(data))
+    
+        if search_mode.search_packages():
+            pak = asset.add_asset_package(data.name, ["Alembic"])
+            self.set_package_file(pak, data, details)
+
+            if search_mode.search_package_content():
+                pak.add_object(data)
+                pak.export_function = bfu_export_spline_package.process_spline_export_from_package
+
+        # Set the additional data in the asset, add asset to the list and return the list.
+        self.set_additional_data_in_asset(asset, data, details, search_mode)
+        asset_list.append(asset)
+        return asset_list
+
+    def get_asset_additional_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> Dict[str, Any]:
+        additional_data: Dict[str, Any] = {}
+        if search_mode.value == AssetDataSearchMode.FULL.value:
+            pre_bake_spline = bfu_spline.bfu_spline_data.BFU_SplinesList(data)
+            pre_bake_spline.evaluate_spline_obj_data(data)
+            additional_data.update(bfu_spline.bfu_spline_write_text.WriteSplinePointsData(data, pre_bake_spline=pre_bake_spline))
+
+        return additional_data
 
 # --------------------------------------------
 # Register and Unregister functions
 # --------------------------------------------
 
-
 def register():
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_Spline())
+    my_asset_class = BFU_Spline()
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class)
 
 def unregister():
     pass
-

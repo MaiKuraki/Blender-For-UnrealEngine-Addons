@@ -33,7 +33,7 @@ from .. import bfu_lod
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 from .. import bfu_export_nomenclature
 
-def write_main_assets_data(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]) -> Dict[str, Any]:
+def write_main_assets_data(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]) -> Dict[str, Any]:
     # Generate a script for import assets in Unreal Engine.
 
     data: Dict[str, Any] = {}
@@ -52,7 +52,7 @@ def write_main_assets_data(exported_asset_log: List[bfu_export_logs.bfu_asset_ex
     bfu_export_text_files_utils.add_generated_json_footer(data)
     return data
 
-def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog) -> Dict[str, Union[str, bool, float, List[Any]]]:
+def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog) -> Dict[str, Union[str, bool, float, List[Any]]]:
     asset_data: Dict[str, Any] = {}
     asset_data["scene_unit_scale"] = bfu_utils.get_scene_unit_scale()
 

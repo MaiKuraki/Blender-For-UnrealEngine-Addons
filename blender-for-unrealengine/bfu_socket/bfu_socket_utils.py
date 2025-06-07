@@ -25,8 +25,8 @@ from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_unreal_utils
-from .. import bfu_base_object
-from .. import bfu_addon_pref
+from .. import bfu_export_control
+from .. import bfu_addon_prefs
 
 
 
@@ -64,7 +64,7 @@ def get_skeletal_mesh_sockets(obj: bpy.types.Object) -> List[bpy.types.Object]:
     if obj.type != "ARMATURE":  # type: ignore
         return []
 
-    addon_prefs = bfu_addon_pref.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     data: Dict[str, Any] = {}
     sockets: List[bpy.types.Object] = []
 
@@ -148,8 +148,8 @@ def fix_export_type_on_socket(list=None):
 
     fixed_sockets = 0
     for obj in objs:
-        if bfu_base_object.bfu_export_type.is_export_recursive(obj):
-            bfu_base_object.bfu_export_type.set_auto(obj)
+        if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
+            bfu_export_control.bfu_export_control_utils.set_auto(obj)
             fixed_sockets += 1
     return fixed_sockets
 

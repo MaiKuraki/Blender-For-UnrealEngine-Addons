@@ -25,6 +25,7 @@ from . import bfu_groom_ui
 from . import bfu_groom_utils
 from . import bfu_groom_type
 from . import bfu_groom_config
+from . import bfu_export_groom_package
 
 if "bfu_export_procedure" in locals():
     importlib.reload(bfu_export_procedure)  
@@ -38,6 +39,8 @@ if "bfu_groom_type" in locals():
     importlib.reload(bfu_groom_type)
 if "bfu_groom_config" in locals():
     importlib.reload(bfu_groom_config)
+if "bfu_export_groom_package" in locals():
+    importlib.reload(bfu_export_groom_package)
 
 
 classes = (

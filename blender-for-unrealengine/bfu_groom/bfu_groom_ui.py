@@ -26,7 +26,8 @@ from .. import bbpl
 
 from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
-from .. import bfu_base_object
+from .. import bfu_export_control
+
 
 
 
@@ -38,7 +39,7 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
     addon_prefs = bfu_basics.GetAddonPrefs()
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         if scene.bfu_object_properties_expanded.is_expend():
-            if bfu_base_object.bfu_export_type.is_export_recursive(obj):
+            if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
                 if bfu_groom_utils.is_groom(obj) or bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(obj) or bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
                     if bfu_utils.draw_proxy_propertys(obj):
                         AlembicProp = layout.column()

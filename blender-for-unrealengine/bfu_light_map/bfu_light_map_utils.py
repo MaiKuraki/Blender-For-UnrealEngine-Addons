@@ -17,19 +17,18 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List, Dict, Optional, TYPE_CHECKING, Any
+from typing import Dict, TYPE_CHECKING, Any
 from .. import bpl
 from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_static_mesh
-from .. import bfu_export_logs
-from .. import bfu_base_object
+from .. import bfu_export_control
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
 
-def GetExportRealSurfaceArea(obj):
+def GetExportRealSurfaceArea(obj: bpy.types.Object) -> float:
 
     local_view_areas = bbpl.scene_utils.move_to_global_view()
     bbpl.utils.safe_mode_set('OBJECT')
@@ -106,7 +105,7 @@ def UpdateAreaLightMapList(objects_to_update=None):
         objs = objects_to_update
     else:
         objs = []
-        export_recu_objs = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
+        export_recu_objs = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
         for export_recu_obj in export_recu_objs:
 
             if bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(export_recu_obj):
@@ -118,7 +117,7 @@ def UpdateAreaLightMapList(objects_to_update=None):
     for obj in objs:
         obj.computedStaticMeshLightMapRes = GetExportRealSurfaceArea(obj)
         UpdatedRes += 1
-        bfu_utils.UpdateProgress("Update LightMap",(UpdatedRes/len(objs)),counter.get_time())
+        bfu_utils.update_progress("Update LightMap",(UpdatedRes/len(objs)),counter.get_time())
     return UpdatedRes
 
 def GetUseCustomLightMapResolution(obj):

@@ -53,7 +53,7 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
                         return True
 
                 if (scene.bfu_use_static_collection_export
-                        or scene.bfu_use_anim_export):
+                        or scene.bfu_use_animation_export):
                     return True
                 else:
                     return False

@@ -20,13 +20,13 @@
 
 import bpy
 import math
-from . import bfu_camera_utils
-from . import bfu_camera_write_paste_commands
 from .. import bfu_basics
 from .. import bfu_ui
 from .. import bbpl
 from .. import languages
-from .. import bfu_base_object
+from .. import bfu_export_control
+from . import bfu_camera_utils
+from . import bfu_camera_write_paste_commands
 
 
 def get_preset_values():
@@ -98,7 +98,7 @@ def draw_ui_object_camera(layout: bpy.types.UILayout, context: bpy.types.Context
                                     icon='INFO'
                                 )
 
-                camera_ui_pop.enabled = bfu_base_object.bfu_export_type.is_export_recursive(obj)
+                camera_ui_pop.enabled = bfu_export_control.bfu_export_control_utils.is_export_recursive(obj)
                 camera_ui.operator("object.bfu_copy_active_camera_data", icon="COPYDOWN")
 
 

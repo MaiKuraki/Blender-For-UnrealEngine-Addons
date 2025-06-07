@@ -19,36 +19,26 @@
 
 import bpy
 from typing import List
-from . import bfu_export_single_generic
-from . import bfu_export_single_alembic_animation
-from . import bfu_export_single_camera
-from . import bfu_export_single_spline
-from . import bfu_export_single_fbx_nla_anim
-from . import bfu_export_single_groom_simulation
-from .. import bfu_cached_assets
 from .. import bbpl
 from .. import bfu_assets_manager
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
 from .. import bfu_basics
-from .. import bfu_camera
-from .. import bfu_spline
 from .. import bfu_export_logs
-from .. import bfu_base_object
-
+from . import bfu_export_single_generic
 
 def IsValidActionForExport(scene, obj, animType):
     if animType == "Action":
-        if scene.bfu_use_anim_export:
+        if scene.bfu_use_animation_export:
             return True
         else:
             return False
     elif animType == "Pose":
-        if scene.bfu_use_anim_export:
+        if scene.bfu_use_animation_export:
             return True
         else:
             return False
     elif animType == "NLA":
-        if scene.bfu_use_anim_export:
+        if scene.bfu_use_animation_export:
             return True
         else:
             False
@@ -86,7 +76,7 @@ def PrepareSceneForExport():
             if layer_collection.hide_viewport:
                 layer_collection.hide_viewport = False
 
-def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
+def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]:
     prepare_all_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("Prepare all export")
 
     scene = bpy.context.scene
@@ -129,7 +119,7 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     return exported_asset_log
 
 
-def export_all_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
+def export_all_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]:
     scene = bpy.context.scene
 
     export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("TOTAL EXPORT")
@@ -149,141 +139,3 @@ def export_all_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_
 
     export_time_log.end_time_log()
     return exported_asset_log
-
-# @TODO all following export function are deprecated, remove them in future releases
-
-    
-def export_camera_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-    addon_prefs = bfu_basics.GetAddonPrefs()
-    print("Start Export camera(s)")
-    exported_asset_log = []
-
-    camera_list = []
-
-    use_camera_evaluate = (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts)
-    if use_camera_evaluate:
-        multi_camera_tracks = bfu_camera.bfu_camera_data.BFU_MultiCameraTracks()
-        multi_camera_tracks.set_start_end_frames(scene.frame_start, scene.frame_end+1)
-    
-    # Preparre asset to export
-    for asset in asset_list:
-        if asset.asset_type == AssetType.CAMERA:
-            obj = asset.obj
-            if bfu_base_object.bfu_export_type.is_export_recursive(obj):
-                if bfu_camera.bfu_camera_utils.is_camera(obj) and IsValidDataForExport(scene, obj):                    
-                    camera_list.append(obj)
-                    multi_camera_tracks.add_camera_to_evaluate(obj)
-
-    if use_camera_evaluate:
-        multi_camera_tracks.evaluate_all_cameras()
-
-    #Start export
-    for obj in camera_list:
-        # Save current start/end frame
-        UserStartFrame = scene.frame_start
-        UserEndFrame = scene.frame_end
-
-        if use_camera_evaluate:
-            camera_tracks = multi_camera_tracks.get_evaluate_camera_data(obj)
-        else:
-            camera_tracks = None
-        bfu_export_single_camera.process_camera_export(op, obj, camera_tracks)
-
-        # Resets previous start/end frame
-        scene.frame_start = UserStartFrame
-        scene.frame_end = UserEndFrame
-    
-    return exported_asset_log
-
-def export_spline_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-    addon_prefs = bfu_basics.GetAddonPrefs()
-    print("Start Export spline(s)")
-    exported_asset_log = []
-
-    spline_list = []
-
-    use_spline_evaluate = (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts)
-    if use_spline_evaluate:
-        multi_spline_tracks = bfu_spline.bfu_spline_data.BFU_MultiSplineTracks()
-    
-    # Preparre asset to export
-    for asset in asset_list:
-        if asset.asset_type == AssetType.SPLINE:
-            obj = asset.obj
-            if bfu_base_object.bfu_export_type.is_export_recursive(obj):
-                if bfu_spline.bfu_spline_utils.is_spline(obj) and IsValidDataForExport(scene, obj):                    
-                    spline_list.append(obj)
-                    multi_spline_tracks.add_spline_to_evaluate(obj)
-
-    if use_spline_evaluate:
-        multi_spline_tracks.evaluate_all_splines()
-
-    #Start export
-    for obj in spline_list:
-
-        if use_spline_evaluate:
-            spline_tracks = multi_spline_tracks.get_evaluate_spline_data(obj)
-        else:
-            spline_tracks = None
-        bfu_export_single_spline.process_spline_export(op, obj, spline_tracks)
-    return exported_asset_log
-
-def export_alembic_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-
-    print("Start Export Alembic Animation(s)")
-    exported_asset_log = []
-    for asset in asset_list:
-        if asset.asset_type == AssetType.ANIM_ALEMBIC:    
-            export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as Alembic Animation.", 1)
-            # Save current start/end frame
-            UserStartFrame = scene.frame_start
-            UserEndFrame = scene.frame_end
-            exported_asset_log.extend(bfu_export_single_alembic_animation.process_alembic_animation_export_from_asset(op, asset))
-
-            # Resets previous start/end frame
-            scene.frame_start = UserStartFrame
-            scene.frame_end = UserEndFrame
-            export_time_log.end_time_log()
-    return exported_asset_log
-
-def export_groom_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-
-    print("Start Export Groom Simulation(s)")
-    exported_asset_log = []
-    for asset in asset_list:
-        if asset.asset_type == AssetType.GROOM_SIMULATION:
-            export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as Groom Simulation.", 1)        
-            # Save current start/end frame
-            UserStartFrame = scene.frame_start
-            UserEndFrame = scene.frame_end
-            exported_asset_log.extend(bfu_export_single_groom_simulation.process_groom_simulation_export_from_asset(op, asset))
-
-            # Resets previous start/end frame
-            scene.frame_start = UserStartFrame
-            scene.frame_end = UserEndFrame
-            export_time_log.end_time_log()
-    return exported_asset_log
-
-def export_nonlinear_animation_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs.ExportedAssetLog]:
-    scene = bpy.context.scene
-
-    print("Start Export NLA(s)")
-    exported_asset_log = []
-    for asset in asset_list:
-        if asset.asset_type == AssetType.ANIM_NLA:
-            export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as Non Linear Animation.", 1)
-            # Save current start/end frame
-            UserStartFrame = scene.frame_start
-            UserEndFrame = scene.frame_end
-            exported_asset_log.extend(bfu_export_single_fbx_nla_anim.process_nla_anim_export_from_asset(op, asset))
-
-            # Resets previous start/end frame
-            scene.frame_start = UserStartFrame
-            scene.frame_end = UserEndFrame
-            export_time_log.end_time_log()
-    return exported_asset_log
-

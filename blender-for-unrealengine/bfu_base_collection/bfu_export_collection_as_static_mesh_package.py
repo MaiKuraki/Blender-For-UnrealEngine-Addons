@@ -18,29 +18,34 @@
 
 
 import bpy
-from typing import Optional
+from pathlib import Path
+from typing import TYPE_CHECKING
 from .. import bfu_export
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_vertex_color
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetPackage
-from .. import bfu_export_logs
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
+from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
+
 
 def process_collection_as_static_mesh_export_from_package(
     op: bpy.types.Operator,
     package: AssetPackage
 ) -> bool:
 
-    return export_collection_as_static_mesh(
-        op,
-        fullpath=package.file.get_full_path(),
-        col=package.collection
-    )
+    if package.file and package.collection:
+        return export_collection_as_static_mesh(
+            op=op,
+            fullpath=package.file.get_full_path(),
+            col=package.collection
+        )
+    else:
+        return False
 
 
 def export_collection_as_static_mesh(
     op: bpy.types.Operator,
-    fullpath: str,
+    fullpath: Path,
     col: bpy.types.Collection
 ) -> bool:
 
@@ -49,62 +54,109 @@ def export_collection_as_static_mesh(
             # COLLECTION AS STATIC MESH
     #####################################################
     '''
+
+    if bpy.context is None:
+        return False
+
     # Export a single collection
-    prepare_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare export", 2)
+    my_timer_group = SafeTimeGroup(2)
+    my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    objs = bfu_utils.get_export_collection_objects(col)
+
+    # [SAVE ASSET DATA]
+    # Save asset data before export like transforms, animation data, etc.
+    # So can be restored after export.
+    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
+    saved_selection_names.save_new_names(objs)
+
+
+    # [SELECT AND DUPLICATE] 
+    # Select and duplicate objects for export (Export the duplicated objects)
     bbpl.utils.safe_mode_set('OBJECT')
+    bbpl.utils.select_specific_object_list(objs[0], objs)
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
+    duplicate_data.set_duplicate_name_for_export()
 
-    bfu_utils.SelectCollectionObjects(col)
-    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export()
-    bfu_export.bfu_export_utils.set_duplicate_name_for_export(duplicate_data)
+    # Duplicated active that should be used for export.
+    if bpy.context.active_object is None:
+        raise ValueError("No active object found after duplicate!")
+    active: bpy.types.Object = bpy.context.active_object
+    bfu_export.bfu_export_utils.set_duplicated_object_export_name(
+        duplicated_obj=active, 
+        original_obj=objs[0], 
+        is_skeletal=False
+    )
 
-    bfu_export.bfu_export_utils.ConvertSelectedToMesh()
-    bfu_export.bfu_export_utils.MakeSelectVisualReal()
+    if TYPE_CHECKING:
+        class FakeCollection(bpy.types.Collection):
+            bfu_collection_export_procedure: str
+        col = FakeCollection()  # type: ignore
+        class FakeObject(bpy.types.Object):
+            bfu_static_export_procedure: str
+            bfu_convert_geometry_node_attribute_to_uv: bool
+            bfu_convert_geometry_node_attribute_to_uv_name: str
+            bfu_fbx_export_with_custom_props: bool
+            bfu_export_deform_only: bool
+            bfu_export_with_meta_data: bool
+            bfu_mirror_symmetry_right_side_bones: bool
+            bfu_use_ue_mannequin_bone_alignment: bool
+            bfu_disable_free_scale_animation: bool
+            bfu_fbx_export_with_custom_props: bool
+        active = FakeObject()  # type: ignore
+
+    # [MAKE REAL COPY] Make objects real to be able to edit before export
+    bfu_export.bfu_export_utils.convert_selected_to_mesh()
+    bfu_export.bfu_export_utils.make_select_visual_real()
 
     bfu_utils.ApplyNeededModifierToSelect()
     for selected_obj in bpy.context.selected_objects:
-        if selected_obj.bfu_convert_geometry_node_attribute_to_uv:
-            attrib_name = selected_obj.bfu_convert_geometry_node_attribute_to_uv_name
+        if active.bfu_convert_geometry_node_attribute_to_uv:
+            attrib_name = active.bfu_convert_geometry_node_attribute_to_uv_name
             bfu_export.bfu_export_utils.ConvertGeometryNodeAttributeToUV(selected_obj, attrib_name)
         bfu_vertex_color.bfu_vertex_color_utils.SetVertexColorForUnrealExport(selected_obj)
         bfu_export.bfu_export_utils.CorrectExtremUVAtExport(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportTransform(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportName(selected_obj)
 
-    static_collection_export_procedure = col.bfu_collection_export_procedure
-
-    save_use_simplify = bbpl.utils.SaveUserRenderSimplify()
+    
+    # [PREPARE SCENE]
+    # Prepare scene for export (frame range, simplefying, etc.)
     scene.render.use_simplify = False
-    prepare_export_time_log.end_time_log()
 
-    process_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Process export", 2)
+    my_timer_group.end_last_timer()
+
+    # Process export
+    my_timer_group.start_timer(f"Process export")
+    static_collection_export_procedure = col.bfu_collection_export_procedure
     if (static_collection_export_procedure == "ue-standard"):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
-            filepath=fullpath,
+            filepath=str(fullpath),
             check_existing=False,
             use_selection=True,
             global_scale=1,
             object_types={'EMPTY', 'CAMERA', 'LIGHT', 'MESH', 'OTHER'},
-            colors_type=bfu_vertex_color.bfu_vertex_color_utils.get_export_colors_type(obj),
-            use_custom_props=obj.bfu_fbx_export_with_custom_props,
+            colors_type=bfu_vertex_color.bfu_vertex_color_utils.get_export_colors_type(active),
+            use_custom_props=active.bfu_fbx_export_with_custom_props,
             mesh_smooth_type="FACE",
             add_leaf_bones=False,
             # use_armature_deform_only=active.bfu_export_deform_only,
             bake_anim=False,
-            use_metadata=obj.bfu_export_with_meta_data,
-            # primary_bone_axis=bfu_export_utils.get_final_export_primary_bone_axis(obj),
-            # secondary_bone_axis=bfu_export_utils.get_final_export_secondary_bone_axis(obj),
-            # use_space_transform=bfu_export_utils.get_export_use_space_transform(obj),
-            # axis_forward=bfu_export_utils.get_export_axis_forward(obj),
-            # axis_up=bfu_export_utils.get_export_axis_up(obj),
+            use_metadata=active.bfu_export_with_meta_data,
+            # primary_bone_axis=bfu_export_utils.get_final_export_primary_bone_axis(active),
+            # secondary_bone_axis=bfu_export_utils.get_final_export_secondary_bone_axis(active),
+            # use_space_transform=bfu_export_utils.get_export_use_space_transform(active),
+            # axis_forward=bfu_export_utils.get_export_axis_forward(active),
+            # axis_up=bfu_export_utils.get_export_axis_up(active),
             bake_space_transform=False
             )
         
     elif (static_collection_export_procedure == "blender-standard"):
         bfu_export.bfu_fbx_export.export_scene_fbx(
-            filepath=fullpath,
+            filepath=str(fullpath),
             check_existing=False,
             use_selection=True,
             global_scale=1,
@@ -121,10 +173,17 @@ def export_collection_as_static_mesh(
             # axis_up=bfu_export_utils.get_export_axis_up(obj),
             bake_space_transform=False
             )
-    process_export_time_log.end_time_log()
+    else:
+        print(f"Error: The export procedure '{static_collection_export_procedure}' was not found!")
+    my_timer_group.end_last_timer()
 
-    post_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean after export", 2)
-    save_use_simplify.LoadUserRenderSimplify()
+    # [RESTORE ASSET DATA]
+    # Restore asset data after export like transforms, animation data, etc.
+    my_timer_group.start_timer(f"Clean after export")
+    saved_selection_names.restore_names()
+    scene.render.use_simplify = save_use_simplify
+
+
     for obj in bpy.context.selected_objects:
         bfu_vertex_color.bfu_vertex_color_utils.clear_vertex_color_for_unreal_export(obj)
         bfu_export.bfu_export_utils.reset_sockets_export_name(obj)
@@ -132,11 +191,11 @@ def export_collection_as_static_mesh(
 
     bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     for data in duplicate_data.data_to_remove:
-        data.RemoveData()
+        data.remove_data()
 
-    bfu_export.bfu_export_utils.ResetDuplicateNameAfterExport(duplicate_data)
+    duplicate_data.reset_duplicate_name_after_export()
 
     for obj in scene.objects:
         bfu_utils.clear_all_bfu_temp_vars(obj)
-    post_export_time_log.end_time_log()
+    my_timer_group.end_last_timer()
     return True

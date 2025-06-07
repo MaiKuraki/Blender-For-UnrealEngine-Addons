@@ -19,14 +19,14 @@
 
 import bpy
 import fnmatch
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, Tuple
 
 from . import bfu_cached_assets_types
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode, AssetType
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_assets_manager
-from .. import bfu_base_object
+from .. import bfu_export_control
 
 
 
@@ -126,9 +126,12 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Returns all assets that will be exported
         # WARNING: the assets not to be ordered. First asset are exported first.
 
+        if bpy.context is None:
+            return []
+
         def get_have_parent_to_export(obj: bpy.types.Object) -> Optional[bpy.types.Object]:
             if obj.parent is not None:
-                if bfu_base_object.bfu_export_type.is_export_recursive(obj.parent):
+                if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj.parent):
                     return obj.parent
                 else:
                     return get_have_parent_to_export(obj.parent)
@@ -160,10 +163,10 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Search for objects
         obj_list: List[bpy.types.Object] = []
         if export_filter == "default":
-            obj_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
+            obj_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
 
         elif export_filter in ["only_object", "only_object_action"]:
-            recursive_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
+            recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
 
             for obj in bpy.context.selected_objects:
                 if obj in recursive_list:
@@ -177,16 +180,15 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Search for objects assets
         for obj in obj_list:
             asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(obj)
-            if asset_class_list: 
-                for asset_class in asset_class_list:
-                    target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
+            for asset_class in asset_class_list:
+                target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
 
         # Search for armatures and their actions
         armature_list: List[bpy.types.Object] = []
         if export_filter == "default":
-            armature_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
+            armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
         elif export_filter in ["only_object", "only_object_action"]:
-            armature_recursive_list = bfu_base_object.bfu_export_type.get_all_export_recursive_objects()
+            armature_recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
 
             for obj in bpy.context.selected_objects:
                 if obj in armature_recursive_list:
@@ -197,7 +199,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                     if armature_parent_target not in armature_list:
                         armature_list.append(armature_parent_target)
 
-        armature_actions_map: List[(bpy.types.Object, bpy.types.Action)] = []
+        armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
         if export_filter == "only_object_action":
             for armature in armature_list:
                 if armature.animation_data and armature.animation_data.action:
@@ -211,9 +213,8 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Search for actions assets
         for armature, action in armature_actions_map:
             asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(armature, action)
-            if asset_class_list:
-                for asset_class in asset_class_list:
-                    target_asset_to_export.extend(asset_class.get_asset_export_data(armature, action, search_mode=search_mode))
+            for asset_class in asset_class_list:
+                target_asset_to_export.extend(asset_class.get_asset_export_data(armature, action, search_mode=search_mode))
 
         # Reorder the asset list
         asset_type_order = [
@@ -238,7 +239,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         return target_asset_to_export
   
         # NLA
-        if scene.bfu_use_anim_export:
+        if scene.bfu_use_animation_export:
             if obj.bfu_anim_nla_use:
                 TargetAssetToExport.append(AssetToExport(obj, obj.animation_data, AssetType.ANIM_NLA))
 
@@ -250,7 +251,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                     if obj.animation_data.action == action:
                         TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_ACTION))
             else:
-                if scene.bfu_use_anim_export:
+                if scene.bfu_use_animation_export:
                     
                     if bfu_utils.action_is_one_frame(action) == True:
                         # Action

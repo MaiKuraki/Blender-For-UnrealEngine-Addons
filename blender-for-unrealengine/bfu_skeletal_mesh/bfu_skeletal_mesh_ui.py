@@ -18,12 +18,11 @@
 
 
 import bpy
-from . import bfu_skeletal_mesh_utils
 from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
-from .. import bfu_base_object
+from .. import bfu_export_control
+from . import bfu_skeletal_mesh_utils
 
 
 def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
@@ -38,7 +37,7 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         if scene.bfu_object_properties_expanded.is_expend():
-            if bfu_base_object.bfu_export_type.is_export_recursive(obj):
+            if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
                 if not obj.bfu_export_as_alembic_animation:
                     AssetType2 = layout.column()
                     # Show asset type
@@ -56,7 +55,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
         return
     if is_skeletal_mesh is False:
         return
-    if bfu_base_object.bfu_export_type.is_not_export_recursive(obj):
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     if obj.bfu_export_as_lod_mesh:
         return

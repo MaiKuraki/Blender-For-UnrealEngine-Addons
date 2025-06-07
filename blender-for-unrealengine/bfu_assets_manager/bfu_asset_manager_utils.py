@@ -27,11 +27,12 @@ def get_all_supported_asset_class(data: Any, details: Any = None) -> list[bfu_as
     :param details: Additional details that may affect asset class support.
     :return: A list of supported asset classes.
     """
-    supported_classes = []
+    supported_classes: list[bfu_asset_manager_type.BFU_BaseAssetClass] = []
     for asset in bfu_asset_manager_registred_assets.get_registred_asset_class():
         asset: bfu_asset_manager_type.BFU_BaseAssetClass
         if asset.support_asset_type(data, details):
-            supported_classes.append(asset)
+            if asset.can_export_asset(data):
+                supported_classes.append(asset)
     return supported_classes
 
 def get_primary_supported_asset_class(data: Any, details: Any = None) -> Optional[bfu_asset_manager_type.BFU_BaseAssetClass]:

@@ -17,112 +17,146 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-import bpy
 from pathlib import Path
+from typing import List, Any, Dict, Optional
+import bpy
 from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_assets_manager
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, BFU_ObjectAssetClass, AssetToExport, AssetDataSearchMode
+from .. import bfu_export_nomenclature
+from .. import bfu_base_object
+from .. import bfu_socket
+from .. import bfu_light_map
+from .. import bfu_nanite
+from .. import bfu_vertex_color
+from .. import bfu_material
+from .. import bfu_lod
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
+from .. import bfu_export_nomenclature
+from .. import bfu_utils
+from . import bfu_export_procedure
+from . import bfu_export_alembic_package
 
 
-class BFU_AlembicAnimation(bfu_assets_manager.bfu_asset_manager_type.BFU_BaseAssetClass):
+
+class BFU_AlembicAnimation(BFU_ObjectAssetClass):
     def __init__(self):
         super().__init__()
         self.use_materials = True
 
-    def support_asset_type(self, obj: bpy.types.Object, details: any = None) -> bool:
-        if not isinstance(obj, bpy.types.Object):
+
+# ###################################################################
+# # Asset Root Class
+# ###################################################################
+
+    def support_asset_type(self, data: Any, details: Any = None) -> bool:
+        if not isinstance(data, bpy.types.Object):
             return False
-        if obj.bfu_export_as_alembic_animation:
+        if details is not None:
+            return False
+        if data.bfu_export_as_alembic_animation:  # type: ignore
             return True
         return False
 
-    def get_asset_type(self, obj: bpy.types.Object, details: any = None) -> AssetType:
+    def get_asset_type(self, data: Any, details: Any = None) -> AssetType:
         return AssetType.ANIM_ALEMBIC
     
-    def get_package_file_name(self, obj: bpy.types.Object, details: any = None, desired_name: str = "", without_extension: bool = False) -> str:
-        # Generate assset file name for skeletal mesh
+    def can_export_asset_type(self) -> bool:
+        if bpy.context is None:
+            return False
         scene = bpy.context.scene
-        if obj.bfu_use_custom_export_name:
-            if obj.bfu_custom_export_name:
-                return obj.bfu_custom_export_name
-            
-        if without_extension:
-            fileType = ""
-        else:
-            asset_type = self.get_package_file_type(obj)
-            if asset_type == "FBX":
-                fileType = ".fbx"
-            elif asset_type == "GLTF":
-                fileType = ".glb"
+        return scene.bfu_use_alembic_export  # type: ignore
 
+    def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
+        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+        return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
-        if desired_name:
-            return bfu_basics.valid_file_name(scene.bfu_alembic_animation_prefix_export_name+desired_name+fileType)
-        return bfu_basics.valid_file_name(scene.bfu_alembic_animation_prefix_export_name+obj.name+fileType)
+# ###################################################################
+# # Asset Package Management
+# ###################################################################
 
-    def get_package_export_directory_path(self, obj: bpy.types.Object, extra_path: str = "", absolute: bool = True) -> str:
-        scene = bpy.context.scene
+    def get_package_file_prefix(self, data: Any, details: Any = None) -> str:
+        if bpy.context:
+            return bpy.context.scene.bfu_alembic_animation_prefix_export_name  # type: ignore
+        return ""
 
-        # Get root path
-        if absolute:
-            root_path = Path(bpy.path.abspath(scene.bfu_export_alembic_file_path))
-        else:
-            root_path = Path(scene.bfu_export_alembic_file_path)
+    def get_export_file_path(self, data: Any, details: Any = None) -> str:
+        if bpy.context:
+            scene = bpy.context.scene
+            self.package_file_path = scene.bfu_export_alembic_file_path  # type: ignore[attr-defined]
+        return ""
+    
+    def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
+        return bfu_export_procedure.get_obj_export_file_type(data)
 
-        # Add obj folder path
-        folder_name = bfu_utils.get_export_folder_name(obj)
-        dirpath = root_path / folder_name
-
+    def get_asset_folder_path(self, data: bpy.types.Object, details: Any = None) -> Path:
         # Add alembic sub folder path
-        if obj.bfu_create_sub_folder_with_alembic_name:
-            dirpath = dirpath / str(self.get_asset_type(obj))
+        if data.bfu_create_sub_folder_with_alembic_name:  # type: ignore[attr-defined]
+            sub_folder = bfu_basics.valid_file_name(data.name)
+            return Path(sub_folder) / super().get_asset_folder_path(data, details)
 
-        # Add extra path if provided
-        if extra_path:
-            dirpath = dirpath / extra_path
-
-        # Clean path and return as string
-        return str(dirpath)
+        return super().get_asset_folder_path(data, details)
     
-    def get_asset_import_directory_path(self, obj, extra_path = ""):
-        scene = bpy.context.scene
+# ###################################################################
+# # UI
+# ###################################################################
 
-        # Get root path
-        root_path = Path(scene.bfu_unreal_import_module)
+    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, data: bpy.types.Object) -> bpy.types.UILayout:
+        return bfu_export_procedure.draw_object_export_procedure(layout, data)
 
-        # Add skeletal subfolder path
-        dirpath = root_path / scene.bfu_unreal_import_location / obj.bfu_export_folder_name
+# ####################################################################
+# # Asset Construction
+# ####################################################################
 
-        # Add extra path if provided
-        if extra_path:
-            dirpath = dirpath / extra_path
+    def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
+        if bpy.context is None:
+            return []
+        
+        asset_list: List[AssetToExport] = []
 
-        # Clean path and return as string
-        return str(dirpath)
+        # One asset per alembic animation pack
+        asset = AssetToExport(self, data.name, AssetType.STATIC_MESH)
+        asset.set_import_name(self.get_package_file_name(data, without_extension=True))
+        asset.set_import_dirpath(self.get_asset_import_directory_path(data))
     
-    def can_export_asset_type(self):
-        scene = bpy.context.scene
-        return scene.bfu_use_alembic_export
+        if search_mode.search_packages():
+            pak = asset.add_asset_package(data.name, ["Alembic"])
+            self.set_package_file(pak, data, details)
 
-    def can_export_asset(self, obj):
-        return self.can_export_asset_type()
-    
-####################################################################
-# UI
-####################################################################
+            if search_mode.search_package_content():
+                pak.add_objects(bfu_base_object.bfu_base_obj_utils.get_exportable_objects(data))
+                frame_range = bfu_utils.get_desired_alembic_start_end_range(data)
+                pak.set_frame_range(frame_range[0], frame_range[1])
+                pak.export_function = bfu_export_alembic_package.process_alembic_animation_export_from_package
 
-    def draw_ui_export_procedure(self, layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object) -> bpy.types.UILayout:
-        return bfu_export_procedure.draw_object_export_procedure(layout, obj)
-    
+        # Set the additional data in the asset, add asset to the list and return the list.
+        self.set_additional_data_in_asset(asset, data, details, search_mode)
+        asset_list.append(asset)
+        return asset_list
+
+
+    def get_asset_additional_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> Dict[str, Any]:
+        additional_data: Dict[str, Any] = {}
+        # Sockets
+        if data:
+            additional_data['Sockets'] = bfu_socket.bfu_socket_utils.get_skeletal_mesh_sockets(data)
+
+        additional_data.update(bfu_lod.bfu_lod_utils.get_lod_additional_data(data, AssetType.STATIC_MESH))
+        additional_data.update(bfu_vertex_color.bfu_vertex_color_utils.get_vertex_color_additional_data(data, AssetType.STATIC_MESH))
+        additional_data.update(bfu_material.bfu_material_utils.get_material_asset_additional_data(data, AssetType.STATIC_MESH))
+        additional_data.update(bfu_light_map.bfu_light_map_utils.get_light_map_additional_data(data, AssetType.STATIC_MESH))
+        additional_data.update(bfu_nanite.bfu_nanite_utils.get_nanite_asset_additional_data(data, AssetType.STATIC_MESH))
+        return additional_data
 
 # --------------------------------------------
 # Register and Unregister functions
 # --------------------------------------------
 
 def register():
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(BFU_AlembicAnimation())
+    my_asset_class = BFU_AlembicAnimation()
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class)
 
 def unregister():
     pass
+
 
