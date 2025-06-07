@@ -18,17 +18,14 @@
 
 
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
-from .. import bfu_cached_assets
 from .. import bfu_asset_preview
+from .. import bfu_addon_prefs
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_export_process_properties_expanded")
     header, panel = accordion.draw(layout)

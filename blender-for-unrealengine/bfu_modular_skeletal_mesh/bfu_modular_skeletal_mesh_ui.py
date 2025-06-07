@@ -19,7 +19,7 @@
 
 import bpy
 from .. import bbpl
-from .. import bfu_basics
+from .. import bfu_addon_prefs
 from .. import bfu_ui
 from .. import bfu_skeletal_mesh
 from .. import bfu_export_control
@@ -33,7 +33,7 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         if scene.bfu_object_properties_expanded.is_expend():
@@ -46,7 +46,7 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
     
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     if obj is None:
         return

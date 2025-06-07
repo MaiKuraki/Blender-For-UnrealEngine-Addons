@@ -24,10 +24,6 @@ import bpy
 import shutil
 import bmesh
 
-# @TODO @DEPRECATED: Use bfu_addon_prefs.get_addon_prefs() instead
-def GetAddonPrefs():
-    return bpy.context.preferences.addons[__package__].preferences
-
 def RemoveFolderTree(folder):
     dirpath = Path(folder)
     if dirpath.exists() and dirpath.is_dir():

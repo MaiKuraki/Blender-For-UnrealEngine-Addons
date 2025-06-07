@@ -2,13 +2,11 @@ import bpy
 import math
 import mathutils
 from typing import Dict, Any
+from .. import bpl
+from .. import bfu_utils
+from .. import bfu_addon_prefs
 from . import bfu_spline_utils
 from . import bfu_spline_unreal_utils
-from .. import bpl
-from .. import bbpl
-from .. import languages
-from .. import bfu_basics
-from .. import bfu_utils
 
 def float_as_ue(float: float):
     return "{:.6f}".format(float)
@@ -201,7 +199,7 @@ class BFU_SimpleSpline():
     def evaluate_spline_data(self, spline_obj: bpy.types.Object, spline_data: bpy.types.Spline, index=0):
         
         scene = bpy.context.scene
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         #print(f"Start evaluate spline_data index {str(index)}")
         counter = bpl.utils.CounterTimer()
@@ -271,7 +269,7 @@ class BFU_SplinesList():
     def evaluate_spline_obj_data(self, spline_obj: bpy.types.Object):
         
         scene = bpy.context.scene
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         #print(f"Start evaluate spline {spline_obj.name}")
         counter = bpl.utils.CounterTimer()
@@ -299,7 +297,7 @@ class BFU_MultiSplineTracks():
         # Evalutate all splines at same time will avoid frames switch
 
         scene = bpy.context.scene
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         counter = bpl.utils.CounterTimer()
 

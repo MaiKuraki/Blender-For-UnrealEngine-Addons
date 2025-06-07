@@ -21,6 +21,7 @@ import fnmatch
 from .. import bfu_basics
 from .. import bfu_unreal_utils
 from .. import bfu_export_control
+from .. import bfu_addon_prefs
 
 
 def is_a_collision(obj: bpy.types.Object) -> bool:
@@ -178,7 +179,7 @@ def Ue4SubObj_set(SubType):
     return ConvertedObjs
 
 def CreateCollisionMaterial():
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     mat = bpy.data.materials.get("UE4Collision")
     if mat is None:

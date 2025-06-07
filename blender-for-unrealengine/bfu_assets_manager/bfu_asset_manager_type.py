@@ -27,6 +27,7 @@ from .. import bfu_basics
 from .. import bfu_export_nomenclature
 from .. import bfu_addon_prefs
 
+
 class AssetDataSearchMode(Enum):
     FULL = "Full" # Search for all assets data.
     PREVIEW = "Preview" # Search assets data for user interface preview.

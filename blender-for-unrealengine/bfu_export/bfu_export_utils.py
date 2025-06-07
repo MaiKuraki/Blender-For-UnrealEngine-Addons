@@ -333,7 +333,7 @@ def SetSocketsExportName(obj: bpy.types.Object):
 def SetSocketsExportTransform(obj: bpy.types.Object):
     # Set socket Transform for Unreal
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     for socket in bfu_socket.bfu_socket_utils.get_socket_desired_children(obj):
         socket["BFU_PreviousSocketScale"] = socket.scale
         socket["BFU_PreviousSocketLocation"] = socket.location
@@ -425,59 +425,7 @@ def set_duplicated_object_export_name(duplicated_obj: bpy.types.Object, original
         duplicated_obj.name = desired_export_name
 
 
-          
-
-# @TODO @DEPRECATED: Use SavedObjectNames and set_object_export_name/set_duplicated_object_export_name instead.
-class PrepareExportName():
-    def __init__(self, obj: bpy.types.Object, is_skeleton: bool):
-        # Set is_skeleton = True only for skeletal assets.
-        # Static meshes with armature should use is_skeleton = False
-
-        # Rename temporarily the assets
-        self.target_object: bpy.types.Object = obj
-        self.is_skeleton: bool = is_skeleton
-        self.saved_original_asset_name: str = ""
-        self.desired_export_name: str = ""
-
-        if self.is_skeleton:
-            self.desired_export_name: str = bfu_utils.get_desired_export_armature_name(obj)
-        else:
-            self.desired_export_name: str = obj.name  # Keep the same name
-
-    def set_export_name(self):
-        '''
-        Set the name of the asset for export
-        '''
-        if bpy.context is None:
-            return
-        scene = bpy.context.scene
-        obj = self.target_object
-        if obj.name != self.desired_export_name:
-            self.saved_original_asset_name = obj.name
-            # Avoid same name for two assets
-            if self.desired_export_name in scene.objects:
-                conflit_asset = scene.objects[self.desired_export_name]
-                conflit_asset.name = dup_temp_name
-            obj.name = self.desired_export_name
-
-    def reset_names(self):
-        '''
-        Reset names after export
-        '''
-        if bpy.context is None:
-            return
-        scene = bpy.context.scene
-        if self.saved_original_asset_name != "":
-            obj = self.target_object
-            obj.name = self.saved_original_asset_name
-
-            if dup_temp_name in scene.objects:
-                armature = scene.objects[dup_temp_name]
-                armature.name = self.desired_export_name
-
 # UVs
-
-
 def ConvertGeometryNodeAttributeToUV(obj: bpy.types.Object, attrib_name: str):
     # I need apply the geometry modifier for get the data.
     # So this work only when I do export of the duplicate object.
@@ -678,7 +626,7 @@ def get_should_rescale_sockets():
 def GetRescaleSocketFactor():
     # This will return the rescale factor.
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     if addon_prefs.rescaleSocketsAtExport == "auto":
         return 1/(100*bfu_utils.get_scene_unit_scale())
     else:

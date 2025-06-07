@@ -18,11 +18,10 @@
 
 
 import bpy
-from . import bfu_socket_utils
 from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
+from .. import bfu_addon_prefs
 from .. import bbpl
+from . import bfu_socket_utils
 
 class BFU_OT_ConvertToStaticSocketButton(bpy.types.Operator):
     bl_label = "Convert to StaticMesh socket"
@@ -75,7 +74,7 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_socket_properties_expanded")
     header, panel = accordion.draw(layout)
     if accordion.is_expend():
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         # Draw user tips and check can use buttons
         ready_for_convert_socket = False

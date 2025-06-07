@@ -18,20 +18,21 @@
 
 
 import bpy
-from .. import bfu_basics
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
 from .. import bfu_export_control
+from .. import bfu_addon_prefs
 from . import bfu_vertex_color_utils
+
 
 
 
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # Hide filters
     if obj is None:

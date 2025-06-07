@@ -18,7 +18,7 @@
 
 
 import bpy
-from .. import bfu_basics
+from .. import bfu_addon_prefs
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
@@ -33,7 +33,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
         return
     
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # Hide filters
     if obj is None:

@@ -16,11 +16,8 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
-import os
 import bpy
 from .. import bbpl
-from .. import bfu_basics
 from .. import languages
 from .. import bfu_custom_property
 from .. import bfu_base_object
@@ -46,6 +43,7 @@ from .. import bfu_light_map
 from .. import bfu_nanite
 from .. import bfu_assets_references
 from .. import bfu_collision
+from .. import bfu_addon_prefs
 
 
 class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
@@ -116,7 +114,7 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
     def draw(self, context: bpy.types.Context):
         scene = bpy.context.scene
         obj: bpy.types.Object = bpy.context.object
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
         layout = self.layout
         
         # Extension details

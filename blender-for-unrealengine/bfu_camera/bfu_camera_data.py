@@ -7,6 +7,8 @@ from .. import bbpl
 from .. import languages
 from .. import bfu_basics
 from .. import bfu_utils
+from .. import bfu_addon_prefs
+
 
 def set_current_frame(new_frame):
     scene = bpy.context.scene
@@ -220,7 +222,7 @@ class BFU_CameraTracks():
 
     def evaluate_track_at_frame(self, camera: bpy.types.Object, frame: int):
         scene = bpy.context.scene
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
         unit_scale = bfu_utils.get_scene_unit_scale()
         set_current_frame(frame)
 
@@ -293,7 +295,7 @@ class BFU_CameraTracks():
     def evaluate_all_tracks(self, camera, frame_start, frame_end):
         
         scene = bpy.context.scene
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         print(f"Start evaluate camera {camera.name} Frames:({str(frame_start)}-{str(frame_end)})")
         counter = bpl.utils.CounterTimer()
@@ -352,7 +354,7 @@ class BFU_MultiCameraTracks():
         frame_start = self.frame_start
         frame_end = self.frame_end
         scene = bpy.context.scene
-        addon_prefs = bfu_basics.GetAddonPrefs()
+        addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         counter = bpl.utils.CounterTimer()
 

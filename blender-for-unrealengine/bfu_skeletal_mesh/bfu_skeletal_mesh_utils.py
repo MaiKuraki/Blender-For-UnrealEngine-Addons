@@ -26,32 +26,6 @@ from .. import bfu_unreal_utils
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
-def SelectArmatureParentAndDesiredChilds(active: bpy.types.Object, inclide_meshs=True, inclide_sockets=True):
-    # Selects only auto desired child objects that must be exported with armature object
-    if active.type != "ARMATURE":
-        print(f"The object {active.name} is not an armature!")
-        return
-
-    new_select_list = []
-    bpy.ops.object.select_all(action='DESELECT')
-    for select_obj in bfu_utils.GetExportDesiredChilds(active):
-        if inclide_meshs == True:
-            new_select_list.append(select_obj)
-        elif select_obj.type != "MESH":
-            new_select_list.append(select_obj)
-
-        # @TODO -> inclide_sockets
-
-    # Select active at end to move a list end
-    new_select_list.append(active)
-
-    # Select proxy at end to move a list end
-    if bfu_utils.GetExportAsProxy(active):
-        proxy_child = bfu_utils.GetExportProxyChild(active)
-        if proxy_child is not None:
-            new_select_list.append(active)
-
-    return bbpl.utils.select_specific_object_list(active, new_select_list)
 
 
 def get_socket_in_desired_childs(obj: bpy.types.Object):

@@ -207,25 +207,6 @@ def clean_delete_objects(objs: List[bpy.types.Object]) -> List[str]:
 
     return removed_objects
 
-# @TODO: @Deprecated use bfu_export_control.bfu_export_type.get_all_xxx_objects instead
-def get_all_objects_by_export_type(exportType) -> List[bpy.types.Object]:
-    # Find all objects with a specific bfu_export_type property
-    targetObj = []
-    for obj in bpy.context.scene.objects:
-        prop = obj.bfu_export_type
-        if prop == exportType:
-            targetObj.append(obj)
-    return (targetObj)
-
-# @TODO: @Deprecated use bfu_export_control.bfu_export_type.get_all_xxx_armatures instead
-def get_all_armatures_by_export_type(exportType) -> List[bpy.types.Object]:
-    # Find all armature objects with a specific bfu_export_type property
-    targetObj = []
-    for obj in bpy.context.scene.objects:
-        prop = obj.bfu_export_type
-        if prop == exportType and obj.type == 'ARMATURE':
-            targetObj.append(obj)
-    return (targetObj)
 
 def get_all_collision_and_sockets_obj(objs_list=None):
     # Get any object that can be understood
@@ -652,23 +633,6 @@ def get_export_collection_objects(collection: bpy.types.Collection) -> List[bpy.
                 found_objs.append(select_obj)
 
     return found_objs
-
-# @TODO: @Deprecated use get_export_collection_objects() with select_specific_object_list() instead.
-def select_collection_objects(collection: bpy.types.Collection) -> List[bpy.types.Object]:
-    # Selects all objects that must be exported in a collection
-    selected_objs = []
-    bpy.ops.object.select_all(action='DESELECT')
-    for select_obj in collection.all_objects:
-        if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(select_obj):
-            if select_obj.name in bpy.context.view_layer.objects:
-                select_obj.select_set(True)
-                selected_objs.append(select_obj)
-
-    if len(selected_objs) > 0:
-        if selected_objs[0].name in bpy.context.view_layer.objects:
-            bpy.context.view_layer.objects.active = selected_objs[0]
-
-    return selected_objs
 
 def draw_proxy_propertys(obj):
     addon_prefs = bpy.context.preferences.addons[__package__].preferences

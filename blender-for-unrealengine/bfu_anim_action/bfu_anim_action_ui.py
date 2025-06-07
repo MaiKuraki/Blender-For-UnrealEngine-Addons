@@ -26,12 +26,13 @@ from .. import bfu_skeletal_mesh
 from .. import bfu_alembic_animation
 from .. import bfu_camera
 from .. import bfu_export_control
+from .. import bfu_addon_prefs
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # Hide filters
     if obj is None:
