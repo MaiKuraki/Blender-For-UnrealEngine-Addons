@@ -148,7 +148,6 @@ def export_as_static_mesh(
             use_custom_props=active.bfu_fbx_export_with_custom_props,
             mesh_smooth_type="FACE",
             add_leaf_bones=False,
-            use_armature_deform_only=active.bfu_export_deform_only,
             bake_anim=False,
             path_mode='AUTO',
             embed_textures=False,
@@ -179,7 +178,6 @@ def export_as_static_mesh(
             use_custom_props=active.bfu_fbx_export_with_custom_props,
             mesh_smooth_type="FACE",
             add_leaf_bones=False,
-            use_armature_deform_only=active.bfu_export_deform_only,
             bake_anim=False,
             path_mode='AUTO',
             embed_textures=False,
@@ -195,8 +193,7 @@ def export_as_static_mesh(
         bfu_export.bfu_gltf_export.export_scene_gltf(
             filepath=str(fullpath),
             check_existing=False,
-            use_selection=True,
-            use_armature_deform_only=active.bfu_export_deform_only
+            use_selection=True
             )
     else:
         print(f"Error: The export procedure '{static_export_procedure}' was not found!")

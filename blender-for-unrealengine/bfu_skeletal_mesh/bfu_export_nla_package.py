@@ -236,8 +236,12 @@ def process_nla_anim_export(
             bake_space_transform=False
             )
     elif (skeleton_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_GLTF.value):
-        # @TODO: Add support for GLTF export
-        bfu_export.bfu_gltf_export.export_scene_gltf()
+        bfu_export.bfu_gltf_export.export_scene_gltf(
+            filepath=str(fullpath),
+            check_existing=False,
+            use_selection=True,
+            use_armature_deform_only=active.bfu_export_deform_only
+            )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
     my_timer_group.end_last_timer()
