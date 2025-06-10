@@ -56,9 +56,11 @@ def get_blender_enum_property_list() -> List[Tuple[str, str, str, str, int]]:
         ]
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_StaticExportProcedure:
-    for export_type in BFU_StaticExportProcedure:
-        if obj.bfu_export_type == export_type.value:  # type: ignore
-            return export_type
+    for procedure in BFU_StaticExportProcedure:
+        if obj.bfu_static_export_procedure == procedure.value:  # type: ignore
+            return procedure
+
+    print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_static_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_StaticExportProcedure.default()
 
 def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:

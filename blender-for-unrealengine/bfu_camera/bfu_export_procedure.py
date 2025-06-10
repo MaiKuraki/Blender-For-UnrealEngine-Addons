@@ -54,9 +54,11 @@ def get_export_file_type(procedure: BFU_CameraExportProcedure) -> BFU_FileTypeEn
     return BFU_FileTypeEnum.FBX
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_CameraExportProcedure:
-    for export_type in BFU_CameraExportProcedure:
-        if getattr(obj, "bfu_camera_export_procedure", None) == export_type.value:
-            return export_type
+    for procedure in BFU_CameraExportProcedure:
+        if getattr(obj, "bfu_camera_export_procedure", None) == procedure.value:
+            return procedure
+
+    print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_camera_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_CameraExportProcedure.default()
 
 def get_camera_procedure_preset(procedure: BFU_CameraExportProcedure) -> Dict[str, str | bool]:

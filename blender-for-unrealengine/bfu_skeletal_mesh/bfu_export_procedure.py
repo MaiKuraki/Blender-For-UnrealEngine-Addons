@@ -53,9 +53,11 @@ def get_default_skeleton_export_procedure() -> str:
     return BFU_SkeletonExportProcedure.default().value
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_SkeletonExportProcedure:
-    for export_type in BFU_SkeletonExportProcedure:
-        if obj.bfu_skeleton_export_procedure == export_type.value:  # type: ignore
-            return export_type
+    for procedure in BFU_SkeletonExportProcedure:
+        if obj.bfu_skeleton_export_procedure == procedure.value:  # type: ignore
+            return procedure
+
+    print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_skeleton_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_SkeletonExportProcedure.default()
 
 def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:

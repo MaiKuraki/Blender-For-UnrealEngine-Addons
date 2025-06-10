@@ -47,9 +47,11 @@ def get_export_file_type(procedure: BFU_SplineExportProcedure) -> BFU_FileTypeEn
     return BFU_FileTypeEnum.UNKNOWN #@TODO: for the momment is support only copy/paste actions.
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_SplineExportProcedure:
-    for export_type in BFU_SplineExportProcedure:
-        if getattr(obj, "bfu_spline_export_procedure", None) == export_type.value:
-            return export_type
+    for procedure in BFU_SplineExportProcedure:
+        if getattr(obj, "bfu_spline_export_procedure", None) == procedure.value:
+            return procedure
+
+    print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_spline_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_SplineExportProcedure.default()
 
 def get_spline_procedure_preset(procedure: BFU_SplineExportProcedure) -> Dict[str, str | bool]:

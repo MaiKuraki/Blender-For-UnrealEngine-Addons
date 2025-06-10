@@ -47,9 +47,11 @@ def get_export_file_type(procedure: BFU_GroomExportProcedure) -> BFU_FileTypeEnu
     return BFU_FileTypeEnum.ALEMBIC
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_GroomExportProcedure:
-    for export_type in BFU_GroomExportProcedure:
-        if getattr(obj, "bfu_groom_export_procedure", None) == export_type.value:
-            return export_type
+    for procedure in BFU_GroomExportProcedure:
+        if getattr(obj, "bfu_groom_export_procedure", None) == procedure.value:
+            return procedure
+
+    print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_groom_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_GroomExportProcedure.default()
 
 def get_groom_procedure_preset(procedure: BFU_GroomExportProcedure) -> Dict[str, str | bool]:

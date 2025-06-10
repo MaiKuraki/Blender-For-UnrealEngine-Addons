@@ -54,9 +54,11 @@ def get_export_file_type(procedure: BFU_CollectionExportProcedure) -> BFU_FileTy
     return BFU_FileTypeEnum.FBX
 
 def get_col_export_procedure(col: bpy.types.Collection) -> BFU_CollectionExportProcedure:
-    for export_type in BFU_CollectionExportProcedure:
-        if getattr(col, "bfu_collection_export_procedure", None) == export_type.value:
-            return export_type
+    for procedure in BFU_CollectionExportProcedure:
+        if getattr(col, "bfu_collection_export_procedure", None) == procedure.value:
+            return procedure
+
+    print(f"Warning: Object {col.name} has unknown export procedure '{col.bfu_collection_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_CollectionExportProcedure.default()
 
 def get_col_procedure_preset(procedure: BFU_CollectionExportProcedure) -> Dict[str, str | bool]:

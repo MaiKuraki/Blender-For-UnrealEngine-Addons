@@ -47,9 +47,11 @@ def get_export_file_type(procedure: BFU_AlembicExportProcedure) -> BFU_FileTypeE
     return BFU_FileTypeEnum.ALEMBIC
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_AlembicExportProcedure:
-    for export_type in BFU_AlembicExportProcedure:
-        if getattr(obj, "bfu_alembic_export_procedure", None) == export_type.value:
-            return export_type
+    for procedure in BFU_AlembicExportProcedure:
+        if getattr(obj, "bfu_alembic_export_procedure", None) == procedure.value:
+            return procedure
+
+    print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_alembic_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_AlembicExportProcedure.default()
 
 def get_alembic_procedure_preset(procedure: BFU_AlembicExportProcedure) -> Dict[str, str | bool]:
