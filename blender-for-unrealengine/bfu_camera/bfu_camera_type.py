@@ -73,7 +73,7 @@ class BFU_Camera(BFU_ObjectAssetClass):
     def get_export_file_path(self, data: Any, details: Any = None) -> str:
         if bpy.context:
             scene = bpy.context.scene
-            self.package_file_path = scene.bfu_export_camera_file_path  # type: ignore[attr-defined]
+            return scene.bfu_export_camera_file_path  # type: ignore[attr-defined]
         return ""
 
     def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
