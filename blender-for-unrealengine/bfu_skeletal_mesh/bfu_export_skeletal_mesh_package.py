@@ -63,6 +63,9 @@ def export_as_skeletal_mesh(
     if bpy.context is None:
         return False
 
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError(f"The armature object is not a valid Armature type! Inputs: armature: {armature.name}")  
+
     # Export a single Mesh
     my_timer_group = SafeTimeGroup(2)
     my_timer_group.start_timer(f"Prepare export")
@@ -91,8 +94,6 @@ def export_as_skeletal_mesh(
     if bpy.context.active_object is None:
         raise ValueError("No active object found after duplicate!")
     active: bpy.types.Object = bpy.context.active_object
-    if active.type != 'ARMATURE':
-        raise ValueError(f"The active object is not an armature! Inputs: armature: {armature.name}, mesh_parts: {[obj.name for obj in mesh_parts]}, active: {active.name}")
 
     bfu_export.bfu_export_utils.set_duplicated_object_export_name(
         duplicated_obj=active, 

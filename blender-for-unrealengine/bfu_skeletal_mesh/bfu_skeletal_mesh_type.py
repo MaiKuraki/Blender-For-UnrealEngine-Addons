@@ -153,6 +153,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
                     self.set_package_file(pak, data, details)
 
                     if search_mode.search_package_content():
+                        pak.add_object(data) # Add the armature object
                         pak.add_object(mesh)
                         pak.export_function = bfu_export_skeletal_mesh_package.process_skeletal_mesh_export_from_package
 
@@ -176,6 +177,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
                         self.set_package_file(pak, data, details)
 
                         if search_mode.search_package_content():
+                            pak.add_object(data) # Add the armature object
                             pak.add_objects(bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_modular_objects_from_part(part))                    
                             pak.export_function = bfu_export_skeletal_mesh_package.process_skeletal_mesh_export_from_package
 
