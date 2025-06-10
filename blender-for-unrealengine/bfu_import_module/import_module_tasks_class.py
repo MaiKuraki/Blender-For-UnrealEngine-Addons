@@ -43,8 +43,7 @@ class ImportTaks():
 
         else:
             # Interchange is avaliable since 5.0,
-            #  but I preffer start to use at 5.5 to avoid issue with previous versions.
-            if support_interchange and import_module_unreal_utils.is_unreal_version_greater_or_equal(5,5):
+            if support_interchange and import_module_unreal_utils.is_unreal_version_greater_or_equal(5,0):
                 # Set values inside unreal.InterchangeGenericAssetsPipeline (unreal.InterchangeGenericCommonMeshesProperties or ...)
                 self.use_interchange = True
             else:
