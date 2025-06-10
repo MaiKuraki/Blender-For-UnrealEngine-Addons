@@ -25,7 +25,8 @@ from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
-
+from . import bfu_export_procedure
+from .bfu_export_procedure import BFU_GroomExportProcedure
 
 def process_groom_simulation_export_from_package(
     op: bpy.types.Operator,
@@ -108,8 +109,8 @@ def export_single_groom_simulation(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    groom_simulation_export_procedure = active.bfu_groom_export_procedure
-    if (groom_simulation_export_procedure == "blender-standard"):
+    groom_simulation_export_procedure: BFU_GroomExportProcedure = bfu_export_procedure.get_object_export_procedure(active)
+    if (groom_simulation_export_procedure.value == BFU_GroomExportProcedure.STANDARD_ALEMBIC.value):
         bpy.ops.wm.alembic_export(  # type: ignore
             filepath=str(fullpath),
             check_existing=False,
@@ -123,7 +124,7 @@ def export_single_groom_simulation(
             vcolors=True
             )
     else:
-        print(f"Error: The export procedure '{groom_simulation_export_procedure}' was not found!")
+        print(f"Error: The export procedure '{groom_simulation_export_procedure.value}' was not found!")
     my_timer_group.end_last_timer()
 
     # [RESTORE ASSET DATA]

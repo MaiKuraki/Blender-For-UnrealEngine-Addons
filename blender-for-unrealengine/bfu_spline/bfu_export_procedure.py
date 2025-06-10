@@ -1,18 +1,36 @@
+# ====================== BEGIN GPL LICENSE BLOCK ============================
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.	 If not, see <http://www.gnu.org/licenses/>.
+#  All rights reserved.
+#
+# ======================= END GPL LICENSE BLOCK =============================
+
 import bpy
 from enum import Enum
 from typing import List, Tuple, Dict
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_SplineExportProcedure(str, Enum):
-    BLENDER_STANDARD = "blender-standard"
+    STANDARD = "standard"
 
     @staticmethod
     def default() -> "BFU_SplineExportProcedure":
-        return BFU_SplineExportProcedure.BLENDER_STANDARD
+        return BFU_SplineExportProcedure.STANDARD
 
 def get_spline_export_procedure_enum_property_list() -> List[Tuple[str, str, str, str, int]]:
     return [
-        (BFU_SplineExportProcedure.BLENDER_STANDARD.value,
+        (BFU_SplineExportProcedure.STANDARD.value,
             "Blender Standard",
             "Standard ALEMBIC.",
             "OUTLINER_OB_FONT",

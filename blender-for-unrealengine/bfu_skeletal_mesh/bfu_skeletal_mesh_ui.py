@@ -18,14 +18,18 @@
 
 
 import bpy
-from .. import bfu_addon_prefs
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_export_control
 from . import bfu_skeletal_mesh_utils
+from .. import bfu_skeletal_mesh
+from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
 
 
 def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
+    if bpy.context is None:
+        return
+
     if obj is None:
         return
     
@@ -33,7 +37,6 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     scene = bpy.context.scene 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         if scene.bfu_object_properties_expanded.is_expend():
@@ -44,10 +47,9 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
                     AssetType2.prop(obj, "bfu_export_skeletal_mesh_as_static_mesh")
 
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
+    if bpy.context is None:
+        return
     
-    scene = bpy.context.scene 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
-
     if obj is None:
         return
     is_skeletal_mesh = bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
@@ -60,6 +62,8 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
     if obj.bfu_export_as_lod_mesh:
         return
     
+    scene = bpy.context.scene 
+
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_skeleton_properties_expanded")
         header, panel = accordion.draw(layout)
@@ -68,19 +72,16 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
             # SkeletalMesh prop
             AssetType2 = panel.column()
 
-            export_procedure_prop = AssetType2.column()
-            export_procedure_prop.prop(obj, 'bfu_skeleton_export_procedure')
-
             AssetType2.prop(obj, 'bfu_create_sub_folder_with_skeletal_mesh_name')
             AssetType2.prop(obj, 'bfu_export_deform_only')
             ue_standard_skeleton = panel.column()
-            ue_standard_skeleton.label(text="(ue-standard)")
-            ue_standard_skeleton_props = ue_standard_skeleton.column()
-            ue_standard_skeleton_props.enabled = obj.bfu_skeleton_export_procedure == "ue-standard"
-            ue_standard_skeleton_props.prop(obj, "bfu_mirror_symmetry_right_side_bones")
-            mirror_symmetry_right_side_bones = ue_standard_skeleton_props.row()
-            mirror_symmetry_right_side_bones.enabled = obj.bfu_mirror_symmetry_right_side_bones
-            mirror_symmetry_right_side_bones.prop(obj, "bfu_use_ue_mannequin_bone_alignment")
+
+            if bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj).value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
+                ue_standard_skeleton_props = ue_standard_skeleton.column()
+                ue_standard_skeleton_props.prop(obj, "bfu_mirror_symmetry_right_side_bones")
+                mirror_symmetry_right_side_bones = ue_standard_skeleton_props.row()
+                mirror_symmetry_right_side_bones.enabled = obj.bfu_mirror_symmetry_right_side_bones
+                mirror_symmetry_right_side_bones.prop(obj, "bfu_use_ue_mannequin_bone_alignment")
 
 def draw_ui_scene(layout: bpy.types.UILayout):
     pass

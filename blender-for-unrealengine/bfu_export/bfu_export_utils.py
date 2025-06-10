@@ -34,6 +34,7 @@ from .. import bfu_skeletal_mesh
 from .. import bfu_socket
 from .. import bfu_export_logs
 from .. import bfu_addon_prefs
+from .. import bfu_skeletal_mesh
 
 # @TODO: Move this to a config file.
 dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
@@ -580,8 +581,8 @@ def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
     # This is only with FBX export. 
     # GlTF export support native blender scale to Unreal Engine. <3<3<3
 
-    if obj.bfu_skeleton_export_procedure not in ["ue-standard", "blender-standard"]:
-        return False
+    if not bfu_skeletal_mesh.bfu_export_procedure.is_fbx_file_export(obj):
+        return False  # Rescale only if FBX export.
 
     addon_prefs = bfu_addon_prefs.get_addon_prefs()
     if addon_prefs.rescaleFullRigAtExport == "auto":

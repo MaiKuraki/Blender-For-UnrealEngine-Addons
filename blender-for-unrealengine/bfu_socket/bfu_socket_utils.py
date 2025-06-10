@@ -27,6 +27,8 @@ from .. import bfu_utils
 from .. import bfu_unreal_utils
 from .. import bfu_export_control
 from .. import bfu_addon_prefs
+from .. import bfu_skeletal_mesh
+from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
 
 
 
@@ -97,7 +99,7 @@ def get_skeletal_mesh_sockets(obj: bpy.types.Object) -> List[bpy.types.Object]:
         em: mathutils.Matrix = socket.matrix_world  # Socket
         RelativeMatrix = (bml.inverted() @ am.inverted() @ em)
         
-        if obj.bfu_skeleton_export_procedure == 'ue-standard':
+        if bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj).value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
             RelativeMatrix = mathutils.Matrix.Rotation(math.radians(90), 4, 'Y') @ RelativeMatrix
             RelativeMatrix = mathutils.Matrix.Rotation(math.radians(-90), 4, 'Z') @ RelativeMatrix
         t = RelativeMatrix.to_translation()
@@ -105,7 +107,7 @@ def get_skeletal_mesh_sockets(obj: bpy.types.Object) -> List[bpy.types.Object]:
         s = socket.scale*addon_prefs.skeletalSocketsImportedSize
 
         # Convet to array for Json and convert value for Unreal
-        if obj.bfu_skeleton_export_procedure == 'ue-standard':
+        if bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj).value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
             array_location = [t[0], t[1]*-1, t[2]]
             array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]
             array_scale = [s[0], s[1], s[2]]

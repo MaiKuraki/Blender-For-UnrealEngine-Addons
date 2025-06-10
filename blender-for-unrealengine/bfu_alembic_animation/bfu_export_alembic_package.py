@@ -25,6 +25,8 @@ from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
+from . import bfu_export_procedure
+from .bfu_export_procedure import BFU_AlembicExportProcedure
 
 
 def process_alembic_animation_export_from_package(
@@ -112,8 +114,8 @@ def export_alembic_animation(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    alembic_animation_export_procedure = active.bfu_alembic_export_procedure
-    if (alembic_animation_export_procedure == "blender-standard"):
+    alembic_animation_export_procedure: BFU_AlembicExportProcedure = bfu_export_procedure.get_object_export_procedure(active)
+    if (alembic_animation_export_procedure.value == BFU_AlembicExportProcedure.STANDARD_ALEMBIC.value):
         bpy.ops.wm.alembic_export(  # type: ignore
             filepath=str(fullpath),
             check_existing=False,
@@ -122,7 +124,7 @@ def export_alembic_animation(
             global_scale=1,
             )
     else:
-        print(f"Error: The export procedure '{alembic_animation_export_procedure}' was not found!")
+        print(f"Error: The export procedure '{alembic_animation_export_procedure.value}' was not found!")
     my_timer_group.end_last_timer()
 
     # [RESTORE ASSET DATA]

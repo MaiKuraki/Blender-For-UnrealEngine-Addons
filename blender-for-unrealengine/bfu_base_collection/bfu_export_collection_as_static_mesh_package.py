@@ -26,6 +26,8 @@ from .. import bfu_utils
 from .. import bfu_vertex_color
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
+from . import bfu_export_procedure
+from .bfu_export_procedure import BFU_CollectionExportProcedure
 
 
 def process_collection_as_static_mesh_export_from_package(
@@ -129,8 +131,8 @@ def export_collection_as_static_mesh(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    static_collection_export_procedure = col.bfu_collection_export_procedure
-    if (static_collection_export_procedure == "ue-standard"):
+    static_collection_export_procedure: BFU_CollectionExportProcedure = bfu_export_procedure.get_col_export_procedure(col)
+    if (static_collection_export_procedure.value == BFU_CollectionExportProcedure.CUSTOM_FBX_EXPORT.value):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
@@ -153,8 +155,8 @@ def export_collection_as_static_mesh(
             # axis_up=bfu_export_utils.get_export_axis_up(active),
             bake_space_transform=False
             )
-        
-    elif (static_collection_export_procedure == "blender-standard"):
+
+    elif (static_collection_export_procedure.value == BFU_CollectionExportProcedure.STANDARD_FBX.value):
         bfu_export.bfu_fbx_export.export_scene_fbx(
             filepath=str(fullpath),
             check_existing=False,
@@ -173,6 +175,9 @@ def export_collection_as_static_mesh(
             # axis_up=bfu_export_utils.get_export_axis_up(obj),
             bake_space_transform=False
             )
+    elif (static_collection_export_procedure.value == BFU_CollectionExportProcedure.CUSTOM_GLTF_EXPORT.value):
+        # @TODO: Implement GLTF export
+        bfu_export.bfu_gltf_export.export_scene_gltf()
     else:
         print(f"Error: The export procedure '{static_collection_export_procedure}' was not found!")
     my_timer_group.end_last_timer()

@@ -84,10 +84,13 @@ def draw_asset_package(
 
     # Package resource count
     if asset.asset_type.can_contain_objects():
-        package_resource = f"[{len(package.objects)} objects]"
-        package_resource = ""
-        if len(package.objects) > 0:
-            package_resource = f"[{len(package.objects)} objects]"
+        if len(package.objects) == 0:
+            package_resource = "[No objects in this package]"
+        elif len(package.objects) == 1:
+            package_resource = f"[1 object: {package.objects[0].name}]"
+        else:
+            object_names = ", ".join(obj.name for obj in package.objects)
+            package_resource = f"[{len(package.objects)} objects: {object_names}]"
         package_content_details_row.label(text=package_resource)  # type: ignore
 
     # Package animation details

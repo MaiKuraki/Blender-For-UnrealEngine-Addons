@@ -27,6 +27,8 @@ from .. import bfu_utils
 from .. import bfu_vertex_color
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
+from . import bfu_export_procedure
+from .bfu_export_procedure import BFU_StaticExportProcedure
 
 
 def process_static_mesh_export_from_package(
@@ -129,8 +131,8 @@ def export_as_static_mesh(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    static_export_procedure = active.bfu_static_export_procedure
-    if (static_export_procedure == "custom_fbx_export"):
+    static_export_procedure: BFU_StaticExportProcedure = bfu_export_procedure.get_object_export_procedure(active)
+    if (static_export_procedure.value == BFU_StaticExportProcedure.CUSTOM_FBX_EXPORT.value):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
@@ -164,7 +166,7 @@ def export_as_static_mesh(
             bake_space_transform=False
             
             )
-    elif (static_export_procedure == "standard_fbx"):
+    elif (static_export_procedure.value == BFU_StaticExportProcedure.STANDARD_FBX.value):
         bfu_export.bfu_fbx_export.export_scene_fbx(
             filepath=str(fullpath),
             check_existing=False,
@@ -189,7 +191,7 @@ def export_as_static_mesh(
             axis_up=bfu_export.bfu_export_utils.get_static_fbx_export_axis_up(active),
             bake_space_transform=False
             )
-    elif (static_export_procedure == "standard_gltf"):
+    elif (static_export_procedure.value == BFU_StaticExportProcedure.STANDARD_GLTF.value):
         bfu_export.bfu_gltf_export.export_scene_gltf(
             filepath=str(fullpath),
             check_existing=False,

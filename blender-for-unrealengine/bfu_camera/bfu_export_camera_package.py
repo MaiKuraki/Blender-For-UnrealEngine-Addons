@@ -25,6 +25,8 @@ from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
+from . import bfu_export_procedure
+from .bfu_export_procedure import BFU_CameraExportProcedure
 
 
 
@@ -115,8 +117,8 @@ def export_camera_animation(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    camera_export_procedure = active.bfu_camera_export_procedure
-    if (camera_export_procedure == "ue-standard"):
+    camera_export_procedure: BFU_CameraExportProcedure = bfu_export_procedure.BFU_CameraExportProcedure(active)
+    if (camera_export_procedure.value == BFU_CameraExportProcedure.CUSTOM_FBX_EXPORT.value):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             op,
             bpy.context,
@@ -150,7 +152,7 @@ def export_camera_animation(
             axis_up=bfu_export.bfu_export_utils.get_static_fbx_export_axis_up(active),
             bake_space_transform=False
             )
-    elif (camera_export_procedure == "blender-standard"):
+    elif (camera_export_procedure.value == BFU_CameraExportProcedure.STANDARD_FBX.value):
         bfu_export.bfu_fbx_export.export_scene_fbx(
             filepath=str(fullpath),
             check_existing=False,
@@ -180,6 +182,9 @@ def export_camera_animation(
             axis_up=bfu_export.bfu_export_utils.get_static_fbx_export_axis_up(active),
             bake_space_transform=False
             )
+    elif (camera_export_procedure.value == BFU_CameraExportProcedure.STANDARD_GLTF.value):
+        # @TODO: Implement GLTF export for camera
+        bfu_export.bfu_gltf_export.export_scene_gltf()
     else:
         print(f"Error: The export procedure '{camera_export_procedure}' was not found!")
     my_timer_group.end_last_timer()

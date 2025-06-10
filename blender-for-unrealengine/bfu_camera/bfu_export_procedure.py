@@ -1,24 +1,43 @@
+# ====================== BEGIN GPL LICENSE BLOCK ============================
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.	 If not, see <http://www.gnu.org/licenses/>.
+#  All rights reserved.
+#
+# ======================= END GPL LICENSE BLOCK =============================
+
 import bpy
 from enum import Enum
 from typing import List, Tuple, Dict
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_CameraExportProcedure(str, Enum):
-    UE_STANDARD = "ue-standard"
-    BLENDER_STANDARD = "blender-standard"
+    CUSTOM_FBX_EXPORT = "custom_fbx_export"
+    STANDARD_FBX = "standard_fbx"
+    STANDARD_GLTF = "standard_gltf"
 
     @staticmethod
     def default() -> "BFU_CameraExportProcedure":
-        return BFU_CameraExportProcedure.BLENDER_STANDARD
+        return BFU_CameraExportProcedure.STANDARD_FBX
 
 def get_camera_export_procedure_enum_property_list() -> List[Tuple[str, str, str, str, int]]:
     return [
-        (BFU_CameraExportProcedure.UE_STANDARD.value,
+        (BFU_CameraExportProcedure.CUSTOM_FBX_EXPORT.value,
             "UE Standard",
             "Modified fbx I/O for Unreal Engine",
             "ARMATURE_DATA",
             1),
-        (BFU_CameraExportProcedure.BLENDER_STANDARD.value,
+        (BFU_CameraExportProcedure.STANDARD_FBX.value,
             "Blender Standard",
             "Standard fbx I/O.",
             "ARMATURE_DATA",

@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_skeletal_mesh
+from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
 from .. import bfu_vertex_color
 from .. import bfu_export
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
@@ -90,6 +91,9 @@ def export_as_skeletal_mesh(
     if bpy.context.active_object is None:
         raise ValueError("No active object found after duplicate!")
     active: bpy.types.Object = bpy.context.active_object
+    if active.type != 'ARMATURE':
+        raise ValueError(f"The active object is not an armature! Inputs: armature: {armature.name}, mesh_parts: {[obj.name for obj in mesh_parts]}, active: {active.name}")
+
     bfu_export.bfu_export_utils.set_duplicated_object_export_name(
         duplicated_obj=active, 
         original_obj=armature, 
@@ -149,8 +153,8 @@ def export_as_skeletal_mesh(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    skeleton_export_procedure = active.bfu_skeleton_export_procedure
-    if (skeleton_export_procedure == "ue-standard"):
+    skeleton_export_procedure = bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(active)
+    if (skeleton_export_procedure.value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
@@ -191,7 +195,7 @@ def export_as_skeletal_mesh(
             axis_up=bfu_export.bfu_export_utils.get_skeleton_export_axis_up(active),
             bake_space_transform=False
             )
-    elif (skeleton_export_procedure == "blender-standard"):
+    elif (skeleton_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_FBX.value):
         bfu_export.bfu_fbx_export.export_scene_fbx(
             filepath=str(fullpath),
             check_existing=False,
@@ -226,6 +230,9 @@ def export_as_skeletal_mesh(
             axis_up=bfu_export.bfu_export_utils.get_skeleton_export_axis_up(active),
             bake_space_transform=False
             )
+    elif (skeleton_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_GLTF.value):
+        # @TODO: Implement GLTF export for Skeletal Mesh
+        bfu_export.bfu_gltf_export.export_scene_gltf()
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
     my_timer_group.end_last_timer()

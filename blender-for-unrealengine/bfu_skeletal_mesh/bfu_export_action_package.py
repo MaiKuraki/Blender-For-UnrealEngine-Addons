@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_skeletal_mesh
+from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
 from .. import bfu_export
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
@@ -176,8 +177,8 @@ def export_as_action_animation(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    skeleton_export_procedure = active.bfu_skeleton_export_procedure
-    if (skeleton_export_procedure == "ue-standard"):
+    skeleton_export_procedure: BFU_SkeletonExportProcedure = bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(active)
+    if (skeleton_export_procedure.value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             operator=op,
             context=bpy.context,
@@ -215,7 +216,7 @@ def export_as_action_animation(
             axis_up=bfu_export.bfu_export_utils.get_skeleton_export_axis_up(active),
             bake_space_transform=False
             )
-    elif (skeleton_export_procedure == "blender-standard"):
+    elif (skeleton_export_procedure == BFU_SkeletonExportProcedure.STANDARD_FBX.value):
         bfu_export.bfu_fbx_export.export_scene_fbx(
             filepath=str(fullpath),
             check_existing=False,
@@ -246,6 +247,9 @@ def export_as_action_animation(
             axis_up=bfu_export.bfu_export_utils.get_skeleton_export_axis_up(active),
             bake_space_transform=False
             )
+    elif (skeleton_export_procedure == BFU_SkeletonExportProcedure.STANDARD_GLTF.value):
+        # @TODO: Implement GLTF export for skeletal mesh
+        bfu_export.bfu_gltf_export.export_scene_gltf()
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
     my_timer_group.end_last_timer()

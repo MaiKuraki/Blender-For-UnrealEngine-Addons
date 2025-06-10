@@ -25,6 +25,8 @@ from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from .. import bfu_export
+from .. import bfu_skeletal_mesh
+from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
 
 
 def process_spline_export_from_package(
@@ -107,8 +109,8 @@ def export_single_fbx_spline(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    spline_export_procedure = active.bfu_spline_export_procedure
-    if (spline_export_procedure == "ue-standard"):
+    spline_export_procedure: BFU_SkeletonExportProcedure = bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(active)
+    if (spline_export_procedure.value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value):
         bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
             op,
             bpy.context,
@@ -142,7 +144,7 @@ def export_single_fbx_spline(
             axis_up=bfu_export.bfu_export_utils.get_static_fbx_export_axis_up(active),
             bake_space_transform=False
             )
-    elif (spline_export_procedure == "blender-standard"):
+    elif (spline_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_FBX.value):
         bfu_export.bfu_fbx_export.export_scene_fbx(
             filepath=str(fullpath),
             check_existing=False,
@@ -172,6 +174,9 @@ def export_single_fbx_spline(
             axis_up=bfu_export.bfu_export_utils.get_static_fbx_export_axis_up(active),
             bake_space_transform=False
             )
+    elif (spline_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_GLTF.value):
+        # @TODO: Implement GLTF export for spline
+        bfu_export.bfu_gltf_export.export_scene_gltf()
     else:
         print(f"Error: The export procedure '{spline_export_procedure}' was not found!")
     my_timer_group.end_last_timer()
