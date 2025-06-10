@@ -19,6 +19,7 @@
 import string
 from typing import List, Tuple
 from . import import_module_unreal_utils
+from . import config
 
 try:
     import unreal
@@ -112,8 +113,20 @@ def show_warning_message(title: str, message: str) -> unreal.AppReturnType:
         print('--------------------------------------------------')
         print(message)
 
-def get_support_interchange() -> bool:
-    return import_module_unreal_utils.is_unreal_version_greater_or_equal(5, 1)
+def get_should_use_interchange() -> bool:
+    # Interchange import is avaliable since 5.1,
+
+    # If True: Set values inside unreal.InterchangeGenericAssetsPipeline (unreal.InterchangeGenericCommonMeshesProperties or ...)
+    # If False: Set values inside unreal.FbxStaticMeshImportData or ...
+
+    if config.force_use_interchange == "Interchange":
+        return True
+
+    elif config.force_use_interchange == "FBX":
+        return False
+
+    else:
+        return import_module_unreal_utils.is_unreal_version_greater_or_equal(5, 0)
 
 def editor_scripting_utilities_active() -> bool:
     if is_unreal_version_greater_or_equal(4,20):

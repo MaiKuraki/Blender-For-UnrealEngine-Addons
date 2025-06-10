@@ -18,7 +18,7 @@
 
 
 import os.path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from . import bpl
 from . import import_module_utils
 from . import import_module_unreal_utils
@@ -59,7 +59,7 @@ def ready_for_asset_import():
 
 
 
-def ImportTask(asset_data):
+def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetData]]):
     asset_type = ExportAssetType.get_asset_type_from_string(asset_data["asset_type"])
 
     if asset_type in [ExportAssetType.STATIC_MESH, ExportAssetType.SKELETAL_MESH]:
@@ -117,25 +117,33 @@ def ImportTask(asset_data):
 
     itask = import_module_tasks_class.ImportTaks()
 
-    def get_file_from_types(file_types: List[str]) -> str:
+    def get_file_from_types(file_types: List[str]) -> Optional[str]:
         for file in asset_data["files"]:
             if file["type"] in file_types:
                 return file["file_path"]
         return None
 
-
+    # Search for the file to import
     if asset_type == ExportAssetType.ANIM_ALEMBIC:
-        itask.get_task().filename = get_file_from_types(["ABC"])
+        filename = get_file_from_types(["ABC"])
+        if not filename:
+            return "FAIL", None
+        itask.get_task().filename = filename
+        print("Target Alembic file:", filename)
     else:
-        itask.get_task().filename = get_file_from_types(["FBX", "GLTF"])
-    
+        filename = get_file_from_types(["FBX", "GLTF"])
+        if not filename:
+            return "FAIL", None
+        itask.get_task().filename = filename
+        print("Target file:", filename)
+
     itask.get_task().destination_path = "/" + os.path.normpath(asset_data["asset_import_path"])
     itask.get_task().automated = config.automated_import_tasks
     itask.get_task().save = False
     itask.get_task().replace_existing = True
-
-    TaskOption = import_module_tasks_helper.init_options_data(asset_type, itask.use_interchange)
-    itask.set_task_option(TaskOption)
+    task_option = import_module_tasks_helper.init_options_data(asset_type, itask.use_interchange)
+    print("task_option -> ", task_option)
+    itask.set_task_option(task_option)
     # Alembic
 
     if asset_type == ExportAssetType.ANIM_ALEMBIC:

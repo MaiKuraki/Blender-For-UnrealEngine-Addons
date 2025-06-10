@@ -27,28 +27,14 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_support_interchange()
+should_use_interchange = import_module_unreal_utils.get_should_use_interchange()
 
 class ImportTaks():
 
     def __init__(self) -> None:
         self.task = unreal.AssetImportTask() 
         self.task_option = None
-
-        if config.force_use_interchange == "Interchange":
-            self.use_interchange = True
-
-        elif config.force_use_interchange == "FBX":
-            self.use_interchange = False
-
-        else:
-            # Interchange is avaliable since 5.0,
-            if support_interchange and import_module_unreal_utils.is_unreal_version_greater_or_equal(5,0):
-                # Set values inside unreal.InterchangeGenericAssetsPipeline (unreal.InterchangeGenericCommonMeshesProperties or ...)
-                self.use_interchange = True
-            else:
-                # Set values inside unreal.FbxStaticMeshImportData or ...
-                self.use_interchange = False
+        self.use_interchange = should_use_interchange
 
     def get_preview_import_refs(self):
         filename_without_ext = os.path.splitext(os.path.basename(self.task.filename))[0]
@@ -83,7 +69,7 @@ class ImportTaks():
 
 
 
-    if support_interchange:
+    if should_use_interchange:
         def get_igap(self) -> unreal.InterchangeGenericAssetsPipeline:
             # unreal.InterchangeGenericAssetsPipeline
             return self.task_option

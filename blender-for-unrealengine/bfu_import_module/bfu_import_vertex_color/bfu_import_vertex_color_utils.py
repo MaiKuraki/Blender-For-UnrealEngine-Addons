@@ -27,7 +27,7 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_support_interchange()
+support_interchange = import_module_unreal_utils.get_should_use_interchange()
 
 def get_vertex_override_color(asset_additional_data: dict) -> Optional[unreal.LinearColor]:
     """Retrieves the vertex override color from the asset data, if available."""

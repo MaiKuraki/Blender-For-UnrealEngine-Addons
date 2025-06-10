@@ -26,7 +26,7 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_support_interchange()
+support_interchange = import_module_unreal_utils.get_should_use_interchange()
 
 
 def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
@@ -40,11 +40,11 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
     if itask.use_interchange:
         if asset_type == ExportAssetType.STATIC_MESH:
             if "generate_light_map_uvs" in asset_additional_data:
-                itask.get_igap_mesh().set_editor_property('generate_light_map_uvs', asset_additional_data["generate_light_map_uvs"])
+                itask.get_igap_mesh().set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_light_map_uvs"])
     else:
         if asset_type == ExportAssetType.STATIC_MESH:
             if "generate_light_map_uvs" in asset_additional_data:
-                itask.get_static_mesh_import_data().set_editor_property('generate_light_map_uvs', asset_additional_data["generate_light_map_uvs"])
+                itask.get_static_mesh_import_data().set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_light_map_uvs"])
 
 
 def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:

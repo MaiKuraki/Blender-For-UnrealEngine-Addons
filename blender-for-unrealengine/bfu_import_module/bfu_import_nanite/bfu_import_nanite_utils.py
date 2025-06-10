@@ -27,7 +27,7 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_support_interchange()
+support_interchange = import_module_unreal_utils.get_should_use_interchange()
 
 
 def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
