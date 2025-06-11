@@ -58,7 +58,10 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
                 texture_ui = material_ui.column()
                 texture_ui.enabled = obj.bfu_export_materials
                 texture_ui.prop(obj, 'bfu_export_textures')
-                texture_ui.prop(obj, 'bfu_flip_normal_map_green_channel')
+
+                normal_texture_ui = texture_ui.column()
+                normal_texture_ui.enabled = obj.bfu_export_textures and obj.bfu_export_materials
+                normal_texture_ui.prop(obj, 'bfu_flip_normal_map_green_channel')
 
                 material_utils_ui = bfu_material_search_location.column()
                 material_utils_ui.prop(obj, 'bfu_reorder_material_to_fbx_order')
