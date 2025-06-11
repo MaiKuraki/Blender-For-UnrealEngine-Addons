@@ -53,23 +53,29 @@ def IsValidDataForExport(scene, obj):
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     return asset_class.can_export_asset(obj)
 
-def PrepareSceneForExport():
+def prepare_scene_for_export():
+    if bpy.context is None:
+        return
+    
     scene = bpy.context.scene
 
+    #Unhide all objects, but hide on viewport and make them selectable
     for obj in scene.objects:
         if obj.hide_select:
             obj.hide_select = False
-        if obj.hide_viewport:
-            obj.hide_viewport = False
+        if obj.hide_viewport is False:
+            obj.hide_viewport = True
         if obj.hide_get():
             obj.hide_set(False)
 
+    # Hhide all collections on viewport and make them selectable
     for col in bpy.data.collections:
         if col.hide_select:
             col.hide_select = False
         if col.hide_viewport:
             col.hide_viewport = False
 
+    # Unexclude all layer collections and hide them on viewport
     for vlayer in bpy.context.scene.view_layers:
         layer_collections = bbpl.utils.get_layer_collections_recursive(vlayer.layer_collection)
         for layer_collection in layer_collections:
@@ -89,7 +95,7 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     user_scene_save = bbpl.save_data.scene_save.UserSceneSave()
     user_scene_save.save_current_scene()
     
-    PrepareSceneForExport()
+    prepare_scene_for_export()
     bbpl.utils.safe_mode_set('OBJECT', user_scene_save.user_select_class.user_active)
 
     if addon_prefs.revertExportPath:

@@ -104,7 +104,7 @@ def export_single_fbx_spline(
 
     # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
-    saved_simplify.unsymplify_scene()
+    saved_simplify.unsimplify_scene()
 
     my_timer_group.end_last_timer()
 

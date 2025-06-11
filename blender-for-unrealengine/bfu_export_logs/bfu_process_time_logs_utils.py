@@ -18,6 +18,9 @@ def clear_process_time_logs():
     if bpy.context is None:
         return
     scene = bpy.context.scene
+    scene.bfu_export_process_current_sub_step = 0  # type: ignore[attr-defined]
+    scene.bfu_export_process_faster_time = 0  # type: ignore[attr-defined]
+    scene.bfu_export_process_slower_time = 0  # type: ignore[attr-defined]
     scene.bfu_export_process_time_logs.clear()  # type: ignore[attr-defined]
 
 def get_process_time_logs_details():

@@ -59,11 +59,12 @@ class SavedSceneSimplfy():
         self.simplify_subdivision_render: int = scene.render.simplify_subdivision_render
         self.simplify_child_particles_render: int = scene.render.simplify_child_particles_render
 
-    def symplify_scene(self):
+    def simplify_scene(self):
         if bpy.context is None:
             return
         scene = bpy.context.scene
 
+        simplify_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Simplify scene")
         # General
         scene.render.use_simplify = True
 
@@ -76,15 +77,18 @@ class SavedSceneSimplfy():
         # Render
         scene.render.simplify_subdivision_render = 0
         scene.render.simplify_child_particles_render = 0
+        simplify_time_log.end_time_log()
 
-    def unsymplify_scene(self):
+    def unsimplify_scene(self):
         # Reset scene for without data loose.
         if bpy.context is None:
             return
         scene = bpy.context.scene
 
+        unsimplify_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Unsimplify scene")
         # General
         scene.render.use_simplify = False
+        unsimplify_time_log.end_time_log()
 
 
     def reset_scene(self):
@@ -266,7 +270,7 @@ def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after
     
     # Enable simplify for faster duplicate (Don't )
     saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
-    saved_simplify.symplify_scene()
+    saved_simplify.simplify_scene()
 
     log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate")
     scene = context.scene
@@ -330,6 +334,63 @@ def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after
     return duplicate_data
 
 
+def apply_select_needed_modifiers_for_export():
+    if bpy.context is None:
+        return
+
+    apply_modifiers_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Apply modifiers")
+    apply_modifiers_prepare_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare for apply modifiers")
+    saved_select = bbpl.save_data.select_save.UserSelectSave()
+    saved_select.save_current_select()
+
+    # Disable simplify for avoid, skipping apply.
+    bpy.context.scene.render.use_simplify = False
+    apply_modifiers_prepare_time_log.end_time_log()
+
+    # Get selected objects with modifiers.
+    for obj in bpy.context.selected_objects:
+        apply_object_modifiers(obj, ['ARMATURE'])
+
+    saved_select.reset_select()
+    apply_modifiers_time_log.end_time_log()
+
+def apply_object_modifiers(obj: bpy.types.Object, blacklist_type = []):
+
+    if(obj.type == "MESH" and obj.data.shape_keys is not None):
+        # Can't apply modifiers with shape key
+        return
+
+    apply_modifiers_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Apply modifiers for: {obj.name}")
+    apply_modifiers_prepare_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Search modifiers to apply")
+    # Get Modifier to Apply
+    mod_to_apply: list[bpy.types.Modifier] = []
+    for mod in obj.modifiers:
+        if mod.type not in blacklist_type:
+            if mod.show_viewport == True:
+                mod_to_apply.append(mod)
+    apply_modifiers_prepare_time_log.end_time_log()
+
+    if len(mod_to_apply) > 0:
+        time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Select object for apply modifiers")
+        bbpl.utils.select_specific_object(obj)
+        time_log.end_time_log()
+        
+        time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Make single user")
+        if obj.data.users > 1:
+            # Make single user.
+            obj.data = obj.data.copy()
+        time_log.end_time_log()
+
+        for mod in mod_to_apply:
+            if bpy.ops.object.modifier_apply.poll():
+                apply_modifier_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Apply modifier: {mod.name} ({mod.type})")
+                try:
+                    bpy.ops.object.modifier_apply(modifier=mod.name)
+                except RuntimeError as ex:
+                    # print the error incase its important... but continue
+                    print(ex)
+                apply_modifier_time_log.end_time_log()
+    apply_modifiers_time_log.end_time_log()
 
 
 def convert_selected_to_mesh():

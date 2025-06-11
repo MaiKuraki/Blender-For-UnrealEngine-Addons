@@ -20,7 +20,23 @@
 import bpy
 from . import bfu_export_utils
 from .. import bfu_export_logs
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
+from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetPackage
+from .. import bbpl
+
+def prepare_scene_for_package_export(package: AssetPackage):
+    if bpy.context is None:
+        return
+    
+    scene = bpy.context.scene
+
+    for obj in scene.objects:
+        if obj in package.objects:
+            if obj.hide_viewport is True:
+                obj.hide_viewport = False
+        else:
+            if obj.hide_viewport is False:
+                obj.hide_viewport = True
 
 
 def process_generic_export_from_asset(
@@ -28,16 +44,26 @@ def process_generic_export_from_asset(
     asset: AssetToExport
 ) -> bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog:
 
+
     new_log = bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog(asset)
     new_log.start_asset_export()
     for package in asset.asset_packages:
         new_log.start_package_export(package)
+
+        my_timer_group = SafeTimeGroup()
+        my_timer_group.start_timer(f"Preparing scene for package export: {package.name}")
+        prepare_scene_for_package_export(package)
+        my_timer_group.end_last_timer()
+
         # Check folder before export
         if package.file:
             bfu_export_utils.check_and_make_export_path(package.file.get_full_path())
 
         if package.export_function:
+            my_timer_group.start_timer(f"Exporting package: {package.name}")
             result = package.export_function(op, package)
+            my_timer_group.end_last_timer()
+
             if result:
                 new_log.end_package_export(package, True)
             else:

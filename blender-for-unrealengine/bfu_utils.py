@@ -742,55 +742,6 @@ def GoToMeshEditMode():
     return False
 
 
-def apply_select_needed_modifiers():
-    if bpy.context is None:
-        return
-
-    saved_select = bbpl.save_data.select_save.UserSelectSave()
-    saved_select.save_current_select()
-
-    # Disable simplify for avoid, skipping apply.
-    bpy.context.scene.render.use_simplify = False
-
-    # Get selected objects with modifiers.
-    for obj in bpy.context.selected_objects:
-        ApplyObjectModifiers(obj, ['ARMATURE'])
-
-    saved_select.reset_select()
-
-def ApplyObjectModifiers(obj: bpy.types.Object, blacklist_type = []):
-
-    if(obj is None):
-        return
-    if(obj.type == "MESH" and obj.data.shape_keys is not None):
-        # Can't apply modifiers with shape key
-        return
-
-
-    # Get Modifier to Apply
-    mod_to_apply = []
-    for mod in obj.modifiers:
-        if mod.type not in blacklist_type:
-            if mod.show_viewport == True:
-                mod_to_apply.append(mod)
-
-    if len(mod_to_apply) > 0:
-        bbpl.utils.select_specific_object(obj)
-        
-        if obj.data.users > 1:
-            # Make single user.
-            obj.data = obj.data.copy()
-
-        for mod in mod_to_apply:
-            if bpy.ops.object.modifier_apply.poll():
-                try:
-                    bpy.ops.object.modifier_apply(modifier=mod.name)
-                except RuntimeError as ex:
-                    # print the error incase its important... but continue
-                    print(ex)
-    
-
-
 def CorrectExtremeUV(step_scale=2, move_to_absolute=False):
     
     def GetHaveConnectedLoop(faceTarget):

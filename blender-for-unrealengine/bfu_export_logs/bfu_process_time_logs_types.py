@@ -36,7 +36,7 @@ class BFU_OT_ExportProcessTimeLog(bpy.types.PropertyGroup):
         
         return self.start_time
 
-    def finish_timer(self):
+    def finish_timer(self) -> float:
         if bpy.context is None:
             return 0.0
         
@@ -47,13 +47,38 @@ class BFU_OT_ExportProcessTimeLog(bpy.types.PropertyGroup):
         scene = bpy.context.scene
         scene.bfu_export_process_current_sub_step -= 1  # type: ignore[attr-defined]
 
+        elapsed_time = self.end_time - self.start_time
+        if elapsed_time < scene.bfu_export_process_faster_time:
+            scene.bfu_export_process_faster_time = elapsed_time
+        elif elapsed_time > scene.bfu_export_process_slower_time:
+            scene.bfu_export_process_slower_time = elapsed_time
+
+        return elapsed_time
+
+
     def get_process_detail(self):
         if self.finished_success:
             result = "Success"
         else:
             result = bpl.color_set.red("Never finished")
-        str_time = bpl.color_set.yellow(bpl.utils.get_formatted_time(self.end_time - self.start_time))
-        str_sub_steps = self.sub_step * "   |" 
+
+        scene = bpy.context.scene
+        elapsed = self.end_time - self.start_time
+        faster: float = scene.bfu_export_process_faster_time # type: ignore[attr-defined]
+        slower: float = scene.bfu_export_process_slower_time # type: ignore[attr-defined]
+
+        # Colorize 20% faster times in green, 20% slower in red and other in yellow
+        faster_max: float = ((slower - faster) * 0.2) + faster # 20% faster
+        slower_min: float = slower - ((slower - faster) * 0.2)  # 20% slower
+        
+        if elapsed <= faster_max:
+            str_time = bpl.color_set.green(bpl.utils.get_formatted_time(elapsed))
+        elif elapsed >= slower_min:
+            str_time = bpl.color_set.red(bpl.utils.get_formatted_time(elapsed))
+        else:
+            str_time = bpl.color_set.yellow(bpl.utils.get_formatted_time(elapsed))
+
+        str_sub_steps = self.sub_step * "   |"
         return f"{str_sub_steps}{self.process_info}, {str_time}, {result}"
 
 class SafeTimeLogHandle():
@@ -138,12 +163,26 @@ def register():
         name="Current Sub Step",
         default=0,
     )
+    bpy.types.Scene.bfu_export_process_faster_time = bpy.props.FloatProperty(  # type: ignore
+        name="Faster Time",
+        default=0.0,
+        description="Faster time.",
+    )
+    bpy.types.Scene.bfu_export_process_slower_time = bpy.props.FloatProperty(  # type: ignore
+        name="Slower Time",
+        default=0.0,
+        description="Slower time.",
+    )
     bpy.types.Scene.bfu_export_process_time_logs = bpy.props.CollectionProperty(    # type: ignore
         type=BFU_OT_ExportProcessTimeLog)
 
 
 def unregister():
     del bpy.types.Scene.bfu_export_process_time_logs  # type: ignore
+    del bpy.types.Scene.bfu_export_process_slower_time  # type: ignore
+    del bpy.types.Scene.bfu_export_process_faster_time  # type: ignore
+    del bpy.types.Scene.bfu_export_process_current_sub_step  # type: ignore
+
 
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)  # type: ignore

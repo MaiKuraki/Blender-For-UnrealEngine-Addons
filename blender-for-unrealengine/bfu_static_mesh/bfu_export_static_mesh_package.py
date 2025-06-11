@@ -113,7 +113,7 @@ def export_as_static_mesh(
     bfu_export.bfu_export_utils.convert_selected_to_mesh()
     bfu_export.bfu_export_utils.make_select_visual_real()
 
-    bfu_utils.apply_select_needed_modifiers() 
+    bfu_export.bfu_export_utils.apply_select_needed_modifiers_for_export() 
     for selected_obj in bpy.context.selected_objects:
         if active.bfu_convert_geometry_node_attribute_to_uv:
             attrib_name: str = str(active.bfu_convert_geometry_node_attribute_to_uv_name)
@@ -127,7 +127,7 @@ def export_as_static_mesh(
 
     # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
-    saved_simplify.unsymplify_scene()
+    saved_simplify.unsimplify_scene()
 
     my_timer_group.end_last_timer()
 

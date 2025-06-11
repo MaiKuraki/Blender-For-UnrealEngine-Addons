@@ -162,7 +162,7 @@ def process_nla_anim_export(
     if frame_range:
         scene.frame_start = int(frame_range[0])
         scene.frame_end = int(frame_range[1]) + 1
-    saved_simplify.unsymplify_scene()
+    saved_simplify.unsimplify_scene()
 
     my_timer_group.end_last_timer()
 
