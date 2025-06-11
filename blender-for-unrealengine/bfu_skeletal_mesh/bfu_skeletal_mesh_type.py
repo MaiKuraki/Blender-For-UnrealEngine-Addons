@@ -115,7 +115,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
         if bpy.context is None:
             return []
-        
+        scene = bpy.context.scene
         asset_list: List[AssetToExport] = []
         
         # Export the armature and all mesh as a single skeletal mesh
@@ -142,8 +142,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
             for mesh in bbpl.basics.get_obj_childs(data):
                 asset_name = data.name + str(data.bfu_modular_skeletal_mesh_every_meshs_separate) + mesh.name # type: ignore[attr-defined]
                 asset = AssetToExport(self, asset_name, AssetType.SKELETAL_MESH)
-
-
+                
                 import_dirpath = self.get_asset_import_directory_path(data)
                 asset.set_import_name(self.get_package_file_name(mesh, without_extension=True))
                 asset.set_import_dirpath(import_dirpath)
@@ -162,10 +161,23 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
         # Export specified parts of the modular skeletal mesh
         elif bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.modular_mode_is_specified_parts(data):
+            export_filter = scene.bfu_export_selection_filter  # type: ignore[attr-defined]
+            if export_filter == "only_object_and_active":
+                active_part: int = data.bfu_modular_skeletal_specified_parts_meshs_template.active_template_property  # type: ignore[attr-defined]
 
             template = bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_modular_skeletal_specified_parts_meshs_template(data)
-            for part in template.get_template_collection():
-                if part.enabled:
+            for x, part in enumerate(template.get_template_collection()):
+
+                
+                should_export = True
+                if part.enabled == False:
+                    should_export = False
+                # Check export filter
+                if export_filter == "only_object_and_active":
+                    if x != active_part:
+                        should_export = False
+                
+                if should_export:
                     asset = AssetToExport(self, part.name, AssetType.SKELETAL_MESH)
 
                     import_dirpath = self.get_asset_import_directory_path(data, part.sub_folder)

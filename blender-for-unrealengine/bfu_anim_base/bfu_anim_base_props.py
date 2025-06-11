@@ -31,6 +31,8 @@ def get_preset_values():
     preset_values = [
         'obj.bfu_disable_free_scale_animation',
         'obj.bfu_export_animation_without_mesh',
+        'obj.bfu_export_animation_without_materials',
+        'obj.bfu_export_animation_without_textures',
         'obj.bfu_sample_anim_for_export',
         'obj.bfu_simplify_anim_for_export',
     ]
@@ -144,15 +146,32 @@ def register():
 
     bpy.types.Object.bfu_export_animation_without_mesh = bpy.props.BoolProperty(
         name="Export animation without mesh",
-        description=("If checked, When exporting animation, do not include mesh data in the exported files. (This may destroy shape keys)"),
+        description="If checked, When exporting animation, do not include mesh data in the animation exported files. \n"
+        "(False by default because don't work with shape keys animation.)",
         override={'LIBRARY_OVERRIDABLE'},
         default=False
+        )
+    
+    bpy.types.Object.bfu_export_animation_without_materials = bpy.props.BoolProperty(
+        name="Export animation without materials",
+        description="If checked, When exporting animation, do not include materials in the animation exported files.",
+        override={'LIBRARY_OVERRIDABLE'},
+        default=True
+        )
+    
+    bpy.types.Object.bfu_export_animation_without_textures = bpy.props.BoolProperty(
+        name="Export animation without textures",
+        description="If checked, When exporting animation, do not include textures in the animation exported files.",
+        override={'LIBRARY_OVERRIDABLE'},
+        default=True
         )
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
+    del bpy.types.Object.bfu_export_animation_without_textures
+    del bpy.types.Object.bfu_export_animation_without_materials
     del bpy.types.Object.bfu_export_animation_without_mesh
     del bpy.types.Object.bfu_disable_free_scale_animation
     del bpy.types.Object.bfu_simplify_anim_for_export

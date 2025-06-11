@@ -22,6 +22,7 @@ from .. import bbpl
 from .. import bfu_addon_prefs
 from .. import bfu_ui
 from .. import bfu_skeletal_mesh
+from .. import bfu_modular_skeletal_mesh
 from .. import bfu_export_control
 
 
@@ -69,7 +70,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
                 if obj.bfu_modular_skeletal_mesh_mode == "every_meshs":
                     modular_skeletal_mesh.prop(obj, "bfu_modular_skeletal_mesh_every_meshs_separate")
                 if obj.bfu_modular_skeletal_mesh_mode == "specified_parts":
-                    obj.bfu_modular_skeletal_specified_parts_meshs_template.draw(modular_skeletal_mesh)
+                    bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_modular_skeletal_specified_parts_meshs_template(obj).draw(modular_skeletal_mesh)
 
 def draw_ui_scene(layout: bpy.types.UILayout):
     pass

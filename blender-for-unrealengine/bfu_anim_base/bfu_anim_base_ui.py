@@ -42,16 +42,27 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_advanced_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             # Animation fbx properties
             if bfu_alembic_animation.bfu_alembic_animation_utils.is_not_alembic_animation(obj):
                 propsFbx = panel.row()
                 propsFbx.prop(obj, 'bfu_sample_anim_for_export')
                 propsFbx.prop(obj, 'bfu_simplify_anim_for_export')
-            propsScaleAnimation = panel.column()
-            propsScaleAnimation.prop(obj, "bfu_disable_free_scale_animation")
-            propsScaleAnimation.prop(obj, "bfu_export_animation_without_mesh")
+
+            props_scale_animation = panel.column()
+            props_scale_animation.prop(obj, "bfu_disable_free_scale_animation")
+
+            props_animation_mesh = panel.column()
+            props_animation_mesh.prop(obj, "bfu_export_animation_without_mesh")
+
+            props_animation_materials = panel.column()
+            props_animation_materials.prop(obj, "bfu_export_animation_without_materials")
+            props_animation_materials.enabled = not obj.bfu_export_animation_without_mesh
+
+            props_animation_textures = panel.column()
+            props_animation_textures.prop(obj, "bfu_export_animation_without_textures")
+            props_animation_textures.enabled = not obj.bfu_export_animation_without_materials and not obj.bfu_export_animation_without_mesh
 
 def draw_animation_tab_footer_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 

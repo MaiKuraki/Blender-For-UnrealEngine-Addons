@@ -28,14 +28,12 @@ from .. import bfu_export_control
 
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
-    scene = bpy.context.scene 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    if bpy.context is None:
+        return
+    
+    scene = bpy.context.scene
 
     # Hide filters
-    if obj is None:
-        return
-    if addon_prefs.useGeneratedScripts is False:
-        return
     if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     if obj.bfu_export_as_lod_mesh:
@@ -43,17 +41,27 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_material_properties_expanded")
-        header, panel = accordion.draw(layout)
+        if accordion is None:
+            return
+
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
             if asset_class and asset_class.use_materials == True:
                 bfu_material_search_location = panel.column()
                 bbpl.blender_layout.layout_doc_button.add_doc_page_operator(bfu_material_search_location, text="About Materials", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Material")
                 bfu_material_search_location.prop(obj, 'bfu_material_search_location')
-                bfu_material_search_location.prop(obj, 'bfu_import_materials')
-                bfu_material_search_location.prop(obj, 'bfu_import_textures')
-                bfu_material_search_location.prop(obj, 'bfu_flip_normal_map_green_channel')
-                bfu_material_search_location.prop(obj, 'bfu_reorder_material_to_fbx_order')
+
+                material_ui = bfu_material_search_location.column()
+                material_ui.prop(obj, 'bfu_export_materials')
+
+                texture_ui = material_ui.column()
+                texture_ui.enabled = obj.bfu_export_materials
+                texture_ui.prop(obj, 'bfu_export_textures')
+                texture_ui.prop(obj, 'bfu_flip_normal_map_green_channel')
+
+                material_utils_ui = bfu_material_search_location.column()
+                material_utils_ui.prop(obj, 'bfu_reorder_material_to_fbx_order')
                             
 
 def draw_ui_scene_collision(layout: bpy.types.UILayout):

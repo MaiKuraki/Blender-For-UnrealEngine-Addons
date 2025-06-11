@@ -25,6 +25,7 @@ from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_skeletal_mesh
 from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
+from .. import bfu_material
 from .. import bfu_export
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
@@ -251,11 +252,13 @@ def export_as_action_animation(
             bake_space_transform=False
             )
     elif (skeleton_export_procedure == BFU_SkeletonExportProcedure.STANDARD_GLTF.value):
-        bfu_export.bfu_gltf_export.export_scene_gltf(
+        bpy.ops.export_scene.gltf(
             filepath=str(fullpath),
             check_existing=False,
             use_selection=True,
-            use_armature_deform_only=active.bfu_export_deform_only
+            export_def_bones=active.bfu_export_deform_only,
+            export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active, is_animation=True),
+            export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active, is_animation=True),
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")

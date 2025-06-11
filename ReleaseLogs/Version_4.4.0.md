@@ -4,6 +4,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 ### Version 4.4.0
 
 - Full refactorig about asset management and addon in general.
+- New: Support materials and textures export using glTF 2.0 format.
 - New: Sub folder support for modular skeletal meshs.
 - New: Better and more checks for potential issue checker.
 - New: Experimental glTF 2.0 export procedure.

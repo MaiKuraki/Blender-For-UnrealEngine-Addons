@@ -25,6 +25,7 @@ from .. import bfu_export
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_vertex_color
+from .. import bfu_material
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from . import bfu_export_procedure
@@ -190,10 +191,12 @@ def export_as_static_mesh(
             bake_space_transform=False
             )
     elif (static_export_procedure.value == BFU_StaticExportProcedure.STANDARD_GLTF.value):
-        bfu_export.bfu_gltf_export.export_scene_gltf(
+        bpy.ops.export_scene.gltf(
             filepath=str(fullpath),
             check_existing=False,
-            use_selection=True
+            use_selection=True,
+            export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active),
+            export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active),
             )
     else:
         print(f"Error: The export procedure '{static_export_procedure}' was not found!")

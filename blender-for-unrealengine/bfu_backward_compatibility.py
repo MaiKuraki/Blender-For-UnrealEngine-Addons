@@ -109,6 +109,10 @@ def update_old_variables():
 
         update_variable(obj, ["exportWithCustomProps", "bfu_export_with_custom_props"], "bfu_fbx_export_with_custom_props")
 
+        update_variable(obj, ["bfu_import_materials"], "bfu_export_materials")
+        update_variable(obj, ["bfu_import_textures"], "bfu_export_textures")
+
+
 
     for col in bpy.data.collections:
         update_variable(col, ["exportFolderName"], "bfu_export_folder_name")
@@ -152,7 +156,6 @@ def update_old_variables():
         update_variable(scene, ["UnrealExportedAssetsList"], "bfu_unreal_exported_assets_logs")
         update_variable(scene, ["potentialErrorList"], "bfu_export_potential_errors")
         
-
 
 def enum_callback(data, old_var_name, new_var_name):
     value = data[old_var_name] # Get value ast int

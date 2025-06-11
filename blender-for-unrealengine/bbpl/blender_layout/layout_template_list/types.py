@@ -54,9 +54,9 @@ class BBPL_UI_TemplateItem(bpy.types.PropertyGroup):
         )  # type: ignore
     
 class BBPL_UL_TemplateItemDraw(bpy.types.UIList):
-    def draw_item(  # type: ignore
+    def draw_item(
         self, 
-        context: bpy.types.Context, 
+        context: bpy.types.Context | None,
         layout: bpy.types.UILayout, 
         data: bpy.types.PropertyGroup, 
         item: BBPL_UI_TemplateItem, 
@@ -144,7 +144,7 @@ def create_template_list_class(TemplateItem, TemplateItemDraw):  # type: ignore
                 prop_name = self.path_from_id()
                 return prop_name
 
-        def draw(self, layout: bpy.types.UILayout, context: bpy.types.Context) -> bpy.types.UILayout:
+        def draw(self, layout: bpy.types.UILayout) -> bpy.types.UILayout:
             template_row = layout.row()
             if self.template_collection_uilist_class_name == "":
                 print("template_collection_uilist_class_name was not set!")

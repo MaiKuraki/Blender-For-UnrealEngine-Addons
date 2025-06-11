@@ -44,20 +44,22 @@ def register():
         bpy.utils.register_class(cls)
 
     
-    # Used for set import_materials in FbxImportUI
-    # https://docs.unrealengine.com/5.3/en-US/PythonAPI/class/FbxImportUI.html
-    bpy.types.Object.bfu_import_materials = bpy.props.BoolProperty(
-        name="Import Materials",
-        description="Whether to import materials from the FBX file.",
-        default=True  # Modifier selon le comportement par défaut souhaité
+    # Export materials (Float color, roughness value, metallic value, etc.)
+    bpy.types.Object.bfu_export_materials = bpy.props.BoolProperty(
+        name="Export Materials",
+        description="Export materials with in the model file, you also need to enable the 'Export Textures' option to export textures.\n" \
+        "Work better with glTF file format.",
+        default=True
     )
 
-    # Used for set import_textures in FbxImportUI
-    # https://docs.unrealengine.com/5.3/en-US/PythonAPI/class/FbxImportUI.html
-    bpy.types.Object.bfu_import_textures = bpy.props.BoolProperty(
-        name="Import Textures",
-        description="Whether to import textures from the FBX file.",
-        default=False
+    #export textures (Diffuse map, normal map, roughness map, metallic map, etc.)
+    bpy.types.Object.bfu_export_textures = bpy.props.BoolProperty(
+        name="Export Textures",
+        description="Export textures (Diffuse map, normal map, roughness map, metallic map, etc.) with the file.\n" \
+        "Work better with glTF file format.\n" \
+        "Note: I recommend to use this option only for the first export to save export time.\n" \
+        "Note 2: For animation textures export is disabled by default, check the value 'bfu_export_animation_without_textures'.",
+        default=True
     )
 
     # Used for set flip_normal_map_green_channel in FbxTextureImportData
@@ -118,7 +120,7 @@ def unregister():
     del bpy.types.Object.bfu_material_search_location
     del bpy.types.Object.bfu_reorder_material_to_fbx_order
     del bpy.types.Object.bfu_flip_normal_map_green_channel
-    del bpy.types.Object.bfu_import_textures
-    del bpy.types.Object.bfu_import_materials
+    del bpy.types.Object.bfu_export_textures
+    del bpy.types.Object.bfu_export_materials
     
     del bpy.types.Scene.bfu_object_material_properties_expanded

@@ -165,7 +165,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         if export_filter == "default":
             obj_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
 
-        elif export_filter in ["only_object", "only_object_action"]:
+        elif export_filter in ["only_object", "only_object_and_active"]:
             recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
 
             for obj in bpy.context.selected_objects:
@@ -187,7 +187,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         armature_list: List[bpy.types.Object] = []
         if export_filter == "default":
             armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
-        elif export_filter in ["only_object", "only_object_action"]:
+        elif export_filter in ["only_object", "only_object_and_active"]:
             armature_recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
 
             for obj in bpy.context.selected_objects:
@@ -200,7 +200,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                         armature_list.append(armature_parent_target)
 
         armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
-        if export_filter == "only_object_action":
+        if export_filter == "only_object_and_active":
             for armature in armature_list:
                 if armature.animation_data and armature.animation_data.action:
                     armature_actions_map.append((armature, armature.animation_data.action))
@@ -246,7 +246,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         animation_asset_cache = get_animation_asset_cache(obj)
         animation_to_export = animation_asset_cache.GetAnimationAssetList()
         for action in animation_to_export:
-            if scene.bfu_export_selection_filter == "only_object_action":
+            if scene.bfu_export_selection_filter == "only_object_and_active":
                 if obj.animation_data:
                     if obj.animation_data.action == action:
                         TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_ACTION))

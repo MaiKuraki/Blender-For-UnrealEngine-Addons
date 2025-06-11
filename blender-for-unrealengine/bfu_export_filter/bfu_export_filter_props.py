@@ -145,8 +145,8 @@ def register():
         items=[
             ('default', "No Filter", "Export as normal all objects with the recursive export option.", 0),
             ('only_object', "Only selected", "Export only the selected and visible object(s)", 1),
-            ('only_object_action', "Only selected and active action",
-                "Export only the selected and visible object(s) and active action on this object", 2),
+            ('only_object_and_active', "Only selected, active action / part",
+                "Export only the selected and visible object(s) and active action on this object or part for modular skeletal mesh", 2),
             ],
         description=(
             "Choose what need be export from asset list."),
