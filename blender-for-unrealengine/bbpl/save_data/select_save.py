@@ -70,7 +70,8 @@ class UserSelectSave():
         scene = bpy.context.scene
         self.save_mode(use_names)
         utils.safe_mode_set("OBJECT", bpy.ops.object)  # type: ignore
-        bpy.ops.object.select_all(action='DESELECT')  # type: ignore
+        for obj in bpy.context.selected_objects:
+            obj.select_set(False)
 
         if use_names:
             for obj in scene.objects:

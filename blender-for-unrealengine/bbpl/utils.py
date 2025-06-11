@@ -52,7 +52,8 @@ def select_specific_object_list(active: Optional[bpy.types.Object], objs: List[b
     selected_objs: List[bpy.types.Object] = []
 
     # Deselect all
-    bpy.ops.object.select_all(action='DESELECT')  # type: ignore
+    for obj in bpy.context.selected_objects:
+        obj.select_set(False)
     bpy.context.view_layer.objects.active = None
 
     # Select specific objects
@@ -91,7 +92,8 @@ def select_specific_object(active: Optional[bpy.types.Object]):
         return None
 
     # Deselect all
-    bpy.ops.object.select_all(action='DESELECT')  # type: ignore
+    for obj in bpy.context.selected_objects:
+        obj.select_set(False)
     bpy.context.view_layer.objects.active = None
 
     # Select specific object and set active
