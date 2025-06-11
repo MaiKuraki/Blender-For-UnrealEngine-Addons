@@ -50,15 +50,15 @@ def register():
         items=[
             ("all_in_one",
                 "All In One",
-                "Export all child meshs  of the armature as one skeletal mesh.",
+                "Export a single skeletal mesh for the armature and all child meshes.",
                 1),
             ("every_meshs",
                 "Every Meshs",
-                "Export one skeletal mesh for every child meshs of the armature.",
+                "Export a skeletal mesh per every mesh that child of the armature.",
                 2),
             ("specified_parts",
                 "Specified Parts",
-                "Export specified mesh parts.",
+                "Export a skeletal mesh for every specified parts. A specified part can contain multiple objects or collections.",
                 3)
             ]
         )

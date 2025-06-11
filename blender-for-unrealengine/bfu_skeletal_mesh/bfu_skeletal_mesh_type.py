@@ -91,6 +91,37 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
     def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
         return bfu_export_procedure.get_obj_export_file_type(data)
 
+    def get_package_file_name(self, data: bpy.types.Object, details: Optional[bpy.types.Object] = None, desired_name: str = "", without_extension: bool = False) -> str:
+
+        if isinstance(details, bpy.types.Object):
+
+            if bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.modular_mode_is_every_meshs(data):
+                asset_name = data.name + str(data.bfu_modular_skeletal_mesh_every_meshs_separate) + details.name # type: ignore[attr-defined]
+                return super().get_package_file_name(
+                    data,
+                    details,
+                    desired_name=asset_name,
+                    without_extension=without_extension,
+                )
+            
+        if isinstance(details, bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_type.BFU_UI_ModularSkeletalSpecifiedPartsMeshItem):
+            if bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.modular_mode_is_specified_parts(data):
+                asset_name = details.name
+                return super().get_package_file_name(
+                    data,
+                    details,
+                    desired_name=asset_name,
+                    without_extension=without_extension,
+                )
+
+        return super().get_package_file_name(
+            data,
+            details,
+            desired_name=desired_name,
+            without_extension=without_extension,
+        )
+
+
     def get_asset_folder_path(self, data: bpy.types.Object, details: Any = None) -> Path:
         # Add skeletal sub folder path
         if data.bfu_create_sub_folder_with_skeletal_mesh_name:  # type: ignore[attr-defined]
@@ -149,14 +180,14 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
                 if search_mode.search_packages():
                     pak = asset.add_asset_package(mesh.name, ["Lod0"])
-                    self.set_package_file(pak, data, details)
+                    self.set_package_file(pak, data, mesh) # Send mesh as details.
 
                     if search_mode.search_package_content():
                         pak.add_object(data) # Add the armature object
                         pak.add_object(mesh)
                         pak.export_function = bfu_export_skeletal_mesh_package.process_skeletal_mesh_export_from_package
 
-                self.set_additional_data_in_asset(asset, data, details, search_mode)
+                self.set_additional_data_in_asset(asset, data, mesh, search_mode) # Send mesh as details.
                 asset_list.append(asset)
 
         # Export specified parts of the modular skeletal mesh
@@ -186,14 +217,14 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
                     if search_mode.search_packages():
                         pak = asset.add_asset_package(data.name, ["Lod0"])
-                        self.set_package_file(pak, data, details)
+                        self.set_package_file(pak, data, part) # Send part as details.
 
                         if search_mode.search_package_content():
                             pak.add_object(data) # Add the armature object
                             pak.add_objects(bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_modular_objects_from_part(part))                    
                             pak.export_function = bfu_export_skeletal_mesh_package.process_skeletal_mesh_export_from_package
 
-                    self.set_additional_data_in_asset(asset, data, details, search_mode)
+                    self.set_additional_data_in_asset(asset, data, part, search_mode) # Send part as details.
                     asset_list.append(asset)
 
         return asset_list
