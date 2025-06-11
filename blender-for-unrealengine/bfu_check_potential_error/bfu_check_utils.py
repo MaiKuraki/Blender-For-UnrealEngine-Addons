@@ -180,8 +180,12 @@ def try_to_correct_potential_issues(issue_index):
 
     # Correction list
 
-    if my_po_error.correct_ref == "SetUnrealUnit":
+    if my_po_error.correct_ref == "SetUnitScaleForFBX":
         bpy.context.scene.unit_settings.scale_length = 0.01
+        successCorrect = True
+
+    if my_po_error.correct_ref == "SetUnitScaleForGLTF":
+        bpy.context.scene.unit_settings.scale_length = 1.0
         successCorrect = True
 
     if my_po_error.correct_ref == "ConvertToMesh":

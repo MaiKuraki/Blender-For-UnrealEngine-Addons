@@ -54,14 +54,14 @@ class BFU_Checker_UnitScale(bfu_checker):
                         my_po_error.text += ('\nFor Unreal, with FBX and Alembic export a unit scale equal to 0.01 is recommended.')
                         my_po_error.text += ('\n(You can disable this potential error in the addon preferences.)')
                         my_po_error.object = main_object
-                        my_po_error.correct_ref = "SetUnrealUnit"
-                        my_po_error.correct_label = 'Set Unreal Unit'
+                        my_po_error.correct_ref = "SetUnitScaleForFBX"
+                        my_po_error.correct_label = 'Set Unreal Unit 0.01'
             
             elif file_type in [BFU_FileTypeEnum.GLTF]:
                 
                 # Check if the unit scale is equal to 1.0 for GLTF export.
                 if addon_prefs.notifyUnitScalePotentialError:
-                    if not bfu_utils.get_scene_unit_scale_is_close(0.01):
+                    if not bfu_utils.get_scene_unit_scale_is_close(1.0):
                         str_unit_scale = str(bfu_utils.get_scene_unit_scale())
                         my_po_error = self.add_potential_error()
                         my_po_error.name = bpy.context.scene.name
@@ -70,5 +70,5 @@ class BFU_Checker_UnitScale(bfu_checker):
                         my_po_error.text += ('\nFor Unreal, with GLTF export a unit scale equal to 1.0 is recommended.')
                         my_po_error.text += ('\n(You can disable this potential error in the addon preferences.)')
                         my_po_error.object = main_object
-                        my_po_error.correct_ref = "SetUnrealUnit"
-                        my_po_error.correct_label = 'Set Unreal Unit'
+                        my_po_error.correct_ref = "SetUnitScaleForGLTF"
+                        my_po_error.correct_label = 'Set Unreal Unit 1.0'
