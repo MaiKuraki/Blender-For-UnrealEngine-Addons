@@ -211,7 +211,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
                 if should_export:
                     asset = AssetToExport(self, part.name, AssetType.SKELETAL_MESH)
 
-                    import_dirpath = self.get_asset_import_directory_path(data, part.sub_folder)
+                    import_dirpath = self.get_asset_import_directory_path(data, extra_path=Path(part.sub_folder))
                     asset.set_import_name(self.get_package_file_name(data, desired_name=part.name, without_extension=True))
                     asset.set_import_dirpath(import_dirpath)
 
