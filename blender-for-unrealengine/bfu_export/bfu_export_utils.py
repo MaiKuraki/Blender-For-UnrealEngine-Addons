@@ -40,6 +40,64 @@ from .. import bfu_skeletal_mesh
 dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
 Export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
 
+class SavedSceneSimplfy():
+    def __init__(self):
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
+
+        # General
+        self.use_simplify: bool = bpy.context.scene.render.use_simplify
+
+        # Viewport
+        self.simplify_subdivision: int = scene.render.simplify_subdivision
+        self.simplify_child_particles: int = scene.render.simplify_child_particles
+        self.simplify_volumes: int = scene.render.simplify_volumes
+        self.use_simplify_normals: bool = scene.render.use_simplify_normals
+
+        # Render
+        self.simplify_subdivision_render: int = scene.render.simplify_subdivision_render
+        self.simplify_child_particles_render: int = scene.render.simplify_child_particles_render
+
+    def symplify_scene(self):
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
+
+        # General
+        scene.render.use_simplify = True
+
+        # Viewport
+        scene.render.simplify_subdivision = 0
+        scene.render.simplify_child_particles = 0
+        scene.render.simplify_volumes = 0
+        scene.render.use_simplify_normals = False
+
+        # Render
+        scene.render.simplify_subdivision_render = 0
+        scene.render.simplify_child_particles_render = 0
+
+
+    def reset_scene(self):
+        # Reset scene to saved scene.
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
+
+        # General
+        scene.render.use_simplify = self.use_simplify
+
+        # Viewport
+        scene.render.simplify_subdivision = self.simplify_subdivision
+        scene.render.simplify_child_particles = self.simplify_child_particles
+        scene.render.simplify_volumes = self.simplify_volumes
+        scene.render.use_simplify_normals = self.use_simplify_normals
+
+        # Render
+        scene.render.simplify_subdivision_render = self.simplify_subdivision_render
+        scene.render.simplify_child_particles_render = self.simplify_child_particles_render
+
+
 def check_and_make_export_path(dirpath: Path):
     """
     Check if the directory exists, and create it if it doesn't.
@@ -195,8 +253,9 @@ class DuplicateData():
 def duplicate_select_for_export(context: bpy.types.Context) -> DuplicateData:
     duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection", 3)
 
+    
     # Note: Need look for a optimized duplicate, This is too long
-
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate", 4)
     scene = context.scene
     duplicate_data = DuplicateData()
     duplicate_data.set_origin_select()
@@ -212,9 +271,13 @@ def duplicate_select_for_export(context: bpy.types.Context) -> DuplicateData:
     action_names: list[str] = []
     for action in bpy.data.actions:
         action_names.append(action.name)
+    log_4.end_time_log()
 
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate", 4)
     bpy.ops.object.duplicate()  # type: ignore
+    log_4.end_time_log()
 
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare clean", 4)
     # Save the name for found after "Make Instances Real"
     current_select_names: list[str] = []
     for current_select_name in context.selected_objects:
@@ -230,13 +293,18 @@ def duplicate_select_for_export(context: bpy.types.Context) -> DuplicateData:
             oldData = objScene.data.name
             objScene.data = objScene.data.copy()
             data_to_remove.append(DelegateOldData(oldData, objScene.type))  # type: ignore
+    log_4.end_time_log()
 
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean", 4)
     # Clean create actions by duplication
     for action in bpy.data.actions:
         if action.name not in action_names:
             bpy.data.actions.remove(action)  # type: ignore
+    log_4.end_time_log()
 
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Update select", 4)
     duplicate_data.set_duplicate_select()
+    log_4.end_time_log()
 
     duplicate_time_log.end_time_log()
     return duplicate_data

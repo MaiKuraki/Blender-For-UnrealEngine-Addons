@@ -28,6 +28,7 @@ from .. import bfu_material
 from .. import bfu_addon_prefs
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
+from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 
 
 def process_nla_animation_export_from_package(
@@ -77,7 +78,7 @@ def process_nla_anim_export(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_name(armature)
     saved_selection_names.save_new_names(mesh_parts)
@@ -162,7 +163,7 @@ def process_nla_anim_export(
     if frame_range:
         scene.frame_start = int(frame_range[0])
         scene.frame_end = int(frame_range[1]) + 1
-    scene.render.use_simplify = False
+    saved_simplify.symplify_scene()
 
     my_timer_group.end_last_timer()
 
@@ -254,7 +255,7 @@ def process_nla_anim_export(
     my_timer_group.start_timer(f"Clean after export")
     scene.unit_settings.scale_length = saved_unit_scale
     saved_selection_names.restore_names()
-    scene.render.use_simplify = save_use_simplify
+    saved_simplify.reset_scene()
     animation_data.set_animation_data(armature, copy_nla=True)
     scene.frame_start = saved_frame_range[0]
     scene.frame_end = saved_frame_range[1]

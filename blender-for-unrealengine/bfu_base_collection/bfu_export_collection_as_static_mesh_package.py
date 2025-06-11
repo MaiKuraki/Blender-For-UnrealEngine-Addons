@@ -21,6 +21,7 @@ import bpy
 from pathlib import Path
 from typing import TYPE_CHECKING
 from .. import bfu_export
+from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_vertex_color
@@ -69,7 +70,7 @@ def export_collection_as_static_mesh(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_names(objs)
 
@@ -125,7 +126,7 @@ def export_collection_as_static_mesh(
     
     # [PREPARE SCENE]
     # Prepare scene for export (frame range, simplefying, etc.)
-    scene.render.use_simplify = False
+    saved_simplify.symplify_scene()
 
     my_timer_group.end_last_timer()
 
@@ -175,7 +176,7 @@ def export_collection_as_static_mesh(
             # axis_up=bfu_export_utils.get_export_axis_up(obj),
             bake_space_transform=False
             )
-    elif (static_collection_export_procedure.value == BFU_CollectionExportProcedure.CUSTOM_GLTF_EXPORT.value):
+    elif (static_collection_export_procedure.value == BFU_CollectionExportProcedure.STANDARD_GLTF.value):
         # @TODO: Implement GLTF export
         bfu_export.bfu_gltf_export.export_scene_gltf()
     else:
@@ -186,7 +187,7 @@ def export_collection_as_static_mesh(
     # Restore asset data after export like transforms, animation data, etc.
     my_timer_group.start_timer(f"Clean after export")
     saved_selection_names.restore_names()
-    scene.render.use_simplify = save_use_simplify
+    saved_simplify.reset_scene()
 
 
     for obj in bpy.context.selected_objects:

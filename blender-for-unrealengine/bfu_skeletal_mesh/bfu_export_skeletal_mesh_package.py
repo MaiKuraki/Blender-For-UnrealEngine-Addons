@@ -28,6 +28,7 @@ from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
 from .. import bfu_vertex_color
 from .. import bfu_material
 from .. import bfu_export
+from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 
@@ -75,7 +76,7 @@ def export_as_skeletal_mesh(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_name(armature)
     saved_selection_names.save_new_names(mesh_parts)
@@ -149,7 +150,7 @@ def export_as_skeletal_mesh(
 
     # [PREPARE SCENE]
     # Prepare scene for export (frame range, simplefying, etc.)
-    scene.render.use_simplify = False
+    saved_simplify.symplify_scene()
 
     my_timer_group.end_last_timer()
 
@@ -250,7 +251,7 @@ def export_as_skeletal_mesh(
     my_timer_group.start_timer(f"Clean after export")
     scene.unit_settings.scale_length = saved_unit_scale
     saved_selection_names.restore_names()
-    scene.render.use_simplify = save_use_simplify
+    saved_simplify.reset_scene()
 
     # This will rescale the rig and unit scale to get a root bone egal to 1
     if should_rescale_rig:

@@ -24,6 +24,7 @@ from .. import bbpl
 from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
+from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from . import bfu_export_procedure
 from .bfu_export_procedure import BFU_CameraExportProcedure
@@ -70,7 +71,7 @@ def export_camera_animation(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_name(obj)
     saved_frame_range: Tuple[int, int] = (scene.frame_start, scene.frame_end)
@@ -111,7 +112,7 @@ def export_camera_animation(
     if frame_range:
         scene.frame_start = int(frame_range[0])
         scene.frame_end = int(frame_range[1]) + 1
-    scene.render.use_simplify = False
+    saved_simplify.symplify_scene()
 
     my_timer_group.end_last_timer()
 
@@ -193,7 +194,7 @@ def export_camera_animation(
     # Restore asset data after export like transforms, animation data, etc.
     my_timer_group.start_timer(f"Clean after export")
     saved_selection_names.restore_names()
-    scene.render.use_simplify = save_use_simplify
+    saved_simplify.reset_scene()
     scene.frame_start = saved_frame_range[0]
     scene.frame_end = saved_frame_range[1]
 

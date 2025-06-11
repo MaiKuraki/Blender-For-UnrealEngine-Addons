@@ -25,6 +25,7 @@ from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from .. import bfu_export
+from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from .. import bfu_skeletal_mesh
 from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
 
@@ -67,7 +68,7 @@ def export_single_fbx_spline(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    save_use_simplify: bool = bpy.context.scene.render.use_simplify
+    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_name(obj)
     saved_base_transforms = bfu_export.bfu_export_utils.SaveTransformObjects(obj)
@@ -103,7 +104,7 @@ def export_single_fbx_spline(
 
     # [PREPARE SCENE]
     # Prepare scene for export (frame range, simplefying, etc.)
-    scene.render.use_simplify = False
+    saved_simplify.symplify_scene()
 
     my_timer_group.end_last_timer()
 
@@ -186,7 +187,7 @@ def export_single_fbx_spline(
     my_timer_group.start_timer(f"Clean after export")
     saved_base_transforms.reset_object_transforms()
     saved_selection_names.restore_names()
-    scene.render.use_simplify = save_use_simplify
+    saved_simplify.reset_scene()
 
     for obj in scene.objects:
         bfu_utils.clear_all_bfu_temp_vars(obj)
