@@ -239,9 +239,10 @@ def export_as_skeletal_mesh(
             check_existing=False,
             use_selection=True,
             export_def_bones=active.bfu_export_deform_only,
-            export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active, is_animation=True),
-            export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active, is_animation=True),
+            export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active),
+            export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active),
             export_apply = True,
+            export_animations = False,
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
