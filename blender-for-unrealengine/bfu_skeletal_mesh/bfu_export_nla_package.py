@@ -70,7 +70,7 @@ def process_nla_anim_export(
         raise TypeError(f"The armature object is not a valid Armature type! Inputs: armature: {armature.name}")  
 
     # Export a single NLA Animation
-    my_timer_group = SafeTimeGroup(2)
+    my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
     addon_prefs = bfu_addon_prefs.get_addon_prefs()

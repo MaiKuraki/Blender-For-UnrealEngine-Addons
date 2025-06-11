@@ -9,9 +9,9 @@ def get_process_time_logs() -> List[bfu_process_time_logs_types.BFU_OT_ExportPro
     scene = bpy.context.scene
     return scene.bfu_export_process_time_logs  # type: ignore[attr-defined]
 
-def start_time_log(process_info: str, sub_step: int = 0) -> bfu_process_time_logs_types.SafeTimeLogHandle:
+def start_time_log(process_info: str) -> bfu_process_time_logs_types.SafeTimeLogHandle:
     process_task_proxy = bfu_process_time_logs_types.SafeTimeLogHandle()
-    process_task_proxy.start_timer(process_info, sub_step)
+    process_task_proxy.start_timer(process_info)
     return process_task_proxy
 
 def clear_process_time_logs():

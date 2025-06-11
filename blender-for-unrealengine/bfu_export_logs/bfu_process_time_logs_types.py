@@ -21,16 +21,31 @@ class BFU_OT_ExportProcessTimeLog(bpy.types.PropertyGroup):
         sub_step: int
         finished_success: bool
 
-    def start_timer(self, process_id: str, process_info: str, sub_step: int) -> float:
+    def start_timer(self, process_id: str, process_info: str) -> float:
+        if bpy.context is None:
+            return 0.0
+        scene = bpy.context.scene
+
         self.process_id = process_id
         self.process_info = process_info
-        self.sub_step = sub_step
+        self.sub_step = scene.bfu_export_process_current_sub_step  # type: ignore[attr-defined]
         self.start_time = time.perf_counter()
+
+        # Increment the sub step counter
+        scene.bfu_export_process_current_sub_step += 1  # type: ignore[attr-defined]
+        
         return self.start_time
 
     def finish_timer(self):
+        if bpy.context is None:
+            return 0.0
+        
         self.end_time = time.perf_counter()
         self.finished_success = True
+
+        # Decrement the sub step counter
+        scene = bpy.context.scene
+        scene.bfu_export_process_current_sub_step -= 1  # type: ignore[attr-defined]
 
     def get_process_detail(self):
         if self.finished_success:
@@ -51,7 +66,7 @@ class SafeTimeLogHandle():
         self.should_print_log: bool = False
         
 
-    def start_timer(self, timer_name: str, sub_step: int) -> float:
+    def start_timer(self, timer_name: str) -> float:
         if bpy.context is None:
             return 0.0
         self.print_log(self.get_process_info(), "Start!")
@@ -59,7 +74,7 @@ class SafeTimeLogHandle():
         process_task = scene.bfu_export_process_time_logs.add()  # type: ignore[attr-defined]
         if TYPE_CHECKING:
             process_task = BFU_OT_ExportProcessTimeLog()
-        return process_task.start_timer(self.process_id, timer_name, sub_step)
+        return process_task.start_timer(self.process_id, timer_name)
 
     def get_process_time_unique_id(self) -> str:
         if bpy.context is None:
@@ -98,13 +113,12 @@ class SafeTimeLogHandle():
 
 
 class SafeTimeGroup():
-    def __init__(self, sub_step: int) -> None:
+    def __init__(self) -> None:
         self.log_handles: list[SafeTimeLogHandle] = []
-        self.sub_step: int = sub_step
 
     def start_timer(self, timer_name: str) -> SafeTimeLogHandle:
         process_task_proxy = SafeTimeLogHandle()
-        process_task_proxy.start_timer(timer_name, self.sub_step)
+        process_task_proxy.start_timer(timer_name)
         self.log_handles.append(process_task_proxy)
         return process_task_proxy
 
@@ -120,6 +134,10 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)  # type: ignore
 
+    bpy.types.Scene.bfu_export_process_current_sub_step = bpy.props.IntProperty(  # type: ignore
+        name="Current Sub Step",
+        default=0,
+    )
     bpy.types.Scene.bfu_export_process_time_logs = bpy.props.CollectionProperty(    # type: ignore
         type=BFU_OT_ExportProcessTimeLog)
 

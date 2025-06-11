@@ -62,7 +62,7 @@ def export_collection_as_static_mesh(
         return False
 
     # Export a single collection
-    my_timer_group = SafeTimeGroup(2)
+    my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
     objs = bfu_utils.get_export_collection_objects(col)

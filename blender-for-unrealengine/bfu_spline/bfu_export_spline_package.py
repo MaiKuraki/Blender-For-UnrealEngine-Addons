@@ -61,7 +61,7 @@ def export_single_fbx_spline(
         return False
 
     # Export single spline
-    my_timer_group = SafeTimeGroup(2)
+    my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
 

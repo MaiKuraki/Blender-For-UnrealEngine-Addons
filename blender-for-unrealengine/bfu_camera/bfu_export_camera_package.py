@@ -64,7 +64,7 @@ def export_camera_animation(
         return False
 
     # Export single camera
-    my_timer_group = SafeTimeGroup(2)
+    my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
 

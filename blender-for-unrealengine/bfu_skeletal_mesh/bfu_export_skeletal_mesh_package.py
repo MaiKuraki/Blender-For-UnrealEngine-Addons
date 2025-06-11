@@ -69,7 +69,7 @@ def export_as_skeletal_mesh(
         raise TypeError(f"The armature object is not a valid Armature type! Inputs: armature: {armature.name}")  
 
     # Export a single Mesh
-    my_timer_group = SafeTimeGroup(2)
+    my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
 

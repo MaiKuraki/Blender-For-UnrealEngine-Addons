@@ -260,7 +260,7 @@ class DuplicateData():
 
 
 def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after_duplicate: bool = True) -> DuplicateData:
-    duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection", 3)
+    duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection")
 
     
     
@@ -268,7 +268,7 @@ def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after
     saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
     saved_simplify.symplify_scene()
 
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate", 4)
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate")
     scene = context.scene
     duplicate_data = DuplicateData()
     duplicate_data.set_origin_select()
@@ -287,12 +287,12 @@ def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after
 
     log_4.end_time_log()
 
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate", 4)
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate")
     # Note: Need look for a optimized duplicate, This is too long
     bpy.ops.object.duplicate()  # type: ignore
     log_4.end_time_log()
 
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare clean", 4)
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare clean")
     # Save the name for found after "Make Instances Real"
     current_select_names: list[str] = []
     for current_select_name in context.selected_objects:
@@ -310,7 +310,7 @@ def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after
             data_to_remove.append(DelegateOldData(oldData, objScene.type))  # type: ignore
     log_4.end_time_log()
 
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean", 4)
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean")
     # Clean create actions by duplication
     for action in bpy.data.actions:
         if action.name not in action_names:
@@ -320,7 +320,7 @@ def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after
         saved_simplify.reset_scene()
     log_4.end_time_log()
 
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Update select", 4)
+    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Update select")
     duplicate_data.set_duplicate_select()
     log_4.end_time_log()
 

@@ -128,7 +128,7 @@ def export_all_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_
     exported_asset_log = []
 
     for asset in asset_list:
-        export_asset_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as {asset.asset_type.get_friendly_name()}.", 1)
+        export_asset_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as {asset.asset_type.get_friendly_name()}.")
         # Save current start/end frame
         UserStartFrame = scene.frame_start
         UserEndFrame = scene.frame_end
