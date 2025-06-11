@@ -89,7 +89,7 @@ def export_as_skeletal_mesh(
     bbpl.utils.select_specific_object_list(armature, mesh_parts)
     # Deselect sockets because Unreal Engine detect them as bones
     bfu_skeletal_mesh.bfu_skeletal_mesh_utils.deselect_socket(armature) 
-    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context, False)
     duplicate_data.set_duplicate_name_for_export()
 
     # Duplicated active that should be used for export.
@@ -121,7 +121,7 @@ def export_as_skeletal_mesh(
     bfu_export.bfu_export_utils.convert_selected_to_mesh()
     bfu_export.bfu_export_utils.make_select_visual_real()
 
-    bfu_utils.ApplyNeededModifierToSelect()
+    bfu_utils.apply_select_needed_modifiers()
     for selected_obj in bpy.context.selected_objects:
         if active.bfu_convert_geometry_node_attribute_to_uv:
             attrib_name: str = str(active.bfu_convert_geometry_node_attribute_to_uv_name)
@@ -148,9 +148,9 @@ def export_as_skeletal_mesh(
     bpy.context.object.data.pose_position = 'REST'  # type: ignore
     bfu_export.bfu_export_utils.ConvertArmatureConstraintToModifiers(active)
 
-    # [PREPARE SCENE]
+    # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
-    saved_simplify.symplify_scene()
+    saved_simplify.unsymplify_scene()
 
     my_timer_group.end_last_timer()
 
@@ -241,6 +241,7 @@ def export_as_skeletal_mesh(
             export_def_bones=active.bfu_export_deform_only,
             export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active, is_animation=True),
             export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active, is_animation=True),
+            export_apply = True,
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")

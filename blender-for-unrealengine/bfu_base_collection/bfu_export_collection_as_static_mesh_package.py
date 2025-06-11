@@ -79,7 +79,7 @@ def export_collection_as_static_mesh(
     # Select and duplicate objects for export (Export the duplicated objects)
     bbpl.utils.safe_mode_set('OBJECT')
     bbpl.utils.select_specific_object_list(objs[0], objs)
-    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context, False)
     duplicate_data.set_duplicate_name_for_export()
 
     # Duplicated active that should be used for export.
@@ -113,7 +113,7 @@ def export_collection_as_static_mesh(
     bfu_export.bfu_export_utils.convert_selected_to_mesh()
     bfu_export.bfu_export_utils.make_select_visual_real()
 
-    bfu_utils.ApplyNeededModifierToSelect()
+    bfu_utils.apply_select_needed_modifiers()
     for selected_obj in bpy.context.selected_objects:
         if active.bfu_convert_geometry_node_attribute_to_uv:
             attrib_name = active.bfu_convert_geometry_node_attribute_to_uv_name
@@ -123,10 +123,9 @@ def export_collection_as_static_mesh(
         bfu_export.bfu_export_utils.SetSocketsExportTransform(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportName(selected_obj)
 
-    
-    # [PREPARE SCENE]
+    # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
-    saved_simplify.symplify_scene()
+    saved_simplify.unsymplify_scene()
 
     my_timer_group.end_last_timer()
 

@@ -742,15 +742,21 @@ def GoToMeshEditMode():
     return False
 
 
-def ApplyNeededModifierToSelect():
-    SavedSelect = bbpl.save_data.select_save.UserSelectSave()
-    SavedSelect.save_current_select()
+def apply_select_needed_modifiers():
+    if bpy.context is None:
+        return
+
+    saved_select = bbpl.save_data.select_save.UserSelectSave()
+    saved_select.save_current_select()
+
+    # Disable simplify for avoid, skipping apply.
+    bpy.context.scene.render.use_simplify = False
 
     # Get selected objects with modifiers.
     for obj in bpy.context.selected_objects:
         ApplyObjectModifiers(obj, ['ARMATURE'])
 
-    SavedSelect.reset_select()
+    saved_select.reset_select()
 
 def ApplyObjectModifiers(obj: bpy.types.Object, blacklist_type = []):
 

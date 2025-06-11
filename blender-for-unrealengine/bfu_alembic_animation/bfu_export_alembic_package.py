@@ -104,12 +104,12 @@ def export_alembic_animation(
 
     bfu_utils.apply_export_transform(active, "Object")
 
-    # [PREPARE SCENE]
+    # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
     if frame_range:
         scene.frame_start = int(frame_range[0])
         scene.frame_end = int(frame_range[1]) + 1
-    saved_simplify.symplify_scene()
+    saved_simplify.unsymplify_scene()
 
     my_timer_group.end_last_timer()
 

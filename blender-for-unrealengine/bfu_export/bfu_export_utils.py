@@ -77,6 +77,15 @@ class SavedSceneSimplfy():
         scene.render.simplify_subdivision_render = 0
         scene.render.simplify_child_particles_render = 0
 
+    def unsymplify_scene(self):
+        # Reset scene for without data loose.
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
+
+        # General
+        scene.render.use_simplify = False
+
 
     def reset_scene(self):
         # Reset scene to saved scene.
@@ -250,11 +259,15 @@ class DuplicateData():
                 bfu_utils.clear_obj_origin_name_var(user_selected)
 
 
-def duplicate_select_for_export(context: bpy.types.Context) -> DuplicateData:
+def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after_duplicate: bool = True) -> DuplicateData:
     duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection", 3)
 
     
-    # Note: Need look for a optimized duplicate, This is too long
+    
+    # Enable simplify for faster duplicate (Don't )
+    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify.symplify_scene()
+
     log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate", 4)
     scene = context.scene
     duplicate_data = DuplicateData()
@@ -271,9 +284,11 @@ def duplicate_select_for_export(context: bpy.types.Context) -> DuplicateData:
     action_names: list[str] = []
     for action in bpy.data.actions:
         action_names.append(action.name)
+
     log_4.end_time_log()
 
     log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate", 4)
+    # Note: Need look for a optimized duplicate, This is too long
     bpy.ops.object.duplicate()  # type: ignore
     log_4.end_time_log()
 
@@ -300,11 +315,16 @@ def duplicate_select_for_export(context: bpy.types.Context) -> DuplicateData:
     for action in bpy.data.actions:
         if action.name not in action_names:
             bpy.data.actions.remove(action)  # type: ignore
+
+    if reset_simplify_after_duplicate:
+        saved_simplify.reset_scene()
     log_4.end_time_log()
 
     log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Update select", 4)
     duplicate_data.set_duplicate_select()
     log_4.end_time_log()
+
+
 
     duplicate_time_log.end_time_log()
     return duplicate_data

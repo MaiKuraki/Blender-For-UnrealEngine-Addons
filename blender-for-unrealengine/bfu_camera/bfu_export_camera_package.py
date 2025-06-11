@@ -107,12 +107,12 @@ def export_camera_animation(
     # Select and rescale camera for export
     active.delta_scale *= 0.01
 
-    # [PREPARE SCENE]
+    # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
     if frame_range:
         scene.frame_start = int(frame_range[0])
         scene.frame_end = int(frame_range[1]) + 1
-    saved_simplify.symplify_scene()
+    saved_simplify.unsymplify_scene()
 
     my_timer_group.end_last_timer()
 

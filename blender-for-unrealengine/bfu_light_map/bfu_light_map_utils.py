@@ -43,7 +43,7 @@ def GetExportRealSurfaceArea(obj: bpy.types.Object) -> float:
         use_hierarchy=True
         )
 
-    bfu_utils.ApplyNeededModifierToSelect()
+    bfu_utils.apply_select_needed_modifiers()
     bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
     for selectObj in bpy.context.selected_objects:
         # Remove unable to convert mesh

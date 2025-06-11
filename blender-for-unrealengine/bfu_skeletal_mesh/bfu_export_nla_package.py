@@ -94,7 +94,7 @@ def process_nla_anim_export(
     bbpl.utils.select_specific_object_list(armature, mesh_parts)
     # Deselect sockets because Unreal Engine detect them as bones
     bfu_skeletal_mesh.bfu_skeletal_mesh_utils.deselect_socket(armature) 
-    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context)
+    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context, False)
     duplicate_data.set_duplicate_name_for_export()
 
     # Duplicated active that should be used for export.
@@ -157,13 +157,12 @@ def process_nla_anim_export(
         my_rig_consraints_scale.RescaleRigConsraintForUnrealEngine()
         bbpl.anim_utils.copy_drivers(armature, active)
 
-
-    # [PREPARE SCENE]
+    # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
     if frame_range:
         scene.frame_start = int(frame_range[0])
         scene.frame_end = int(frame_range[1]) + 1
-    saved_simplify.symplify_scene()
+    saved_simplify.unsymplify_scene()
 
     my_timer_group.end_last_timer()
 
@@ -245,6 +244,7 @@ def process_nla_anim_export(
             export_def_bones=active.bfu_export_deform_only,
             export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active, is_animation=True),
             export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active, is_animation=True),
+            export_apply = True,
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
