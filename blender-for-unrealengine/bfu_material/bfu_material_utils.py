@@ -24,9 +24,9 @@ from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 def get_gltf_export_materials(obj: bpy.types.Object, is_animation: bool = False) -> Literal["EXPORT", "PLACEHOLDER", "NONE"]:
     if is_animation:
         if obj.bfu_export_animation_without_mesh:
-            return "NONE"
+            return "PLACEHOLDER"
         elif obj.bfu_export_animation_without_materials:
-            return "NONE"
+            return "PLACEHOLDER"
 
     if obj.bfu_export_materials:
         return "EXPORT"
