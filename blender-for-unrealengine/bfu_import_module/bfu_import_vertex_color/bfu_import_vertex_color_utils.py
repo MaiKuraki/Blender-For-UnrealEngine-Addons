@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import Optional
+from typing import Optional, Union
 import unreal
 from .. import import_module_tasks_class
 from .. import import_module_utils
@@ -128,25 +128,24 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_addi
 def apply_one_asset_settings(itask: import_module_tasks_class.ImportTask, asset: unreal.Object, asset_additional_data: dict) -> None:
     """Applies vertex color settings to an already imported asset."""
 
-    # Check   
-    if asset is None:
-        return
-
     vertex_override_color = get_vertex_override_color(asset_additional_data)
-    if itask.use_interchange:
-        vertex_color_import_option = get_interchange_vertex_color_import_option(asset_additional_data)
-    else:
-        vertex_color_import_option = get_vertex_color_import_option(asset_additional_data)
-
-    if itask.use_interchange:
-        common_meshes_properties = asset.get_editor_property('asset_import_data').get_pipelines()[0].get_editor_property('common_meshes_properties')
+        
+    asset_import_data = asset.get_editor_property('asset_import_data')
+    asset_import_data: Union[unreal.FbxStaticMeshImportData, unreal.FbxSkeletalMeshImportData, unreal.InterchangeAssetImportData]
+    
+    if isinstance(asset_import_data, unreal.InterchangeAssetImportData):
+        common_meshes_properties = asset_import_data.get_pipelines()[0].get_editor_property('common_meshes_properties')
         if vertex_override_color:
             common_meshes_properties.set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
+
+        vertex_color_import_option = get_interchange_vertex_color_import_option(asset_additional_data)
         if vertex_color_import_option:
             common_meshes_properties.set_editor_property('vertex_color_import_option', vertex_color_import_option)
     else:
         asset_import_data = asset.get_editor_property('asset_import_data')
         if vertex_override_color:
             asset_import_data.set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
+            
+        vertex_color_import_option = get_vertex_color_import_option(asset_additional_data)
         if vertex_color_import_option:
             asset_import_data.set_editor_property('vertex_color_import_option', vertex_color_import_option)

@@ -30,6 +30,7 @@ if "constrcut_utils" in locals():
 from . import bpl
 from . import config
 from . import asset_types
+from . import import_module_tasks_class
 from . import import_module_utils
 from . import import_module_unreal_utils
 from . import import_module_post_treatment
@@ -44,7 +45,6 @@ from . import bfu_import_vertex_color
 from . import bfu_import_light_map
 from . import bfu_import_nanite
 from . import bfu_import_sequencer
-from . import import_module_tasks_class
 from . import import_module_tasks_helper
 
 if "bpl" in locals():
@@ -53,6 +53,8 @@ if "config" in locals():
     importlib.reload(config)
 if "asset_types" in locals():
     importlib.reload(asset_types)
+if "import_module_tasks_class" in locals():
+    importlib.reload(import_module_tasks_class)
 if "import_module_utils" in locals():
     importlib.reload(import_module_utils)
 if "import_module_unreal_utils" in locals():
@@ -79,8 +81,6 @@ if "bfu_import_nanite" in locals():
     importlib.reload(bfu_import_nanite)
 if "bfu_import_sequencer" in locals():
     importlib.reload(bfu_import_sequencer)
-if "import_module_tasks_class" in locals():
-    importlib.reload(import_module_tasks_class)
 if "import_module_tasks_helper" in locals():
     importlib.reload(import_module_tasks_helper)
 

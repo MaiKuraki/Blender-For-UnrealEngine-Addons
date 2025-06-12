@@ -46,17 +46,20 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
             itask.get_fbx_import_ui().set_editor_property('import_textures', asset_additional_data["import_textures"])
 
     # Material search location and normal map green channel flip
-    if itask.use_interchange:
-        if "material_search_location" in asset_additional_data:
-            search_location = asset_additional_data["material_search_location"]
-            location_enum = {
-                "Local": unreal.InterchangeMaterialSearchLocation.LOCAL,
-                "UnderParent": unreal.InterchangeMaterialSearchLocation.UNDER_PARENT,
-                "UnderRoot": unreal.InterchangeMaterialSearchLocation.UNDER_ROOT,
-                "AllAssets": unreal.InterchangeMaterialSearchLocation.ALL_ASSETS
-            }
-            if search_location in location_enum:
-                itask.get_igap_material().set_editor_property('search_location', location_enum[search_location])
+    
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        # unreal.InterchangeGenericMaterialPipeline.search_location was added in Unreal Engine 5.4
+        if hasattr(itask.get_igap_material(), 'search_location'):
+            if "material_search_location" in asset_additional_data:
+                search_location = asset_additional_data["material_search_location"]
+                location_enum = {
+                    "Local": unreal.InterchangeMaterialSearchLocation.LOCAL,
+                    "UnderParent": unreal.InterchangeMaterialSearchLocation.UNDER_PARENT,
+                    "UnderRoot": unreal.InterchangeMaterialSearchLocation.UNDER_ROOT,
+                    "AllAssets": unreal.InterchangeMaterialSearchLocation.ALL_ASSETS
+                }
+                if search_location in location_enum:
+                    itask.get_igap_material().set_editor_property('search_location', location_enum[search_location])
 
         if "flip_normal_map_green_channel" in asset_additional_data:
             itask.get_igap_texture().set_editor_property('flip_normal_map_green_channel', asset_additional_data["flip_normal_map_green_channel"])

@@ -18,8 +18,19 @@
 
 from typing import Tuple
 
-interchange_minimal_support: Tuple[int, int, int] = (5, 1, 0) # Minimum UE version for Interchange support (5.1.0)
-print("interchange_minimal_support ->", interchange_minimal_support)
+# Minimum UE version for Interchange support (5.1.0)
+interchange_minimal_support: Tuple[int, int, int] = (5, 1, 0) 
+
+# Interchange is expiremental since 5.1, but it is not fully supported until 5.5.
+# Some modules like InterchangeMaterialSearchLocation was added later.
+interchange_unreal_support: Tuple[int, int, int] = (5, 5, 0)
+
+# NOTES
+# - unreal.InterchangePipelineStackOverride was added in 5.2
+# - unreal.InterchangeGenericMaterialPipeline.search_location was added in 5.4
+# - When use unreal.load_asset() and asset.asset_import_data it will return a class of unreal.InterchangeAssetImportData in 5.5
+#   And FbxSkeletalMeshImportData, FbxStaticMeshImportData in older versions.
+
 
 # DEBUG
 force_use_interchange = "Auto" # "Auto" by default. You can use "Auto", "Interchange" or "FBX" for debug.
