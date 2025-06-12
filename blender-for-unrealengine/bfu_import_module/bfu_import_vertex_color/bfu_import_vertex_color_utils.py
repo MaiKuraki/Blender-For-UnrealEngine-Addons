@@ -17,9 +17,9 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 from typing import Optional
-from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 from .. import import_module_utils
+from .. import constrcut_utils
 from ..asset_types import ExportAssetType
 
 try:
@@ -27,7 +27,7 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_should_use_interchange()
+support_interchange = constrcut_utils.include_interchange_functions()
 
 def get_vertex_override_color(asset_additional_data: dict) -> Optional[unreal.LinearColor]:
     """Retrieves the vertex override color from the asset data, if available."""
@@ -83,7 +83,7 @@ def get_vertex_color_import_option(asset_additional_data: dict) -> Optional[unre
     
 
 
-def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
+def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
     """Applies vertex color settings during the import process."""
     import_module_utils.print_debug_step("Set Vertex Color post import settings.")
 
@@ -114,7 +114,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
                 itask.get_skeletal_mesh_import_data().set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
 
 
-def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
+def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_additional_data: dict) -> None:
     """Applies vertex color settings to an already imported asset."""
 
     # Check   
@@ -127,7 +127,7 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_addi
             apply_one_asset_settings(itask, asset, asset_additional_data)
 
 
-def apply_one_asset_settings(itask: import_module_tasks_class.ImportTaks, asset: unreal.Object, asset_additional_data: dict) -> None:
+def apply_one_asset_settings(itask: import_module_tasks_class.ImportTask, asset: unreal.Object, asset_additional_data: dict) -> None:
     """Applies vertex color settings to an already imported asset."""
 
     # Check   

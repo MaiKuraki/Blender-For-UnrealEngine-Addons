@@ -19,7 +19,7 @@
 
 from typing import Union
 from . import import_module_unreal_utils
-from . import import_module_tasks_class
+from . import constrcut_utils
 from .asset_types import ExportAssetType 
 
 try:
@@ -27,7 +27,7 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
-support_interchange: bool = import_module_unreal_utils.get_should_use_interchange()
+support_interchange: bool = constrcut_utils.include_interchange_functions()
 
 if support_interchange:
     def task_options_default_preset(use_interchange: bool = True) -> Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]:

@@ -26,7 +26,7 @@ try:
 except ImportError:
     import unreal_engine as unreal
 
-def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
+def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
     """Applies material and texture import settings to StaticMesh and SkeletalMesh assets."""
     import_module_utils.print_debug_step("Set Materials import settings.")
     
@@ -98,6 +98,6 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
                 itask.get_skeletal_mesh_import_data().set_editor_property('reorder_material_to_fbx_order', asset_additional_data["reorder_material_to_fbx_order"])
 
 
-def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
+def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_additional_data: dict) -> None:
     # Empty for the momment
     pass

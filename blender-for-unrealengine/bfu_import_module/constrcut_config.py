@@ -16,9 +16,10 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-select_assets_after_import = True 
-save_assets_after_import = True
+from typing import Tuple
+
+interchange_minimal_support: Tuple[int, int, int] = (5, 1, 0) # Minimum UE version for Interchange support (5.1.0)
+print("interchange_minimal_support ->", interchange_minimal_support)
 
 # DEBUG
-automated_import_tasks = True # "True" by default. You can use "False" for debug.
-print_debug_steps = False # "False" by default. You can use "True" for debug.
+force_use_interchange = "Auto" # "Auto" by default. You can use "Auto", "Interchange" or "FBX" for debug.

@@ -73,13 +73,13 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
     # Set playback range
     seq.set_playback_end_seconds((sequencer_frame_end-secure_crop)/float(sequencer_frame_rate_numerator))
     seq.set_playback_start_seconds(sequencer_frame_start/float(sequencer_frame_rate_numerator))  # set_playback_end_seconds
-    if import_module_unreal_utils.is_unreal_version_greater_or_equal(5,2):
+    if import_module_unreal_utils.get_unreal_version() > (5,2,0):
         camera_cut_track = seq.add_track(unreal.MovieSceneCameraCutTrack)
     else:
         camera_cut_track = seq.add_master_track(unreal.MovieSceneCameraCutTrack)
 
     camera_cut_track.set_editor_property('display_name', 'Imported Camera Cuts')
-    if import_module_unreal_utils.is_unreal_version_greater_or_equal(4,26):
+    if import_module_unreal_utils.get_unreal_version() >= (4,26,0):
         camera_cut_track.set_color_tint(unreal.Color(b=200, g=0, r=0, a=0))
     else:
         pass
@@ -113,11 +113,11 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
             for camera in ImportedCamera:
                 if camera[0] == section["camera_name"]:
                     camera_binding_id = unreal.MovieSceneObjectBindingID()
-                    if import_module_unreal_utils.is_unreal_version_greater_or_equal(5,3):
+                    if import_module_unreal_utils.get_unreal_version() >= (5,3,0):
                         camera_binding_id = seq.get_binding_id(camera[1])
-                    elif import_module_unreal_utils.is_unreal_version_greater_or_equal(4,27):
+                    elif import_module_unreal_utils.get_unreal_version() >= (4,27,0):
                         camera_binding_id = seq.get_portable_binding_id(seq, camera[1])
-                    elif import_module_unreal_utils.is_unreal_version_greater_or_equal(4,26):
+                    elif import_module_unreal_utils.get_unreal_version() >= (4,26,0):
                         camera_binding_id = seq.make_binding_id(camera[1], unreal.MovieSceneObjectBindingSpace.LOCAL)
                     else:
                         camera_binding_id = seq.make_binding_id(camera[1])
@@ -135,10 +135,10 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
         bpl.advprint.print_separator()
 
     # Select and open seq in content browser
-    if import_module_unreal_utils.is_unreal_version_greater_or_equal(5,0):
+    if import_module_unreal_utils.get_unreal_version() >= (5,0,0):
         pass #TO DO make crate the engine
         #unreal.AssetEditorSubsystem.open_editor_for_assets(unreal.AssetEditorSubsystem(), [unreal.load_asset(seq.get_path_name())])
-    elif import_module_unreal_utils.is_unreal_version_greater_or_equal(4,26):
+    elif import_module_unreal_utils.get_unreal_version() >= (4,26,0):
         unreal.AssetEditorSubsystem.open_editor_for_assets(unreal.AssetEditorSubsystem(), [unreal.load_asset(seq.get_path_name())])
     else:
         unreal.AssetToolsHelpers.get_asset_tools().open_editor_for_assets([unreal.load_asset(seq.get_path_name())])

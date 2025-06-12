@@ -82,7 +82,7 @@ def set_skeletal_mesh_lods(asset: unreal.SkeletalMesh, asset_options, asset_addi
     import_skeletal_lod(asset, asset_options, asset_additional_data, "lod_4", 4)
     import_skeletal_lod(asset, asset_options, asset_additional_data, "lod_5", 5)
 
-def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
+def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
     """Applies lods and lod group import settings to StaticMesh and SkeletalMesh assets."""
     import_module_utils.print_debug_step("Set Lods import settings.")
     
@@ -104,7 +104,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_dat
             else:
                 itask.get_static_mesh_import_data().set_editor_property('static_mesh_lod_group', desired_lod_group)
 
-def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
+def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_additional_data: dict) -> None:
     """Applies lods and lod group import settings to StaticMesh and SkeletalMesh assets."""
     import_module_utils.print_debug_step("Set Lods import settings.")
     static_mesh = itask.get_imported_static_mesh()

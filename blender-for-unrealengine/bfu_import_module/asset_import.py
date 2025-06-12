@@ -115,7 +115,7 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
                 message += f" -{skeletal_mesh_search_str}" + "\n"
                 import_module_unreal_utils.show_warning_message("Skeleton not found.", message)
 
-    itask = import_module_tasks_class.ImportTaks()
+    itask = import_module_tasks_class.ImportTask()
 
     def get_file_from_types(file_types: List[str]) -> Optional[str]:
         for file in asset_data["files"]:

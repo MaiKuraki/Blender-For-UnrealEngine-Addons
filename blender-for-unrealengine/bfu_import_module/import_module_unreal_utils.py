@@ -17,9 +17,10 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import string
-from typing import List, Tuple
-from . import import_module_unreal_utils
+from typing import List, Tuple, Union
 from . import config
+from . import constrcut_config
+
 
 try:
     import unreal
@@ -49,7 +50,7 @@ def get_package_path_from_any_string(asset_string: str) -> str:
     return asset_path
 
 
-def load_asset(name):
+def load_asset(name: str):
     # Convert ObjectPath to PackageName
     package_name = get_package_path_from_any_string(name)
     asset_exist = unreal.EditorAssetLibrary.does_asset_exist(package_name)
@@ -71,19 +72,9 @@ def get_unreal_version() -> Tuple[int, int, int]:
     """Returns the Unreal Engine version as a tuple of (major, minor, patch)."""
     version_info = unreal.SystemLibrary.get_engine_version().split('-')[0]
     major, minor, patch = map(int, version_info.split('.'))
-    return major, minor, patch
+    return (major, minor, patch)
 
-def is_unreal_version_greater_or_equal(target_major: int, target_minor: int = 0, target_patch: int = 0) -> bool:
-    """Checks if the Unreal Engine version is greater than or equal to the target version."""
-    major, minor, patch = get_unreal_version()
-    return (
-        major > target_major or 
-        (major == target_major and minor > target_minor) or 
-        (major == target_major and minor == target_minor and patch >= target_patch)
-    )
-
-
-def clean_filename_for_unreal(filename):
+def clean_filename_for_unreal(filename: str) -> str:
     """
     Returns a valid Unreal asset name by replacing invalid characters.
     Normalizes string, removes non-alpha characters
@@ -113,23 +104,8 @@ def show_warning_message(title: str, message: str) -> unreal.AppReturnType:
         print('--------------------------------------------------')
         print(message)
 
-def get_should_use_interchange() -> bool:
-    # Interchange import is avaliable since 5.1,
-
-    # If True: Set values inside unreal.InterchangeGenericAssetsPipeline (unreal.InterchangeGenericCommonMeshesProperties or ...)
-    # If False: Set values inside unreal.FbxStaticMeshImportData or ...
-
-    if config.force_use_interchange == "Interchange":
-        return True
-
-    elif config.force_use_interchange == "FBX":
-        return False
-
-    else:
-        return import_module_unreal_utils.is_unreal_version_greater_or_equal(5, 0)
-
 def editor_scripting_utilities_active() -> bool:
-    if is_unreal_version_greater_or_equal(4,20):
+    if get_unreal_version() >= (4,20, 0):
         if hasattr(unreal, 'EditorAssetLibrary'):
             return True
     return False

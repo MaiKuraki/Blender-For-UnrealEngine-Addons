@@ -27,14 +27,14 @@ except ImportError:
 
 
 
-def apply_post_import_assets_changes(itask: import_module_tasks_class.ImportTaks, asset_data):
+def apply_post_import_assets_changes(itask: import_module_tasks_class.ImportTask, asset_data):
     """Applies post-import changes based on whether Interchange or FBX is used."""
     if itask.use_interchange:
         apply_interchange_post_import(itask, asset_data)
     else:
         apply_fbxui_post_import(itask, asset_data)
 
-def apply_interchange_post_import(itask: import_module_tasks_class.ImportTaks, asset_data):
+def apply_interchange_post_import(itask: import_module_tasks_class.ImportTask, asset_data):
 
 
     # When Import FBX animation using the Interchange it create Anim_0_Root and Root_MorphAnim_0. 
@@ -66,7 +66,7 @@ def apply_interchange_post_import(itask: import_module_tasks_class.ImportTaks, a
         fail_reason = f"animAsset {asset_data['asset_name']} not found after import: {main_anim_path}"
         return fail_reason, None
 
-def apply_fbxui_post_import(itask: import_module_tasks_class.ImportTaks, asset_data):
+def apply_fbxui_post_import(itask: import_module_tasks_class.ImportTask, asset_data):
     """Applies post-import changes for FBX pipeline."""
     # When Import FBX animation using FbxImportUI it create a skeletal mesh and the animation at this side. 
     # I'm not sure if that a bug too... So remove the extra mesh

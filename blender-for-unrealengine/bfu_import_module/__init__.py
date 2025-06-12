@@ -19,6 +19,14 @@
 import importlib
 import traceback
 
+# constrcut_config needs to be imported and reloaded first because it used to construct functions.
+from . import constrcut_config
+from . import constrcut_utils
+if "constrcut_config" in locals():
+    importlib.reload(constrcut_config)
+if "constrcut_utils" in locals():
+    importlib.reload(constrcut_utils)
+
 from . import bpl
 from . import config
 from . import asset_types

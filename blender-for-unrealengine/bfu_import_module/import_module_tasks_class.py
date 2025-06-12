@@ -17,19 +17,18 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import os
-from typing import List, Optional
+from typing import List
 from . import import_module_unreal_utils
-from .import import_module_utils
-from . import config
+from . import constrcut_utils
 
 try:
     import unreal
 except ImportError:
     import unreal_engine as unreal
 
-should_use_interchange = import_module_unreal_utils.get_should_use_interchange()
+should_use_interchange = constrcut_utils.include_interchange_functions()
 
-class ImportTaks():
+class ImportTask():
 
     def __init__(self) -> None:
         self.task = unreal.AssetImportTask() 
