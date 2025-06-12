@@ -18,13 +18,10 @@
 
 import os
 from typing import List
+import unreal
 from . import import_module_unreal_utils
 from . import constrcut_utils
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
 should_use_interchange = constrcut_utils.include_interchange_functions()
 

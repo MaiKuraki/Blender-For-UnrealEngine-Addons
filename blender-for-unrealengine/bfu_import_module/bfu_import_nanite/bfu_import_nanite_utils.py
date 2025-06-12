@@ -16,20 +16,14 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-from typing import Optional
-from .. import import_module_unreal_utils
+import unreal
 from .. import import_module_tasks_class
 from .. import import_module_utils
 from .. import constrcut_utils
 from ..asset_types import ExportAssetType
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
 support_interchange = constrcut_utils.include_interchange_functions()
-
 
 def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
     import_module_utils.print_debug_step("Set Nanite import settings.")

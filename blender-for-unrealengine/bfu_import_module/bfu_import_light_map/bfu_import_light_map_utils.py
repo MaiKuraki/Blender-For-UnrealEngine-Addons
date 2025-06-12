@@ -16,16 +16,12 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+import unreal
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 from .. import import_module_utils
 from .. import constrcut_utils
 from ..asset_types import ExportAssetType
-
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
 support_interchange = constrcut_utils.include_interchange_functions()
 

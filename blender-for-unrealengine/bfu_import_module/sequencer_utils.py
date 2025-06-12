@@ -17,13 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 from typing import TYPE_CHECKING, Dict, Any
-
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
-
-from . import import_module_utils
+import unreal
 from . import import_module_unreal_utils
 
 # Since 5.1 MovieSceneBindingProxy replace SequencerBindingProxy.

@@ -18,14 +18,11 @@
 
 
 from typing import Union
+import unreal
 from . import import_module_unreal_utils
 from . import constrcut_utils
 from .asset_types import ExportAssetType 
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
 support_interchange: bool = constrcut_utils.include_interchange_functions()
 

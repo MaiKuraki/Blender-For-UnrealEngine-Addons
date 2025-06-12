@@ -17,18 +17,12 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import string
+import re
 from typing import List, Tuple, Union
+import unreal
 from . import config
 from . import constrcut_config
 
-
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
-
-import unreal
-import re
 
 def get_package_path_from_any_string(asset_string: str) -> str:
     """

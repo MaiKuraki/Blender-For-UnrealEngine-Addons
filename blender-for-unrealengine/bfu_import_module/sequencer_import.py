@@ -16,13 +16,8 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os.path
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
-
+import unreal
 from . import bpl
 from . import import_module_utils
 from . import import_module_unreal_utils

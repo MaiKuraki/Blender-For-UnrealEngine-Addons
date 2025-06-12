@@ -16,15 +16,11 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-from .. import import_module_unreal_utils
+import unreal
 from .. import import_module_tasks_class
 from .. import import_module_utils
 from ..asset_types import ExportAssetType 
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
 def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
     """Applies material and texture import settings to StaticMesh and SkeletalMesh assets."""

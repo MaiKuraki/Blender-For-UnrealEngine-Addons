@@ -16,15 +16,9 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-from typing import List
+import unreal
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
-
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
-
 
 
 def apply_post_import_assets_changes(itask: import_module_tasks_class.ImportTask, asset_data):

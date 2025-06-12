@@ -19,6 +19,7 @@
 
 import os.path
 from typing import List, Dict, Any, Optional
+import unreal
 from . import bpl
 from . import import_module_utils
 from . import import_module_unreal_utils
@@ -34,10 +35,6 @@ from . import bfu_import_nanite
 from . import config
 from .asset_types import ExportAssetType
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
 
 

@@ -16,16 +16,12 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os
+import unreal
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
 from .. import import_module_utils
 from ..asset_types import ExportAssetType
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
 def import_static_lod(asset: unreal.StaticMesh, asset_options, asset_additional_data, lod_name, lod_number):
 

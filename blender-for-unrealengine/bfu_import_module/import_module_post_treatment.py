@@ -16,14 +16,7 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os
-from . import import_module_unreal_utils
-from . import import_module_utils
-
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
+import unreal
 
 
 def set_sequence_preview_skeletal_mesh(asset: unreal.AnimSequence, origin_skeletal_mesh):
