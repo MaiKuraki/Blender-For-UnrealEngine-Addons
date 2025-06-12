@@ -28,7 +28,7 @@ should_use_interchange = constrcut_utils.include_interchange_functions()
 class ImportTask():
 
     def __init__(self) -> None:
-        self.task = unreal.AssetImportTask() 
+        self.task: unreal.AssetImportTask = unreal.AssetImportTask() 
         self.task_option: Optional[Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]] = None  # Type hint for task_option, can be FbxImportUI or InterchangeGenericAssetsPipeline
 
         # @TODO @DEPRECATED: Use isinstance(use.task_option, unreal.InterchangeGenericAssetsPipeline) instead
@@ -95,24 +95,24 @@ class ImportTask():
         def get_igap_animation(self) -> unreal.InterchangeGenericAnimationPipeline:
             # unreal.InterchangeGenericAnimationPipeline
             return self.task_option.get_editor_property('animation_pipeline')
-    
+
     def get_imported_assets(self) -> List[unreal.Object]:
-        assets = []
+        assets: List[unreal.Object] = []
         for path in self.task.imported_object_paths:
             search_asset = import_module_unreal_utils.load_asset(path)
             if search_asset:
                 assets.append(search_asset)
         return assets
-    
+
     def get_imported_assets_of_class(self, search_class) -> List[unreal.Object]:
-        assets = []
+        assets: List[unreal.Object] = []
         for path in self.task.imported_object_paths:
             search_asset = import_module_unreal_utils.load_asset(path)
             if search_asset:
                 if isinstance(search_asset, search_class):
                     assets.append(search_asset)
         return assets
-    
+
     def get_imported_asset_of_class(self, search_class) -> unreal.Object:
         for path in self.task.imported_object_paths:
             search_asset = import_module_unreal_utils.load_asset(path)

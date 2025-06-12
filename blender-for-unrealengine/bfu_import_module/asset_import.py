@@ -360,13 +360,27 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
     if asset_type == ExportAssetType.SKELETAL_MESH:
         if origin_skeleton is None:
             # Unreal create a new skeleton when no skeleton was selected, so addon rename it.
-            skeleton = itask.get_imported_skeleton()
+            if import_module_unreal_utils.get_unreal_version() >= (5, 5, 0):
+                skeleton = itask.get_imported_skeleton()
+            else:
+                # Before Unreal Engine 5.5, the skeleton is not included in the imported assets but still created.
+                # So try to find using skeletal mesh name.
+                skeletal_mesh = itask.get_imported_skeletal_mesh()
+                if skeletal_mesh:
+                    skeletal_mesh_name = skeletal_mesh.get_name()
+                    skeletal_mesh_path = skeletal_mesh.get_path_name()
+                    skeleton_path = skeletal_mesh_path.replace(skeletal_mesh_name, skeletal_mesh_name + "_Skeleton")
+                    skeleton = unreal.EditorAssetLibrary.find_asset_data(skeleton_path).get_asset()
+
             if skeleton:
                 if "target_skeleton_import_ref" in asset_data:
                     print("Start rename skeleton...")
                     unreal.EditorAssetLibrary.rename_asset(skeleton.get_path_name(), asset_data["target_skeleton_import_ref"])
             else:
                 print("Error: export skeleton not found after import!")
+                print("Imported object paths:")
+                for path in itask.task.imported_object_paths:
+                    print(" -", path)
                 
     if itask.use_interchange:
         if asset_type == ExportAssetType.STATIC_MESH:

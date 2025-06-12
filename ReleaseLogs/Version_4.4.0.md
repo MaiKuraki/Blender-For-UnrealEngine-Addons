@@ -26,3 +26,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: Animation export may stay idle (NLA export fail, fixed with BBPL update)
 - Fixed: Modifiers distances not updated wihe the rescale when the Unit Scale is not set to 0.01.
 - Fixed: bfu_do_not_import_curve_with_zero not updated with presets
+- Fixed: Skeleton is not renamed when import a new skeletal mesh.
