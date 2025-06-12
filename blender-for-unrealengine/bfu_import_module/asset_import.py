@@ -64,11 +64,6 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
             if asset_data["import_as_lod_mesh"] == True:  # Lod should not be imported here so return if lod is not 0.
                 return "FAIL", None
 
-    if asset_type == ExportAssetType.ANIM_ALEMBIC:
-        FileType = "ABC"
-    else:
-        FileType = "FBX"
-
     def found_additional_data():
         files: List[Dict[str, Any]] = asset_data["files"]
         for file in files:
@@ -189,15 +184,24 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
                     itask.get_fbx_import_ui().set_editor_property('Skeleton', origin_skeleton)
 
         if asset_type == ExportAssetType.SKELETAL_MESH:
-            if itask.use_interchange:
+            if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
                 if origin_skeleton:
                     itask.get_igap_skeletal_mesh().set_editor_property('Skeleton', origin_skeleton)
+                    
+                    # From Unreal Engine 5.1 to 5.4, the interchange pipeline still creates a new skeleton asset. #Look like a bug.
+                    # May do a replace reference after import?
+                    print("Skeleton set, ", origin_skeleton.get_path_name())
+                    unreal_version = import_module_unreal_utils.get_unreal_version()
+                    if unreal_version >= (5, 1, 0) and unreal_version <= (5, 4, 0):
+                        print("Skeleton is set, but a new skeleton asset will be created. This is a bug with the Interchange Generic Assets Pipeline in Unreal Engine 5.1 to 5.4.")
+                        
                 else:
                     print("Skeleton is not set, a new skeleton asset will be created...")
                     
-            else:
+            elif isinstance(itask.task_option, unreal.FbxImportUI):
                 if origin_skeleton:
                     itask.get_fbx_import_ui().set_editor_property('Skeleton', origin_skeleton)
+                    print("Skeleton set, ", origin_skeleton.get_path_name())
                 else:
                     print("Skeleton is not set, a new skeleton asset will be created...")                  
    
