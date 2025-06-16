@@ -66,7 +66,6 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
                 spline_ui_pop = spline_ui.column()
                 spline_ui_as_static_mesh = spline_ui_pop.column()
                 spline_ui_as_static_mesh.prop(obj, 'bfu_export_spline_as_static_mesh')
-                spline_ui_as_static_mesh.prop(obj, 'bfu_export_fbx_spline')
                 spline_ui_as_static_mesh.enabled = bfu_export_control.bfu_export_control_utils.is_export_recursive(obj)
                 
                 spline_ui_spline_type = spline_ui_pop.column()

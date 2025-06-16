@@ -22,19 +22,28 @@ from typing import List, Tuple, Dict
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_SplineExportProcedure(str, Enum):
-    STANDARD = "standard"
+    STANDARD_FBX = "standard_fbx"
+    STANDARD_GLTF = "standard_gltf"
 
     @staticmethod
     def default() -> "BFU_SplineExportProcedure":
-        return BFU_SplineExportProcedure.STANDARD
+        # For the momment FBX is the default export procedure.
+        # But in the future I will change on glTF when fully stable and supported by Unreal Engine.
+        # glTF is more modern and open than FBX.
+        return BFU_SplineExportProcedure.STANDARD_FBX
 
 def get_spline_export_procedure_enum_property_list() -> List[Tuple[str, str, str, str, int]]:
     return [
-        (BFU_SplineExportProcedure.STANDARD.value,
-            "Blender Standard",
-            "Standard ALEMBIC.",
-            "OUTLINER_OB_FONT",
+        (BFU_SplineExportProcedure.STANDARD_FBX.value,
+            "Blender Standard (FBX)",
+            "Standard fbx I/O.",
+            "OUTLINER_OB_GROUP_INSTANCE",
             1),
+        (BFU_SplineExportProcedure.STANDARD_GLTF.value,
+            "Blender Standard (glTF 2.0)",
+            "Standard glTF 2.0.",
+            "OUTLINER_OB_GROUP_INSTANCE",
+            2),
         ]
 
 def get_default_spline_export_procedure() -> str:
@@ -44,7 +53,10 @@ def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:
     return get_export_file_type(get_object_export_procedure(obj))
 
 def get_export_file_type(procedure: BFU_SplineExportProcedure) -> BFU_FileTypeEnum:
-    return BFU_FileTypeEnum.UNKNOWN #@TODO: for the momment is support only copy/paste actions.
+    if procedure == BFU_SplineExportProcedure.STANDARD_FBX:
+        return BFU_FileTypeEnum.FBX
+    elif procedure == BFU_SplineExportProcedure.STANDARD_GLTF:
+        return BFU_FileTypeEnum.GLTF
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_SplineExportProcedure:
     for procedure in BFU_SplineExportProcedure:

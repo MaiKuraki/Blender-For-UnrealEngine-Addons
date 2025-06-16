@@ -27,7 +27,6 @@ from . import bfu_spline_write_paste_commands
 
 def get_preset_values():
     preset_values = [
-        'obj.bfu_export_fbx_spline',
         'obj.bfu_desired_spline_type',
         'obj.bfu_custom_spline_component',
         'obj.bfu_export_spline_as_static_mesh'
@@ -113,13 +112,6 @@ def register():
     bpy.types.Scene.bfu_spline_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Spline Properties")
     bpy.types.Scene.bfu_spline_tools_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Spline")
 
-    bpy.types.Object.bfu_export_fbx_spline = bpy.props.BoolProperty(
-        name=(languages.ti('export_spline_as_fbx_name')),
-        description=(languages.tt('export_spline_as_fbx_desc')),
-        override={'LIBRARY_OVERRIDABLE'},
-        default=False,
-        )
-
     bpy.types.Object.bfu_desired_spline_type = bpy.props.EnumProperty(
         name="Spline Type",
         description="Choose the type of spline",
@@ -157,7 +149,6 @@ def unregister():
     del bpy.types.Object.bfu_custom_spline_component
     del bpy.types.Object.bfu_spline_resample_resolution
     del bpy.types.Object.bfu_desired_spline_type
-    del bpy.types.Object.bfu_export_fbx_spline
     del bpy.types.Scene.bfu_spline_tools_expanded
     del bpy.types.Scene.bfu_spline_properties_expanded
 
