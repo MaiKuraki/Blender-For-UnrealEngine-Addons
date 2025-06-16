@@ -17,15 +17,12 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from . import bfu_nanite_utils
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 
 
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
             'obj.bfu_build_nanite_mode'
         ]

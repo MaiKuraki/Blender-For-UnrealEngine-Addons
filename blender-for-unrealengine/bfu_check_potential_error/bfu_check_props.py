@@ -17,11 +17,11 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import TYPE_CHECKING, List
 import bpy
-from typing import TYPE_CHECKING
 
 
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         ]
     return preset_values

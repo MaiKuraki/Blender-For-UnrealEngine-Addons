@@ -16,6 +16,7 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+from typing import List
 import bpy
 from .. import bbpl
 from .. import languages
@@ -43,7 +44,6 @@ from .. import bfu_light_map
 from .. import bfu_nanite
 from .. import bfu_assets_references
 from .. import bfu_collision
-from .. import bfu_addon_prefs
 
 
 class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
@@ -70,8 +70,9 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         bl_description = 'Add or remove a preset for Global properties'
         preset_menu = 'BFU_MT_ObjectGlobalPropertiesPresets'
 
-        def get_object_global_preset_propertys():
-            preset_values = []
+        @staticmethod
+        def get_object_global_preset_propertys() -> List[str]:
+            preset_values: List[str] = []
             preset_values += bfu_base_object.bfu_base_obj_props.get_preset_values()
             preset_values += bfu_adv_object.bfu_adv_obj_props.get_preset_values()
             preset_values += bfu_base_collection.bfu_base_col_props.get_preset_values()
@@ -151,42 +152,42 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         if scene.bfu_active_tab == "OBJECT":
             layout.row().prop(scene, "bfu_active_object_tab", expand=True)
 
-        
-        if context.object is None:
-            layout.row().label(text='No active object.')
-            return
-        else:
-            obj: bpy.types.Object = context.object
+        if layout:
+            if context.object is None:
+                layout.row().label(text='No active object.')
+                return
+            else:
+                obj: bpy.types.Object = context.object
+            
+                # Object
+                bfu_base_object.bfu_base_obj_ui.draw_ui(layout, context, obj)
+                bfu_adv_object.bfu_adv_obj_ui.draw_ui(layout, context, obj)
+                bfu_static_mesh.bfu_static_mesh_ui.draw_ui_object(layout, context, obj)
+                bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
+                bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
+                bfu_alembic_animation.bfu_alembic_animation_ui.draw_ui_object(layout, context, obj)
+                bfu_groom.bfu_groom_ui.draw_ui_object(layout, context, obj)
+                bfu_camera.bfu_camera_ui.draw_ui_object_camera(layout, context, obj)
+                bfu_spline.bfu_spline_ui.draw_ui_object_spline(layout, context, obj)
+                bfu_lod.bfu_lod_ui.draw_ui(layout, context, obj)
+                bfu_collision.bfu_collision_ui.draw_ui_object(layout, context, obj)
+                bfu_uv_map.bfu_uv_map_ui.draw_obj_ui(layout, context, obj)
+                bfu_light_map.bfu_light_map_ui.draw_obj_ui(layout, context, obj)
+                bfu_nanite.bfu_nanite_ui.draw_obj_ui(layout, context, obj)
+                bfu_material.bfu_material_ui.draw_ui_object(layout, context, obj)
+                bfu_vertex_color.bfu_vertex_color_ui.draw_ui_object(layout, context, obj)
+                bfu_assets_references.bfu_asset_ref_ui.draw_ui(layout, context, obj)
 
-            # Object
-            bfu_base_object.bfu_base_obj_ui.draw_ui(layout, context, obj)
-            bfu_adv_object.bfu_adv_obj_ui.draw_ui(layout, context, obj)
-            bfu_static_mesh.bfu_static_mesh_ui.draw_ui_object(layout, context, obj)
-            bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
-            bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
-            bfu_alembic_animation.bfu_alembic_animation_ui.draw_ui_object(layout, context, obj)
-            bfu_groom.bfu_groom_ui.draw_ui_object(layout, context, obj)
-            bfu_camera.bfu_camera_ui.draw_ui_object_camera(layout, context, obj)
-            bfu_spline.bfu_spline_ui.draw_ui_object_spline(layout, context, obj)
-            bfu_lod.bfu_lod_ui.draw_ui(layout, context, obj)
-            bfu_collision.bfu_collision_ui.draw_ui_object(layout, context, obj)
-            bfu_uv_map.bfu_uv_map_ui.draw_obj_ui(layout, context, obj)
-            bfu_light_map.bfu_light_map_ui.draw_obj_ui(layout, context, obj)
-            bfu_nanite.bfu_nanite_ui.draw_obj_ui(layout, context, obj)
-            bfu_material.bfu_material_ui.draw_ui_object(layout, context, obj)
-            bfu_vertex_color.bfu_vertex_color_ui.draw_ui_object(layout, context, obj)
-            bfu_assets_references.bfu_asset_ref_ui.draw_ui(layout, context, obj)
+                # Animations
+                bfu_anim_action.bfu_anim_action_ui.draw_ui(layout, context, obj)
+                bfu_anim_action_adv.bfu_anim_action_adv_ui.draw_ui(layout, context, obj)
+                bfu_anim_nla.bfu_anim_nla_ui.draw_ui(layout, context, obj)
+                bfu_anim_nla_adv.bfu_anim_nla_adv_ui.draw_ui(layout, context, obj)
+                bfu_anim_base.bfu_anim_base_ui.draw_ui(layout, context, obj)
+                bfu_anim_base.bfu_anim_base_ui.draw_animation_tab_footer_ui(layout, context, obj)
 
-            # Animations
-            bfu_anim_action.bfu_anim_action_ui.draw_ui(layout, context, obj)
-            bfu_anim_action_adv.bfu_anim_action_adv_ui.draw_ui(layout, context, obj)
-            bfu_anim_nla.bfu_anim_nla_ui.draw_ui(layout, context, obj)
-            bfu_anim_nla_adv.bfu_anim_nla_adv_ui.draw_ui(layout, context, obj)
-            bfu_anim_base.bfu_anim_base_ui.draw_ui(layout, context, obj)
-            bfu_anim_base.bfu_anim_base_ui.draw_animation_tab_footer_ui(layout, context, obj)
-
-        # Scene
-        bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
+            # Scene
+            bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
 
 
 # -------------------------------------------------------------------

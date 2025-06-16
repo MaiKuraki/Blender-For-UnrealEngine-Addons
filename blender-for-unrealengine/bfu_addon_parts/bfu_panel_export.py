@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-import os
+from typing import List
 import bpy
 from .. import bfu_export_nomenclature
 from .. import bfu_export_filter
@@ -47,8 +47,9 @@ class BFU_PT_Export(bpy.types.Panel):
         bl_description = 'Add or remove a preset for Nomenclature'
         preset_menu = 'BFU_MT_NomenclaturePresets'
 
-        def get_export_global_preset_propertys():
-            preset_values = []
+        @staticmethod
+        def get_export_global_preset_propertys() -> List[str]:
+            preset_values: List[str] = []
             preset_values += bfu_export_nomenclature.bfu_export_nomenclature_props.get_preset_values()
             preset_values += bfu_export_filter.bfu_export_filter_props.get_preset_values()
             preset_values += bfu_export_process.bfu_export_process_props.get_preset_values()
@@ -78,9 +79,10 @@ class BFU_PT_Export(bpy.types.Panel):
         row.operator('object.add_nomenclature_preset', text='', icon='REMOVE').remove_active = True
 
         # Export sections
-        bfu_export_nomenclature.bfu_export_nomenclature_ui.draw_ui(layout, context)
-        bfu_export_filter.bfu_export_filter_ui.draw_ui(layout, context)
-        bfu_export_process.bfu_export_process_ui.draw_ui(layout, context)
+        if layout:
+            bfu_export_nomenclature.bfu_export_nomenclature_ui.draw_ui(layout, context)
+            bfu_export_filter.bfu_export_filter_ui.draw_ui(layout, context)
+            bfu_export_process.bfu_export_process_ui.draw_ui(layout, context)
 
 # -------------------------------------------------------------------
 #   Register & Unregister

@@ -17,15 +17,14 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from . import bfu_light_map_utils
-from .. import bfu_basics
 from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
+from . import bfu_light_map_utils
 
 
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
             'obj.bfu_static_mesh_light_map_mode',
             'obj.bfu_static_mesh_custom_light_map_res',

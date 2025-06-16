@@ -17,15 +17,15 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-
+from typing import List
 import bpy
 from .. import bfu_basics
 from .. import bbpl
-from .. import languages
 from . import bfu_spline_utils
 from . import bfu_spline_write_paste_commands
 
-def get_preset_values():
+
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_desired_spline_type',
         'obj.bfu_custom_spline_component',

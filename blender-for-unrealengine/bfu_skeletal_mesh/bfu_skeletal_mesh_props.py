@@ -17,11 +17,12 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
 from .. import bbpl
 
 
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_export_deform_only',
         'obj.bfu_export_skeletal_mesh_as_static_mesh',

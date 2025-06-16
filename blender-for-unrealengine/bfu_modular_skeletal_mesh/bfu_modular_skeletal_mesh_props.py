@@ -17,10 +17,12 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
 from .. import bbpl
 
-def get_preset_values():
+
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_modular_skeletal_mesh_mode',
         'obj.bfu_modular_skeletal_mesh_every_meshs_separate',

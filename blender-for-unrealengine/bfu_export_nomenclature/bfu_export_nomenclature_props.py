@@ -17,14 +17,13 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import os
 import bpy
 from .. import bbpl
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         # Prefix
         'scene.bfu_static_mesh_prefix_export_name',

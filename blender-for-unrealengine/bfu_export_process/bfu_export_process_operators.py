@@ -19,12 +19,10 @@
 
 import bpy
 from typing import List
-from . import bfu_export_process_utils
 from .. import bpl
 from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_utils
-from .. import bfu_ui
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode
 from .. import bfu_cached_assets
@@ -32,7 +30,7 @@ from .. import bfu_check_potential_error
 from .. import bfu_export
 from .. import bfu_export_text_files
 from .. import bfu_export_logs
-
+from . import bfu_export_process_utils
 
 
 class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
@@ -153,7 +151,7 @@ class BFU_OT_CopyImportSequencerScriptCommand(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         ]
     return preset_values

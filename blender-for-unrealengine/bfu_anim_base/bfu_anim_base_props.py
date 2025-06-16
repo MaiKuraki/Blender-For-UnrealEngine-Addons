@@ -17,17 +17,14 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from .. import bfu_basics
 from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_cached_assets
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_disable_free_scale_animation',
         'obj.bfu_export_animation_without_mesh',

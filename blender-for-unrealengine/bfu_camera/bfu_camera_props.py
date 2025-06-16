@@ -17,19 +17,17 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-
+from typing import List
 import bpy
 import math
 from .. import bfu_basics
-from .. import bfu_ui
 from .. import bbpl
 from .. import languages
-from .. import bfu_export_control
 from . import bfu_camera_utils
 from . import bfu_camera_write_paste_commands
 
 
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_export_fbx_camera',
         'obj.bfu_fix_axis_flippings',
