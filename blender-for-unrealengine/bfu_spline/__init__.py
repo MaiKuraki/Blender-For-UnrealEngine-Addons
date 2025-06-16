@@ -29,7 +29,6 @@ from . import bfu_spline_export_utils
 from . import bfu_spline_write_text
 from . import bfu_spline_write_paste_commands
 from . import bfu_spline_type
-from . import bfu_spline_config
 from . import bfu_export_spline_package
 
 if "bfu_export_procedure" in locals():
@@ -52,8 +51,6 @@ if "bfu_spline_write_paste_commands" in locals():
     importlib.reload(bfu_spline_write_paste_commands)
 if "bfu_spline_type" in locals():
     importlib.reload(bfu_spline_type)
-if "bfu_spline_config" in locals():
-    importlib.reload(bfu_spline_config)
 if "bfu_export_spline_package" in locals():
     importlib.reload(bfu_export_spline_package)
 

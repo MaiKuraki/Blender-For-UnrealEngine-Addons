@@ -4,7 +4,7 @@ from . import bfu_spline_data
 from .. import languages
 from .. import bfu_export_text_files
 
-def WriteSplinePointsData(obj: bpy.types.Object, pre_bake_spline: bfu_spline_data.BFU_SplinesList) -> Dict[str, Any]:
+def write_spline_points_data(obj: bpy.types.Object, pre_bake_spline: Optional[bfu_spline_data.BFU_SplinesList] = None) -> Dict[str, Any]:
     # Write as data spline animation tracks
 
 

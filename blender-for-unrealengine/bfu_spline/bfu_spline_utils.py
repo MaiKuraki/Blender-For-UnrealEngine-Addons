@@ -17,8 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-import json
-from . import bfu_spline_config
+from typing import List, Dict, Any
 from .. import bbpl
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
@@ -33,7 +32,7 @@ def get_enum_splines_list():
 def get_enum_splines_default():
     return "SPLINE"
 
-def transform_point_data(points):
+def transform_point_data(points: List[Any]) -> str:
     transformed_points = []
     for point in points:
         point_parts = []
@@ -47,7 +46,7 @@ def transform_point_data(points):
     return f"({','.join(transformed_points)})"
 
 
-def json_to_ue_format(json_data):
+def json_to_ue_format(json_data: Dict[str, Any]) -> str:
     result_parts = []
     for spline, data in json_data.items():  # SplineCurves, ReparamTable, etc.
         if spline == "SplineCurves":

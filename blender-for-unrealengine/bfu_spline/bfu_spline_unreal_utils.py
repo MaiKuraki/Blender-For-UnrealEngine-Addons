@@ -1,6 +1,6 @@
 import bpy
 
-def get_spline_unreal_component(spline: bpy.types.Object):
+def get_spline_unreal_component(spline: bpy.types.Object) -> str:
     # Engin ref:
     spline_type = spline.bfu_desired_spline_type
     if spline_type == "SPLINE":

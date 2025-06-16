@@ -56,7 +56,7 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
         return
 
 
-    scene = bpy.context.scene 
+    scene = context.scene 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_spline_properties_expanded")
         _, panel = accordion.draw(layout)
@@ -68,6 +68,7 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
                 spline_ui_as_static_mesh.prop(obj, 'bfu_export_spline_as_static_mesh')
                 spline_ui_as_static_mesh.enabled = bfu_export_control.bfu_export_control_utils.is_export_recursive(obj)
                 
+                # Show spline type
                 spline_ui_spline_type = spline_ui_pop.column()
                 spline_ui_spline_type.prop(obj, 'bfu_desired_spline_type')
                 if obj.bfu_desired_spline_type == "CUSTOM":
@@ -75,9 +76,25 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
                 if bfu_spline_utils.contain_nurbs_spline(obj):
                     resample_resolution = spline_ui_spline_type.row()
                     resample_resolution.prop(obj, 'bfu_spline_resample_resolution')
-                    layout_doc_button.add_doc_page_operator(resample_resolution, text="", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#notes")
+                    layout_doc_button.add_doc_page_operator(
+                        layout=resample_resolution, 
+                        url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#notes",
+                        text=""
+                    )
                 spline_ui_spline_type.enabled = obj.bfu_export_spline_as_static_mesh is False
-                spline_ui.operator("object.bfu_copy_active_spline_data", icon="COPYDOWN")
+                
+                # Spline scale
+                spline_ui_spline_vector_scale = spline_ui_pop.row()
+                spline_ui_spline_vector_scale.prop(scene, 'bfu_spline_vector_scale', text="Spline Vector Scale")
+
+                # Spline buttons
+                copy_spline_buttons = spline_ui.row(align=True)
+                copy_spline_buttons.operator("object.bfu_copy_active_spline_data", icon="COPYDOWN")
+                bbpl.blender_layout.layout_doc_button.functions.add_doc_page_operator(
+                    layout=copy_spline_buttons,
+                    url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#import-with-copypaste",
+                    text=""
+                )
 
 
 def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):

@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import List
+from typing import List, Set
 import bpy
 from .. import bfu_basics
 from .. import bbpl
@@ -40,9 +40,9 @@ class BFU_OT_CopyActivesplineOperator(bpy.types.Operator):
     bl_idname = "object.bfu_copy_active_spline_data"
     bl_description = "Copy active spline data. (Use CTRL+V in Unreal viewport)"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.object
-        result = bfu_spline_write_paste_commands.GetImportSplineScriptCommand([obj])
+        result = bfu_spline_write_paste_commands.get_spline_unreal_clipboard([obj])
         if result[0]:
             bfu_basics.set_windows_clipboard(result[1])
             self.report({'INFO'}, result[2])
@@ -56,9 +56,9 @@ class BFU_OT_CopySelectedsplinesOperator(bpy.types.Operator):
     bl_idname = "object.copy_selected_splines_data"
     bl_description = "Copy selected spline(s) data. (Use CTRL+V in Unreal viewport)"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         objs = context.selected_objects
-        result = bfu_spline_write_paste_commands.GetImportSplineScriptCommand(objs)
+        result = bfu_spline_write_paste_commands.get_spline_unreal_clipboard(objs)
         if result[0]:
             bfu_basics.set_windows_clipboard(result[1])
             self.report({'INFO'}, result[2])
@@ -140,17 +140,26 @@ def register():
         override={'LIBRARY_OVERRIDABLE'},
         default=False
         )
+    
+    bpy.types.Scene.bfu_spline_vector_scale = bpy.props.FloatVectorProperty(
+        name="Spline Vector Scale (Apply on all splines)",
+        description="Spline export scale for Unreal Engine.\n" \
+         "- If you use glTF with unit scale at 1.0 keep 100.0.\n" \
+         "- If you work with FBX and unit scale 0.01 use 1.0.",
+        size=3,
+        default=(100.0, 100.0, 100.0),
+    )
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
+    del bpy.types.Scene.bfu_spline_vector_scale
     del bpy.types.Object.bfu_export_spline_as_static_mesh
     del bpy.types.Object.bfu_custom_spline_component
     del bpy.types.Object.bfu_spline_resample_resolution
     del bpy.types.Object.bfu_desired_spline_type
     del bpy.types.Scene.bfu_spline_tools_expanded
     del bpy.types.Scene.bfu_spline_properties_expanded
-
 
 
