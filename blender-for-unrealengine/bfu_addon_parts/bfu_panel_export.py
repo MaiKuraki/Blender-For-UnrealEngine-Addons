@@ -71,7 +71,9 @@ class BFU_PT_Export(bpy.types.Panel):
     def draw(self, context: bpy.types.Context):
         
         layout = self.layout
-
+        if layout is None:
+            return
+        
         # Presets
         row = layout.row(align=True)
         row.menu('BFU_MT_NomenclaturePresets', text='Export Presets')
@@ -79,10 +81,9 @@ class BFU_PT_Export(bpy.types.Panel):
         row.operator('object.add_nomenclature_preset', text='', icon='REMOVE').remove_active = True
 
         # Export sections
-        if layout:
-            bfu_export_nomenclature.bfu_export_nomenclature_ui.draw_ui(layout, context)
-            bfu_export_filter.bfu_export_filter_ui.draw_ui(layout, context)
-            bfu_export_process.bfu_export_process_ui.draw_ui(layout, context)
+        bfu_export_nomenclature.bfu_export_nomenclature_ui.draw_ui(layout, context)
+        bfu_export_filter.bfu_export_filter_ui.draw_ui(layout, context)
+        bfu_export_process.bfu_export_process_ui.draw_ui(layout, context)
 
 # -------------------------------------------------------------------
 #   Register & Unregister

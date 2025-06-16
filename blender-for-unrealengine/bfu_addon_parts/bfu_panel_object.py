@@ -73,22 +73,12 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         @staticmethod
         def get_object_global_preset_propertys() -> List[str]:
             preset_values: List[str] = []
+            # Global properties
             preset_values += bfu_base_object.bfu_base_obj_props.get_preset_values()
             preset_values += bfu_adv_object.bfu_adv_obj_props.get_preset_values()
-            preset_values += bfu_base_collection.bfu_base_col_props.get_preset_values()
             preset_values += bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_props.get_preset_values()
             preset_values += bfu_custom_property.bfu_custom_property_props.get_preset_values()
             preset_values += bfu_material.bfu_material_props.get_preset_values()
-            preset_values += bfu_camera.bfu_camera_props.get_preset_values()
-            preset_values += bfu_spline.bfu_spline_props.get_preset_values()
-            preset_values += bfu_static_mesh.bfu_static_mesh_props.get_preset_values()
-            preset_values += bfu_skeletal_mesh.bfu_skeletal_mesh_props.get_preset_values()
-            preset_values += bfu_alembic_animation.bfu_alembic_animation_props.get_preset_values()
-            preset_values += bfu_anim_base.bfu_anim_base_props.get_preset_values()
-            preset_values += bfu_anim_action.bfu_anim_action_props.get_preset_values()
-            preset_values += bfu_anim_action_adv.bfu_anim_action_adv_props.get_preset_values()
-            preset_values += bfu_anim_nla.bfu_anim_nla_props.get_preset_values()
-            preset_values += bfu_anim_nla_adv.bfu_anim_nla_adv_props.get_preset_values()
             preset_values += bfu_vertex_color.bfu_vertex_color_props.get_preset_values()
             preset_values += bfu_lod.bfu_lod_props.get_preset_values()
             preset_values += bfu_uv_map.bfu_uv_map_props.get_preset_values()
@@ -96,6 +86,32 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             preset_values += bfu_light_map.bfu_light_map_props.get_preset_values()
             preset_values += bfu_assets_references.bfu_asset_ref_props.get_preset_values()
             preset_values += bfu_collision.bfu_collision_props.get_preset_values()
+
+            # Scene assets
+            preset_values += bfu_base_collection.bfu_base_col_props.get_preset_values()
+            preset_values += bfu_base_collection.bfu_export_procedure.get_preset_values()
+
+            # Object assets
+            preset_values += bfu_camera.bfu_camera_props.get_preset_values()
+            preset_values += bfu_camera.bfu_export_procedure.get_preset_values()
+            preset_values += bfu_spline.bfu_spline_props.get_preset_values()
+            preset_values += bfu_spline.bfu_export_procedure.get_preset_values()
+            preset_values += bfu_groom.bfu_groom_props.get_preset_values()
+            preset_values += bfu_groom.bfu_export_procedure.get_preset_values()
+            preset_values += bfu_static_mesh.bfu_static_mesh_props.get_preset_values()
+            preset_values += bfu_static_mesh.bfu_export_procedure.get_preset_values()
+            preset_values += bfu_skeletal_mesh.bfu_skeletal_mesh_props.get_preset_values()
+            preset_values += bfu_skeletal_mesh.bfu_export_procedure.get_preset_values()
+            preset_values += bfu_alembic_animation.bfu_alembic_animation_props.get_preset_values()
+            preset_values += bfu_alembic_animation.bfu_export_procedure.get_preset_values()
+
+            # Skeletal sub assets
+            preset_values += bfu_anim_base.bfu_anim_base_props.get_preset_values()
+            preset_values += bfu_anim_action.bfu_anim_action_props.get_preset_values()
+            preset_values += bfu_anim_action_adv.bfu_anim_action_adv_props.get_preset_values()
+            preset_values += bfu_anim_nla.bfu_anim_nla_props.get_preset_values()
+            preset_values += bfu_anim_nla_adv.bfu_anim_nla_adv_props.get_preset_values()
+
             return preset_values
 
         # Common variable used for all preset values
@@ -113,7 +129,10 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
 
 
     def draw(self, context: bpy.types.Context | None):
+        
         layout = self.layout
+        if layout is None:
+            return
         
         # Extension details
         if bpy.app.version >= (4, 2, 0):
@@ -152,42 +171,41 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         if scene.bfu_active_tab == "OBJECT":
             layout.row().prop(scene, "bfu_active_object_tab", expand=True)
 
-        if layout:
-            if context.object is None:
-                layout.row().label(text='No active object.')
-                return
-            else:
-                obj: bpy.types.Object = context.object
-            
-                # Object
-                bfu_base_object.bfu_base_obj_ui.draw_ui(layout, context, obj)
-                bfu_adv_object.bfu_adv_obj_ui.draw_ui(layout, context, obj)
-                bfu_static_mesh.bfu_static_mesh_ui.draw_ui_object(layout, context, obj)
-                bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
-                bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
-                bfu_alembic_animation.bfu_alembic_animation_ui.draw_ui_object(layout, context, obj)
-                bfu_groom.bfu_groom_ui.draw_ui_object(layout, context, obj)
-                bfu_camera.bfu_camera_ui.draw_ui_object_camera(layout, context, obj)
-                bfu_spline.bfu_spline_ui.draw_ui_object_spline(layout, context, obj)
-                bfu_lod.bfu_lod_ui.draw_ui(layout, context, obj)
-                bfu_collision.bfu_collision_ui.draw_ui_object(layout, context, obj)
-                bfu_uv_map.bfu_uv_map_ui.draw_obj_ui(layout, context, obj)
-                bfu_light_map.bfu_light_map_ui.draw_obj_ui(layout, context, obj)
-                bfu_nanite.bfu_nanite_ui.draw_obj_ui(layout, context, obj)
-                bfu_material.bfu_material_ui.draw_ui_object(layout, context, obj)
-                bfu_vertex_color.bfu_vertex_color_ui.draw_ui_object(layout, context, obj)
-                bfu_assets_references.bfu_asset_ref_ui.draw_ui(layout, context, obj)
+        if context.object is None:
+            layout.row().label(text='No active object.')
+            return
+        else:
+            obj: bpy.types.Object = context.object
+        
+            # Object
+            bfu_base_object.bfu_base_obj_ui.draw_ui(layout, context, obj)
+            bfu_adv_object.bfu_adv_obj_ui.draw_ui(layout, context, obj)
+            bfu_static_mesh.bfu_static_mesh_ui.draw_ui_object(layout, context, obj)
+            bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
+            bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
+            bfu_alembic_animation.bfu_alembic_animation_ui.draw_ui_object(layout, context, obj)
+            bfu_groom.bfu_groom_ui.draw_ui_object(layout, context, obj)
+            bfu_camera.bfu_camera_ui.draw_ui_object_camera(layout, context, obj)
+            bfu_spline.bfu_spline_ui.draw_ui_object_spline(layout, context, obj)
+            bfu_lod.bfu_lod_ui.draw_ui(layout, context, obj)
+            bfu_collision.bfu_collision_ui.draw_ui_object(layout, context, obj)
+            bfu_uv_map.bfu_uv_map_ui.draw_obj_ui(layout, context, obj)
+            bfu_light_map.bfu_light_map_ui.draw_obj_ui(layout, context, obj)
+            bfu_nanite.bfu_nanite_ui.draw_obj_ui(layout, context, obj)
+            bfu_material.bfu_material_ui.draw_ui_object(layout, context, obj)
+            bfu_vertex_color.bfu_vertex_color_ui.draw_ui_object(layout, context, obj)
+            bfu_assets_references.bfu_asset_ref_ui.draw_ui(layout, context, obj)
 
-                # Animations
-                bfu_anim_action.bfu_anim_action_ui.draw_ui(layout, context, obj)
-                bfu_anim_action_adv.bfu_anim_action_adv_ui.draw_ui(layout, context, obj)
-                bfu_anim_nla.bfu_anim_nla_ui.draw_ui(layout, context, obj)
-                bfu_anim_nla_adv.bfu_anim_nla_adv_ui.draw_ui(layout, context, obj)
-                bfu_anim_base.bfu_anim_base_ui.draw_ui(layout, context, obj)
-                bfu_anim_base.bfu_anim_base_ui.draw_animation_tab_footer_ui(layout, context, obj)
+            # Animations
+            bfu_anim_action.bfu_anim_action_ui.draw_ui(layout, context, obj)
+            bfu_anim_action_adv.bfu_anim_action_adv_ui.draw_ui(layout, context, obj)
+            bfu_anim_nla.bfu_anim_nla_ui.draw_ui(layout, context, obj)
+            bfu_anim_nla_adv.bfu_anim_nla_adv_ui.draw_ui(layout, context, obj)
+            bfu_anim_base.bfu_anim_base_ui.draw_ui(layout, context, obj)
+            bfu_anim_base.bfu_anim_base_ui.draw_animation_tab_footer_ui(layout, context, obj)
 
-            # Scene
-            bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
+        # Scene
+        bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
 
 
 # -------------------------------------------------------------------

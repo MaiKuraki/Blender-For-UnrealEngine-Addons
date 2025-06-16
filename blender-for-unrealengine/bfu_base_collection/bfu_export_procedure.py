@@ -69,6 +69,12 @@ def draw_col_export_procedure(layout: bpy.types.UILayout, col: bpy.types.Collect
     layout.prop(col, 'bfu_collection_export_procedure')  # type: ignore
     return layout
 
+def get_preset_values() -> List[str]:
+    preset_values = [
+        'obj.bfu_collection_export_procedure',
+        ]
+    return preset_values
+
 classes = (
 )
 

@@ -74,6 +74,12 @@ def draw_object_export_procedure(layout: bpy.types.UILayout, obj: bpy.types.Obje
     layout.prop(obj, 'bfu_spline_export_procedure')  # type: ignore
     return layout
 
+def get_preset_values() -> List[str]:
+    preset_values = [
+        'obj.bfu_spline_export_procedure',
+        ]
+    return preset_values
+
 classes = (
 )
 

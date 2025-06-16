@@ -106,6 +106,12 @@ def draw_object_export_procedure(layout: bpy.types.UILayout, obj: bpy.types.Obje
     layout.prop(obj, 'bfu_static_export_procedure')  # type: ignore
     return layout
 
+def get_preset_values() -> List[str]:
+    preset_values = [
+        'obj.bfu_static_export_procedure',
+        ]
+    return preset_values
+
 classes = (
 )
 
@@ -117,7 +123,7 @@ def register():
     bpy.types.Object.bfu_static_export_procedure = bpy.props.EnumProperty( # type: ignore
         name="Export Procedure",
         description=(
-            "This will define how a skeletal mesh should be exported."
+            "This will define how a static mesh should be exported."
             ),
         override={'LIBRARY_OVERRIDABLE'},
         items=get_blender_enum_property_list(),
