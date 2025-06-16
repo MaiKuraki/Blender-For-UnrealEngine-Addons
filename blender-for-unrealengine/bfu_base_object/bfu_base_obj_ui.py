@@ -26,6 +26,7 @@ from .. import bfu_assets_manager
 from .. import bfu_alembic_animation
 from .. import bfu_groom
 from .. import bfu_skeletal_mesh
+from .. import bfu_spline
 from .. import bfu_export_control
 from .. import bfu_addon_prefs
 
@@ -84,3 +85,4 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                 bfu_alembic_animation.bfu_alembic_animation_ui.draw_general_ui_object(panel, obj)
                 bfu_groom.bfu_groom_ui.draw_general_ui_object(panel, obj)
                 bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_general_ui_object(panel, obj)
+                bfu_spline.bfu_spline_ui.draw_general_ui_object(panel, obj)

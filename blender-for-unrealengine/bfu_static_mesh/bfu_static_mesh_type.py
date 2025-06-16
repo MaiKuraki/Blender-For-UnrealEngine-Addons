@@ -48,13 +48,24 @@ class BFU_StaticMesh(BFU_ObjectAssetClass):
             return False
         if details is not None:
             return False
-        if data.bfu_export_skeletal_mesh_as_static_mesh:  # type: ignore
-            return True
+        
+        if data.type == "ARMATURE":
+            if data.bfu_export_skeletal_mesh_as_static_mesh:  # type: ignore
+                return True
+            return False
+        
+        if data.type == "CURVE":
+            if data.bfu_export_spline_as_static_mesh:  # type: ignore
+                return True
+            return False
+        
+        if data.type == "CAMERA":
+            # Can't export camera as static mesh
+            return False
+
         elif data.bfu_export_as_groom_simulation:  # type: ignore
             return False
         elif data.bfu_export_as_alembic_animation:  # type: ignore
-            return False
-        elif data.type in ["ARMATURE", "CAMERA"]:  # type: ignore
             return False
         return True
 

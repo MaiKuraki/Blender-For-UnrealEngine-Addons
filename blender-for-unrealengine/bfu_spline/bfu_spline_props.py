@@ -20,11 +20,8 @@
 
 import bpy
 from .. import bfu_basics
-from .. import bfu_ui
 from .. import bbpl
 from .. import languages
-from .. import bfu_export_control
-from ..bbpl.blender_layout import layout_doc_button
 from . import bfu_spline_utils
 from . import bfu_spline_write_paste_commands
 
@@ -36,51 +33,7 @@ def get_preset_values():
         'obj.bfu_export_spline_as_static_mesh'
         ]
     return preset_values
-
-def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
-  
-
-    if obj is None:
-        return
-    
-    if obj.type != "CURVE":
-        return
-
-
-    scene = bpy.context.scene 
-    if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
-        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_spline_properties_expanded")
-        header, panel = accordion.draw(layout)
-        if accordion.is_expend():
-            spline_ui = panel.column()
-            if obj.type == "CURVE":
-                spline_ui_pop = spline_ui.column()
-                spline_ui_as_static_mesh = spline_ui_pop.column()
-                spline_ui_as_static_mesh.prop(obj, 'bfu_export_spline_as_static_mesh')
-                spline_ui_as_static_mesh.prop(obj, 'bfu_export_fbx_spline')
-                spline_ui_as_static_mesh.enabled = bfu_export_control.bfu_export_control_utils.is_export_recursive(obj)
-                
-                spline_ui_spline_type = spline_ui_pop.column()
-                spline_ui_spline_type.prop(obj, 'bfu_desired_spline_type')
-                if obj.bfu_desired_spline_type == "CUSTOM":
-                    spline_ui_spline_type.prop(obj, 'bfu_custom_spline_component')
-                if bfu_spline_utils.contain_nurbs_spline(obj):
-                    resample_resolution = spline_ui_spline_type.row()
-                    resample_resolution.prop(obj, 'bfu_spline_resample_resolution')
-                    layout_doc_button.add_doc_page_operator(resample_resolution, text="", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#notes")
-                spline_ui_spline_type.enabled = obj.bfu_export_spline_as_static_mesh is False
-                spline_ui.operator("object.bfu_copy_active_spline_data", icon="COPYDOWN")
-
-
-def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
-    scene = context.scene
-
-    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_spline_tools_expanded")
-    header, panel = accordion.draw(layout)
-    if accordion.is_expend():
-        spline_ui = panel.column()
-        spline_ui.operator("object.copy_selected_splines_data", icon="COPYDOWN")
-    
+   
 
 # Object button
 class BFU_OT_CopyActivesplineOperator(bpy.types.Operator):
@@ -190,8 +143,8 @@ def register():
         )
     
     bpy.types.Object.bfu_export_spline_as_static_mesh = bpy.props.BoolProperty(
-        name="Force staticMesh",
-        description="Force export asset like a StaticMesh if is ARMATURE type",
+        name="Export as Static Mesh",
+        description="If true this mesh will be exported as a Static Mesh",
         override={'LIBRARY_OVERRIDABLE'},
         default=False
         )

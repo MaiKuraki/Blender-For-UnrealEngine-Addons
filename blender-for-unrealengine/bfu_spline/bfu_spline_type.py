@@ -102,7 +102,7 @@ class BFU_Spline(BFU_ObjectAssetClass):
         asset.set_import_dirpath(self.get_asset_import_directory_path(data))
     
         if search_mode.search_packages():
-            pak = asset.add_asset_package(data.name, ["Alembic"])
+            pak = asset.add_asset_package(data.name, ["Spline"])
             self.set_package_file(pak, data, details)
 
             if search_mode.search_package_content():

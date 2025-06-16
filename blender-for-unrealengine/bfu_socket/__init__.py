@@ -19,11 +19,14 @@
 import bpy
 import importlib
 
-from . import bfu_socket_ui_and_props
+from . import bfu_socket_props
+from . import bfu_socket_ui
 from . import bfu_socket_utils
 
-if "bfu_socket_ui_and_props" in locals():
-    importlib.reload(bfu_socket_ui_and_props)
+if "bfu_socket_props" in locals():
+    importlib.reload(bfu_socket_props)
+if "bfu_socket_ui" in locals():
+    importlib.reload(bfu_socket_ui)
 if "bfu_socket_utils" in locals():
     importlib.reload(bfu_socket_utils)
 
@@ -35,10 +38,10 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bfu_socket_ui_and_props.register()
+    bfu_socket_props.register()
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    bfu_socket_ui_and_props.unregister()
+    bfu_socket_props.unregister()

@@ -21,9 +21,9 @@ import bpy
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_export_control
-from . import bfu_skeletal_mesh_utils
 from .. import bfu_skeletal_mesh
 from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
+from . import bfu_skeletal_mesh_utils
 
 
 def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
@@ -39,12 +39,13 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
     scene = bpy.context.scene 
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
-        if scene.bfu_object_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_properties_expanded")
+        if accordion.is_expend():
             if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
                 if not obj.bfu_export_as_alembic_animation:
-                    AssetType2 = layout.column()
+                    skeletal_mesh_ui = layout.column()
                     # Show asset type
-                    AssetType2.prop(obj, "bfu_export_skeletal_mesh_as_static_mesh")
+                    skeletal_mesh_ui.prop(obj, "bfu_export_skeletal_mesh_as_static_mesh")
 
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
     if bpy.context is None:
