@@ -17,14 +17,61 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-
+from typing import Optional
 import bpy
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_export_control
 from ..bbpl.blender_layout import layout_doc_button
 from . import bfu_spline_utils
+from . import bfu_spline_data
+from .bfu_spline_data import BFU_SimpleSpline
 
+def draw_debug_panel(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
+
+    pre_bake_spline = bfu_spline_data.BFU_MultiSplineTracks()
+    if isinstance(obj.data, bpy.types.Curve):
+        pre_bake_spline.add_spline_to_evaluate(obj)
+        pre_bake_spline.evaluate_all_splines(preview=True)
+
+        debug_panel = layout.column(align=True)
+        debug_panel.label(text="Spline Debug Panel", icon="INFO")
+        debug_panel.label(text=f"Number of splines: {len(obj.data.splines)}")
+        total_points = 0
+        active_spline: Optional[bpy.types.Spline] = None
+        active_spline_index = -1
+        active_point = -1
+        for x, spline in enumerate(obj.data.splines):
+            if spline.type == 'NURBS':
+                total_points += len(spline.points)
+            elif spline.type == 'BEZIER':
+                total_points += len(spline.bezier_points)
+                for i, bp in enumerate(spline.bezier_points):
+                    if bp.select_control_point:
+                        active_spline = spline
+                        active_spline_index = x
+                        active_point = i
+            elif spline.type == 'POLY':
+                total_points += len(spline.points)
+
+
+        debug_panel.label(text=f"Total points: {total_points}")
+        debug_panel.label(text=f"--------------------")
+        debug_panel.label(text=f"Current active spline: {active_spline_index}")
+        debug_panel.label(text=f"Current active point: {active_point}")
+        if active_spline is not None:
+            debug_panel.label(text=f"--------------------")
+            debug_panel.label(text=f"In Unreal Engine:")
+            debug_panel.label(text=f"Input Key: {active_point}")
+            simple_spline: BFU_SimpleSpline = pre_bake_spline.evaluate_splines[obj.name].simple_splines[active_spline_index]
+            simple_point = simple_spline.spline_points[active_point]
+            debug_panel.label(text=f"Location: {simple_point.get_ue_position()}")
+            debug_panel.label(text=f"Rotation: {simple_point.get_human_readable_rotation()}")
+            debug_panel.label(text=f"Scale: {simple_point.get_ue_scale()}")
+    else:
+        debug_panel = layout.column(align=True)
+        debug_panel.label(text="No spline data available", icon="ERROR")
+        return
 
 def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
     if bpy.context is None:
@@ -55,6 +102,7 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
     if obj.type != "CURVE":
         return
 
+    show_spline_debug_panel = True
 
     scene = context.scene 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
@@ -95,6 +143,11 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
                     url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#import-with-copypaste",
                     text=""
                 )
+
+                # Current spline point debug panel
+                if show_spline_debug_panel:
+                    draw_debug_panel(spline_ui, context, obj)
+
 
 
 def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):

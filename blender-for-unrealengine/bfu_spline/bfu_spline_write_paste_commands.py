@@ -53,6 +53,8 @@ def add_spline_to_command(spline: bpy.types.Object, pre_bake_spline: bfu_spline_
             t += "   " + ue_format_spline_list[x] + "\n"
             t += "   " + f"bClosedLoop={simple_spline['closed_loop']}" + "\n"
             t += "   " + f"CreationMethod=Instance" + "\n"
+            t += "   " + f"bShouldVisualizeScale=True" + "\n"
+            t += "   " + f"RelativeLocation=(X=0.000000,Y=0.000000,Z=0.000000)" + "\n"
 
             # Close
             t += "" + "End Object" + "\n"

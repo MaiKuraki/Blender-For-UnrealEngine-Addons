@@ -492,6 +492,24 @@ def evaluate_camera_position(camera):
     array_transform = [loc, r, s]
     return array_transform
 
+def convert_blender_quat_to_unreal(quat: mathutils.Quaternion) -> mathutils.Quaternion:
+    # Convert quaternion to matrix
+    mat = quat.to_matrix().to_4x4()
+
+    # Blender (X=Right, Y=Forward, Z=Up)
+    # Unreal  (X=Forward, Y=Right, Z=Up)
+    # So remap axes: [X,Y,Z] => [Y,X,Z]
+    remap = mathutils.Matrix((
+        (0, 1, 0, 0),  # X = Blender Y
+        (1, 0, 0, 0),  # Y = Blender X
+        (0, 0, 1, 0),  # Z unchanged
+        (0, 0, 0, 1)
+    ))
+
+    # Apply the axis remap
+    mat_unreal = remap @ mat
+    return mat_unreal.to_quaternion()
+
 def evaluate_camera_position_for_unreal(camera, previous_euler=mathutils.Euler()):
     # Get Transfrom
     unit_scale = get_scene_unit_scale()
@@ -506,13 +524,13 @@ def evaluate_camera_position_for_unreal(camera, previous_euler=mathutils.Euler()
     s = matrix.to_scale() * unit_scale * display_size
 
     loc *= mathutils.Vector([1, -1, 1])
-    array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]  # Roll Pith Yaw XYZ
+    array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]  # Roll, Pitch, Yaw: XYZ
     array_transform = [loc, array_rotation, s]
 
     return array_transform
 
 
-def EvaluateCameraRotationForBlender(transform):
+def evaluate_camera_rotation_for_blender(transform):
     x = transform["rotation_x"]
     y = transform["rotation_y"]*-1
     z = transform["rotation_z"]*-1
