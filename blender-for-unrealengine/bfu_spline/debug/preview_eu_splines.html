@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Unreal Text to JSON Viewer</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #111; color: #eee; }
+    textarea { width: 100%; height: 200px; background: #222; color: #0f0; border: 1px solid #555; padding: 10px; }
+    pre { background: #1a1a1a; padding: 10px; margin-top: 10px; white-space: pre-wrap; border: 1px solid #333; }
+    button { margin-top: 10px; padding: 10px 20px; font-weight: bold; }
+    h2, h3 { margin-top: 30px; }
+  </style>
+</head>
+<body>
+
+  <h2>Text Area (Raw Unreal Export)</h2>
+  <textarea id="inputText" placeholder="Paste your Unreal text here..."></textarea><br>
+  <button onclick="convert()">Convert</button>
+
+  <h3>Pre-formatted JSON-like Text</h3>
+  <pre id="outputRaw"></pre>
+
+  <h3>Result of JSON.parse()</h3>
+  <pre id="outputParsed"></pre>
+
+  <h3>Interpretation (manual summary)</h3>
+  <pre id="outputSummary"></pre>
+
+  <script>
+
+    function convertLineToJsonString(line) {
+    
+      function tryConvertValue(str) {
+        const lowered = str.toLowerCase();
+
+        if (lowered === "true") return true;
+        if (lowered === "false") return false;
+        if (lowered === "none" || lowered === "null") return null;
+        if (/^-?\d+(\.\d+)?$/.test(str)) return Number(str);
+
+        return `"${str}"`;
+      }
+
+      function parse(text) {
+        const result = {};
+        let i = 0;
+
+        while (i < text.length) {
+          // Read the key
+          const keyMatch = /^[A-Za-z0-9_]+/.exec(text.slice(i));
+          if (!keyMatch) break;
+          const key = keyMatch[0];
+          i += key.length;
+
+          // Skip '='
+          if (text[i] === '=') i++;
+          else break;
+
+          // Read the value
+          let value = '';
+          if (text[i] === '(') {
+            let depth = 0;
+            let start = i;
+            do {
+              if (text[i] === '(') depth++;
+              else if (text[i] === ')') depth--;
+              i++;
+            } while (depth > 0 && i < text.length);
+            value = text.slice(start, i);
+
+            // Recursive processing
+            if (value.startsWith('((')) {
+              // List of dictionaries
+              value = value.slice(1, -1); // remove one layer of ()
+              const list = [];
+              let inner = '';
+              let depth = 0;
+              for (let j = 0; j < value.length; j++) {
+                const c = value[j];
+                if (c === '(') depth++;
+                if (c === ')') depth--;
+
+                inner += c;
+
+                if (depth === 0 && inner.trim()) {
+                  const clean = inner.slice(1, -1); // remove ()
+                  list.push(parse(clean));
+                  inner = '';
+                  if (value[j + 1] === ',') j++;
+                }
+              }
+              result[key] = list;
+            } else {
+              // Simple dictionary
+              const inner = value.slice(1, -1);
+              result[key] = parse(inner);
+            }
+          } else {
+            // Simple value
+            const valMatch = /^[^,\s)]+/.exec(text.slice(i));
+            if (valMatch) {
+              value = valMatch[0];
+
+              // Remove quotes if present
+              if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.slice(1, -1);
+              }
+
+              result[key] = tryConvertValue(value);
+              i += valMatch[0].length;
+            }
+          }
+
+          // Skip comma and spaces
+          while (text[i] === ',' || text[i] === ' ') i++;
+        }
+
+        return result;
+      }
+
+      function stringify(obj, indent = 0) {
+        const ts = '  '.repeat(indent);
+        if (Array.isArray(obj)) {
+          const elements = obj.map(e => stringify(e, indent + 1));
+          return `[\n${ts}  ${elements.join(`,\n${ts}  `)}\n${ts}]`;
+        } else if (typeof obj === 'object') {
+          const entries = Object.entries(obj).map(
+            ([k, v]) => `${ts}  "${k}": ${stringify(v, indent + 1)}`
+          );
+          return `{\n${entries.join(',\n')}\n${ts}}`;
+        } else {
+          return `${obj}`;
+        }
+      }
+
+      const parsed = parse(line);
+      return stringify(parsed, 2);
+    }
+
+
+
+    // 🧩 Step 1: Pre-format Unreal to JSON-like string
+    function preformatTextToJsonString(rawText) {
+      const lines = rawText.trim().split('\n');
+      const objects = [];
+      let current = [];
+      const ts = '  ';
+
+      for (let line of lines) {
+        const trimmed = line.trim();
+
+        if (trimmed.startsWith("Begin Object")) {
+          const rest = line.replace("Begin Object", "").trim();
+          current = [rest];
+        } else if (trimmed.startsWith("End Object")) {
+          const convertedBodyLines = current.map(line => {
+            const trimmed = line.trim();
+            if (trimmed.includes('=')) {
+              return `\n${ts}${ts}${ts}${ts}` + convertLineToJsonString(trimmed);
+            } else {
+              return trimmed; // keep the raw line if no "="
+            }
+          });
+
+          const wrapped = `${ts}${ts}${ts}${convertedBodyLines}\n${ts}${ts}`;
+          objects.push(wrapped);
+          current = [];
+        } else {
+          current.push(line);
+        }
+      }
+
+      const start = `{\n${ts}"objects": [\n`;
+      const end = `\n${ts}]\n}`;
+      const formattedObjects = objects.join(',\n');
+      const jsonText = `${start}${formattedObjects}${end}`;
+
+      return jsonText;
+    }
+
+    // 🧩 Step 2: Parse JSON safely
+    function parseJsonSafely(jsonString) {
+      try {
+        return {
+          ok: true,
+          data: JSON.parse(jsonString),
+          error: null
+        };
+      } catch (e) {
+        return {
+          ok: false,
+          data: null,
+          error: e.message
+        };
+      }
+    }
+
+    // 🧩 Step 3: Interpret JSON data
+    function interpretJsonData(parsedJson) {
+      const out = [];
+
+      const curves = parsedJson?.SplineCurves?.Rotation?.Points ?? [];
+      curves.forEach((pt, i) => {
+        const val = pt?.OutVal;
+        if (val) {
+          out.push(`Point ${i}: Pitch=${val.X}, Yaw=${val.Y}, Roll=${val.Z}, W=${val.W}`);
+        }
+      });
+
+      return out.join('\n') || "(no Rotation data found)";
+    }
+
+    // 🧪 Main function triggered by the button
+    function convert() {
+      const input = document.getElementById("inputText").value;
+
+      const jsonLike = preformatTextToJsonString(input);
+      document.getElementById("outputRaw").textContent = jsonLike;
+
+      const result = parseJsonSafely(jsonLike);
+      if (!result.ok) {
+        document.getElementById("outputParsed").textContent = "❌ JSON Error: " + result.error;
+        document.getElementById("outputSummary").textContent = "";
+        return;
+      }
+
+      document.getElementById("outputParsed").textContent = JSON.stringify(result.data, null, 2);
+      document.getElementById("outputSummary").textContent = interpretJsonData(result.data);
+    }
+  </script>
+</body>
+</html>
