@@ -30,9 +30,9 @@ class BFU_SimpleSplinePoint():
         # Context stats
 
         self.position: mathutils.Vector = mathutils.Vector((0,0,0))
-        self.handle_left: mathutils.Vector = mathutils.Vector((0,0,0))
+        self.handle_left: mathutils.Vector = mathutils.Vector((0,0,0)) # Handle left is the "Arrive Tangent" in UE
         self.handle_left_type = "FREE"
-        self.handle_right: mathutils.Vector = mathutils.Vector((0,0,0))
+        self.handle_right: mathutils.Vector = mathutils.Vector((0,0,0)) # Handle right is the "Leave Tangent" in UE
         self.handle_right_type = "FREE"
         self.curve_roll: float = self.get_curve_roll(spline_obj, point_data)
         self.curve_radius: float = point_data.radius
@@ -160,7 +160,7 @@ class BFU_SimpleSplinePoint():
         mat_unreal = remap @ mat
         return mat_unreal.to_quaternion()
 
-    def get_ue_rotation(self) -> mathutils.Quaternion:
+    def get_ue_rotation(self, start: mathutils.Vector, end: mathutils.Vector) -> mathutils.Quaternion:
         direction = (self.position - self.handle_right).normalized()
 
         # Yaw (horizontal angle)
@@ -171,32 +171,44 @@ class BFU_SimpleSplinePoint():
 
         # Pitch (elevation)
         xy_len = math.sqrt(direction.x ** 2 + direction.y ** 2)
-        pitch = -math.degrees(math.atan2(direction.z, xy_len))
+        pitch = math.degrees(math.atan2(direction.z, xy_len))
 
-        # Roll = tilt
+        # Roll = tilt (from curve tilt)
         roll = math.degrees(self.curve_roll)
 
         # Create Euler in Unreal order: Z = Yaw, X = Roll, Y = Pitch
-        euler_unreal = mathutils.Euler((math.radians(roll), math.radians(pitch), math.radians(yaw)), 'ZXY')
-        return euler_unreal.to_quaternion()
+        euler = mathutils.Euler((
+            math.radians(roll),
+            math.radians(pitch),
+            math.radians(yaw)
+        ), 'ZXY')
+
+        return euler.to_quaternion()
     
     def get_out_val_rotation(self) -> mathutils.Quaternion:
-        return mathutils.Quaternion((0, 0, 0, 1))
-        return self.get_ue_rotation()
-    
+        # The rotation seam controlled by the leave tangent in UE. (handle_right in Blender)
+        return self.get_ue_rotation(self.position, self.handle_right)
+
+    @staticmethod
+    def scale_quaternion(q: mathutils.Quaternion, target_w: float = 0.5) -> mathutils.Quaternion:
+        scale = target_w / q.w
+        return mathutils.Quaternion((q.x * scale, q.y * scale, q.z * scale, q.w * scale))
+
     def get_out_left_handle_rotation(self) -> mathutils.Quaternion:
-        #return mathutils.Quaternion((0, 0, 0, 1))
-        return self.get_ue_rotation()
+        quat = self.get_ue_rotation(self.position, self.handle_right)
+        return self.scale_quaternion(quat, 0.2)
 
     def get_out_right_handle_rotation(self) -> mathutils.Quaternion:
-        #return mathutils.Quaternion((0, 0, 0, 1))
-        return self.get_ue_rotation()
+        quat = self.get_ue_rotation(self.handle_left, self.position)
+        return self.scale_quaternion(quat, 0.2)
 
-    def get_human_readable_rotation(self) -> str:
-        ue_rotation = self.get_ue_rotation()
+    def get_human_readable_rotation(self, unreal_format: bool=False) -> str:
+        ue_rotation = self.get_out_val_rotation()
         
-        # Conversion à l'ordre Unreal: ZXY → Roll=X, Pitch=Y, Yaw=Z
-        euler_rotation = ue_rotation.to_euler('ZXY')
+        # Conversion à l'ordre Unreal: XYZ → Roll=X, Pitch=Y, Yaw=Z
+        euler_rotation = ue_rotation.to_euler('XYZ')
+        if unreal_format:
+            euler_rotation.y = -euler_rotation.y  # Invert Y for Unreal format
         
         str_roll = "{:.2f}".format(math.degrees(euler_rotation.x))
         str_pitch = "{:.2f}".format(math.degrees(euler_rotation.y)) 
@@ -216,7 +228,7 @@ class BFU_SimpleSplinePoint():
             return "CIM_CurveAuto"
         elif self.point_type in ["POLY"]:
             return "CIM_Linear" 
-        return "Unknown"
+        return "CIM_CurveAuto"
 
     def get_spline_point_as_dict(self) -> Dict[str, Any]:
         data: Dict[str, Any] = {}

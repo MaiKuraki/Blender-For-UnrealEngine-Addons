@@ -66,7 +66,7 @@ def draw_debug_panel(layout: bpy.types.UILayout, context: bpy.types.Context, obj
             simple_spline: BFU_SimpleSpline = pre_bake_spline.evaluate_splines[obj.name].simple_splines[active_spline_index]
             simple_point = simple_spline.spline_points[active_point]
             debug_panel.label(text=f"Location: {simple_point.get_ue_position()}")
-            debug_panel.label(text=f"Rotation: {simple_point.get_human_readable_rotation()}")
+            debug_panel.label(text=f"Rotation: {simple_point.get_human_readable_rotation(unreal_format=True)}")
             debug_panel.label(text=f"Scale: {simple_point.get_ue_scale()}")
     else:
         debug_panel = layout.column(align=True)
