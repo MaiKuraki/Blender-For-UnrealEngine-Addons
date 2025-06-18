@@ -206,92 +206,128 @@
     }
 
     // Step 3: Interpret JSON data
-function quaternionToEuler(q) {
-  const { X, Y, Z, W } = q;
+    /**
+     * Converts a quaternion to a rotator (Pitch, Yaw, Roll) following Unreal Engine 5.6's implementation.
+     *
+     * This is a faithful translation of FQuat::Rotator() from Unreal Engine source code.
+     * Reference: Engine\Source\Runtime\Core\Public\Math\Quat.h (FQuat4f::Rotator)
+     *
+     * Unreal applies rotations in ZYX order (Yaw → Pitch → Roll), in a left-handed, Z-up coordinate system.
+     * Unreal stores rotators as:
+     * - Pitch: rotation around Y axis
+     * - Yaw:   rotation around Z axis
+     * - Roll:  rotation around X axis
+     *
+     * @param {Object} q - Quaternion object with properties X, Y, Z, W.
+     * @param {boolean} normalize - Whether to normalize the quaternion before conversion.
+     * @returns {Object} Rotator with Pitch, Yaw, Roll in degrees.
+     */
+    function quaternionToUnrealRotator(q, normalize = true) {
+      let { X, Y, Z, W } = q;
 
-  const x = Number(X);
-  const y = Number(Y);
-  const z = Number(Z);
-  const w = Number(W);
+      if (normalize) {
+        const mag = Math.sqrt(X*X + Y*Y + Z*Z + W*W);
+        if (mag > 0) {
+          X /= mag;
+          Y /= mag;
+          Z /= mag;
+          W /= mag;
+        }
+      }
 
-  // Calcul en radians
-  const sinr_cosp = 2 * (w * x + y * z);
-  const cosr_cosp = 1 - 2 * (x * x + y * y);
-  const roll = Math.atan2(sinr_cosp, cosr_cosp);
+      const SINGULARITY_THRESHOLD = 0.4999995;
+      const RAD_TO_DEG = 180 / Math.PI;
 
-  const sinp = 2 * (w * y - z * x);
-  let pitch;
-  if (Math.abs(sinp) >= 1)
-    pitch = Math.sign(sinp) * Math.PI / 2; // 90° clamp
-  else
-    pitch = Math.asin(sinp);
+      // Same formula as Unreal source
+      const SingularityTest = Z * X - W * Y;
+      const YawY = 2 * (W * Z + X * Y);
+      const YawX = 1 - 2 * (Y * Y + Z * Z);
 
-  const siny_cosp = 2 * (w * z + x * y);
-  const cosy_cosp = 1 - 2 * (y * y + z * z);
-  const yaw = Math.atan2(siny_cosp, cosy_cosp);
+      let Pitch, Yaw, Roll;
 
-  // Conversion en degrés
-  const toDeg = rad => (rad * 180 / Math.PI).toFixed(1);
+      if (SingularityTest < -SINGULARITY_THRESHOLD) {
+        Pitch = -90;
+        Yaw = -2 * Math.atan2(X, W) * RAD_TO_DEG;
+        Roll = 0;
+      } else if (SingularityTest > SINGULARITY_THRESHOLD) {
+        Pitch = 90;
+        Yaw = 2 * Math.atan2(X, W) * RAD_TO_DEG;
+        Roll = 0;
+      } else {
+        Pitch = Math.asin(2 * SingularityTest) * RAD_TO_DEG;
+        Yaw = Math.atan2(YawY, YawX) * RAD_TO_DEG;
+        Roll = Math.atan2(-2 * (W * X + Y * Z), 1 - 2 * (X * X + Y * Y)) * RAD_TO_DEG;
+      }
 
-  return {
-    Roll: toDeg(roll),
-    Pitch: toDeg(pitch),
-    Yaw: toDeg(yaw)
-  };
-}
+      return {
+        Pitch,
+        Yaw,
+        Roll
+      };
+    }
 
-function detectValueType(val) {
-  if (typeof val !== 'object' || val === null) return 'unknown';
 
-  const keys = Object.keys(val).sort();
+    function detectValueType(val) {
+      if (typeof val !== 'object' || val === null) return 'unknown';
 
-  if (keys.join() === 'X,Y,Z') return 'vector3';
-  if (keys.join() === 'W,X,Y,Z') return 'quat';
-  if (keys.join() === 'X,Y,Z,W') return 'quat';
-  if (keys.join() === 'R,G,B') return 'color_rgb';
-  if (keys.join() === 'A,B,G,R') return 'color_rgba';
-  if (keys.join() === 'R,G,B,A') return 'color_rgba';
+      const keys = Object.keys(val).sort();
 
-  return 'object';
-}
+      if (keys.join() === 'X,Y,Z') return 'vector3';
+      if (keys.join() === 'W,X,Y,Z') return 'quat';
+      if (keys.join() === 'X,Y,Z,W') return 'quat';
+      if (keys.join() === 'R,G,B') return 'color_rgb';
+      if (keys.join() === 'A,B,G,R') return 'color_rgba';
+      if (keys.join() === 'R,G,B,A') return 'color_rgba';
 
-function formatValueAsHtml(val) {
-  const type = detectValueType(val);
+      return 'object';
+    }
 
-  if (type === 'vector3') {
-    return `<span style="color:#f55">X=${val.X}</span>, ` +  // Red
-           `<span style="color:#5f5">Y=${val.Y}</span>, ` +  // Green
-           `<span style="color:#55f">Z=${val.Z}</span>`;     // Blue
-  }
+    function formatScalar(val) {
+      return Number(val.toFixed(6)).toString(); // Keep up to 6 decimals, strip trailing zeros
+    }
 
-  if (type === 'quat') {
-    const euler = quaternionToEuler(val);
+    function formatValueAsHtml(val) {
+      const type = detectValueType(val);
 
-    return (
-      `<span style="color:#ff5">W=${val.W ?? '?'}</span>, ` +
-      `<span style="color:#f55">X=${val.X ?? '?'}</span>, ` +
-      `<span style="color:#5f5">Y=${val.Y ?? '?'}</span>, ` +
-      `<span style="color:#55f">Z=${val.Z ?? '?'}</span>` +
-      ` <span style="color:#888">→</span> (` +
-      `<span style="color:#f55">Roll=${euler.Roll}°</span>, ` +
-      `<span style="color:#5f5">Pitch=${euler.Pitch}°</span>, ` +
-      `<span style="color:#55f">Yaw=${euler.Yaw}°</span>)`
-    );
-  }
+      if (type === 'vector3') {
+        return `<span style="color:#f55">X=${formatScalar(val.X)}</span>, ` +  // Red
+              `<span style="color:#5f5">Y=${formatScalar(val.Y)}</span>, ` +  // Green
+              `<span style="color:#55f">Z=${formatScalar(val.Z)}</span>`;     // Blue
+      }
 
-  if (type === 'color_rgb' || type === 'color_rgba') {
-    return `<span style="color:#ff0">R=${val.R}</span>, ` +  // Red
-           `<span style="color:#0f0">G=${val.G}</span>, ` +  // Green
-           `<span style="color:#00f">B=${val.B}</span>` +     // Blue
-           (val.A !== undefined ? `, <span style="color:#aaa">A=${val.A}</span>` : ''); // Yellow
-  }
+    if (type === 'quat') {
+      const rotator = quaternionToUnrealRotator(val, true);
+      const rotatorRaw = quaternionToUnrealRotator(val, false);
 
-  if (typeof val === 'object') {
-    return Object.entries(val).map(([k, v]) => `${k}=${v}`).join(', ');
-  }
+      return (
+        `<span style="color:#ff5">W=${formatScalar(val.W)}</span>, ` +
+        `<span style="color:#f55">X=${formatScalar(val.X)}</span>, ` +
+        `<span style="color:#5f5">Y=${formatScalar(val.Y)}</span>, ` +
+        `<span style="color:#55f">Z=${formatScalar(val.Z)}</span>` +
+        ` <span style="color:#888">→ raw:</span>(` +
+        `<span style="color:#f55">Roll=${formatScalar(rotatorRaw.Roll)}°</span>, ` +
+        `<span style="color:#5f5">Pitch=${formatScalar(rotatorRaw.Pitch)}°</span>, ` +
+        `<span style="color:#55f">Yaw=${formatScalar(rotatorRaw.Yaw)}°</span>)` +
+        ` <span style="color:#888">→ norm:</span>(` +
+        `<span style="color:#f55">Roll=${formatScalar(rotator.Roll)}°</span>, ` +
+        `<span style="color:#5f5">Pitch=${formatScalar(rotator.Pitch)}°</span>, ` +
+        `<span style="color:#55f">Yaw=${formatScalar(rotator.Yaw)}°</span>)`
+      );
+    }
 
-  return String(val);
-}
+      if (type === 'color_rgb' || type === 'color_rgba') {
+        return `<span style="color:#ff0">R=${formatScalar(val.R)}</span>, ` +  // Red
+              `<span style="color:#0f0">G=${formatScalar(val.G)}</span>, ` +  // Green
+              `<span style="color:#00f">B=${formatScalar(val.B)}</span>` +     // Blue
+              (val.A !== undefined ? `, <span style="color:#aaa">A=${formatScalar(val.A)}</span>` : ''); // Yellow
+      }
+
+      if (typeof val === 'object') {
+        return Object.entries(val).map(([k, v]) => `${k}=${v}`).join(', ');
+      }
+
+      return String(val);
+    }
 
 function interpretJsonData(parsedJson) {
   const out = [];
