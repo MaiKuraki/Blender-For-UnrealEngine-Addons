@@ -18,7 +18,7 @@
 	},
 	"note": {
 		"fake-bpy-module": "https://github.com/nutti/fake-bpy-module",
-		"win-fake-bpy-module-command": "py -m pip install fake-bpy-module-latest",
+		"win-fake-bpy-module-command": "py -m pip install fake-bpy-module-latest",  // And set extraPaths with c:\users\bleuraven\appdata\local\programs\python\python310\lib\site-packages
 		"linux-fake-bpy-module-command": "pip3 install fake-bpy-module-latest", //And set extraPaths with /home/bleuraven/venv/lib/python3.12/site-packages
 		"Blender best_practice": "https://docs.blender.org/api/current/info_best_practice.html"
 	}

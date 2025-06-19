@@ -186,9 +186,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Search for armatures and their actions
         armature_list: List[bpy.types.Object] = []
         if export_filter == "default":
-            armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+            armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures()
         elif export_filter in ["only_object", "only_object_and_active"]:
-            armature_recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+            armature_recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures()
 
             for obj in bpy.context.selected_objects:
                 if obj in armature_recursive_list:
@@ -206,8 +206,11 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                     armature_actions_map.append((armature, armature.animation_data.action))
         else:
             for armature in armature_list:
+                obj_bone_names: List[str] = [bone.name for bone in armature.data.bones]
                 for action in bpy.data.actions:
-                    armature_actions_map.append((armature, action))
+                    if not action.library:
+                        if bfu_basics.get_if_action_can_associate_bone(action, obj_bone_names):
+                            armature_actions_map.append((armature, action))
 
 
         # Search for actions assets
