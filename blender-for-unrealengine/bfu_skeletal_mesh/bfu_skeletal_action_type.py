@@ -68,8 +68,11 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
         return scene.bfu_use_animation_export  # type: ignore[attr-defined]
     
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
-        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
-        return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
+        scene = bpy.context.scene
+        if scene is not None:
+            dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+            dirpath /= scene.bfu_anim_subfolder_name
+            return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
 ####################################################################
 # Asset Package Management
@@ -93,6 +96,14 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
 
     def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
         return bfu_export_procedure.get_obj_export_file_type(data)
+
+    def get_package_file_name(self, data: bpy.types.Object, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
+        return super().get_package_file_name(
+            data,
+            details,
+            desired_name=details.name,
+            without_extension=without_extension,
+        )
 
     def get_asset_folder_path(self, data: bpy.types.Object, details: Any = None) -> Path:
         # Add skeletal sub folder path
