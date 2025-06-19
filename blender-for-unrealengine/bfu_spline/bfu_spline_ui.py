@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 import bpy
 from .. import bfu_ui
 from .. import bbpl
@@ -81,31 +81,27 @@ def draw_debug_panel(layout: bpy.types.UILayout, context: bpy.types.Context, obj
         debug_panel.label(text="No spline data available", icon="ERROR")
         return
 
-def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
-    if bpy.context is None:
-        return
-
-    if obj is None:
-        return
-    
+def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):    
     if obj.type != "CURVE":
         return
     
     scene = bpy.context.scene 
+
+    if TYPE_CHECKING:
+        export_as_alembic_animation: bool = False
+    else:
+        export_as_alembic_animation: bool = obj.bfu_export_as_alembic_animation
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_properties_expanded")
-        if accordion.is_expend():
+        if accordion and accordion.is_expend():
             if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
-                if not obj.bfu_export_as_alembic_animation:
+                if not export_as_alembic_animation:
                     skeletal_mesh_ui = layout.column()
                     # Show asset type
                     skeletal_mesh_ui.prop(obj, "bfu_export_spline_as_static_mesh")
 
 def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
-  
-    if obj is None:
-        return
     
     if obj.type != "CURVE":
         return
@@ -115,46 +111,54 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
     scene = context.scene 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_spline_properties_expanded")
-        _, panel = accordion.draw(layout)
-        if accordion.is_expend():
-            spline_ui = panel.column()
-            if obj.type == "CURVE":
-                spline_ui_pop = spline_ui.column()
-                spline_ui_as_static_mesh = spline_ui_pop.column()
-                spline_ui_as_static_mesh.prop(obj, 'bfu_export_spline_as_static_mesh')
-                spline_ui_as_static_mesh.enabled = bfu_export_control.bfu_export_control_utils.is_export_recursive(obj)
-                
-                # Show spline type
-                spline_ui_spline_type = spline_ui_pop.column()
-                spline_ui_spline_type.prop(obj, 'bfu_desired_spline_type')
-                if obj.bfu_desired_spline_type == "CUSTOM":
-                    spline_ui_spline_type.prop(obj, 'bfu_custom_spline_component')
-                if bfu_spline_utils.contain_nurbs_spline(obj):
-                    resample_resolution = spline_ui_spline_type.row()
-                    resample_resolution.prop(obj, 'bfu_spline_resample_resolution')
-                    layout_doc_button.add_doc_page_operator(
-                        layout=resample_resolution, 
-                        url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#notes",
+        if accordion:
+            _, panel = accordion.draw(layout)
+            if panel:
+                spline_ui = panel.column()
+                if obj.type == "CURVE":
+                    spline_ui_pop = spline_ui.column()
+                    spline_ui_as_static_mesh = spline_ui_pop.column()
+                    spline_ui_as_static_mesh.prop(obj, 'bfu_export_spline_as_static_mesh')
+                    spline_ui_as_static_mesh.enabled = bfu_export_control.bfu_export_control_utils.is_export_recursive(obj)
+
+                    if TYPE_CHECKING:
+                        desired_spline_type: str
+                        export_spline_as_static_mesh: bool = False
+                    else:
+                        desired_spline_type: str = obj.bfu_desired_spline_type
+                        export_spline_as_static_mesh: bool = obj.bfu_export_spline_as_static_mesh
+                    
+                    # Show spline type
+                    spline_ui_spline_type = spline_ui_pop.column()
+                    spline_ui_spline_type.prop(obj, 'bfu_desired_spline_type')
+                    if desired_spline_type == "CUSTOM":  # type: ignore
+                        spline_ui_spline_type.prop(obj, 'bfu_custom_spline_component')
+                    if bfu_spline_utils.contain_nurbs_spline(obj):
+                        resample_resolution = spline_ui_spline_type.row()
+                        resample_resolution.prop(obj, 'bfu_spline_resample_resolution')
+                        layout_doc_button.add_doc_page_operator(
+                            layout=resample_resolution, 
+                            url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#notes",
+                            text=""
+                        )
+                    spline_ui_spline_type.enabled = export_spline_as_static_mesh is False
+                    
+                    # Spline scale
+                    spline_ui_spline_vector_scale = spline_ui_pop.row()
+                    spline_ui_spline_vector_scale.prop(scene, 'bfu_spline_vector_scale', text="Spline Vector Scale")
+
+                    # Spline buttons
+                    copy_spline_buttons = spline_ui.row(align=True)
+                    copy_spline_buttons.operator("object.bfu_copy_active_spline_data", icon="COPYDOWN")
+                    bbpl.blender_layout.layout_doc_button.functions.add_doc_page_operator(
+                        layout=copy_spline_buttons,
+                        url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#import-with-copypaste",
                         text=""
                     )
-                spline_ui_spline_type.enabled = obj.bfu_export_spline_as_static_mesh is False
-                
-                # Spline scale
-                spline_ui_spline_vector_scale = spline_ui_pop.row()
-                spline_ui_spline_vector_scale.prop(scene, 'bfu_spline_vector_scale', text="Spline Vector Scale")
 
-                # Spline buttons
-                copy_spline_buttons = spline_ui.row(align=True)
-                copy_spline_buttons.operator("object.bfu_copy_active_spline_data", icon="COPYDOWN")
-                bbpl.blender_layout.layout_doc_button.functions.add_doc_page_operator(
-                    layout=copy_spline_buttons,
-                    url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Curve-and-Spline#import-with-copypaste",
-                    text=""
-                )
-
-                # Current spline point debug panel
-                if show_spline_debug_panel:
-                    draw_debug_panel(spline_ui, context, obj)
+                    # Current spline point debug panel
+                    if show_spline_debug_panel:
+                        draw_debug_panel(spline_ui, context, obj)
 
 
 
@@ -162,8 +166,9 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
 
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_spline_tools_expanded")
-    _, panel = accordion.draw(layout)
-    if accordion.is_expend():
-        spline_ui = panel.column()
-        spline_ui.operator("object.copy_selected_splines_data", icon="COPYDOWN")
+    if accordion:
+        _, panel = accordion.draw(layout)
+        if panel:
+            spline_ui = panel.column()
+            spline_ui.operator("object.copy_selected_splines_data", icon="COPYDOWN")
     

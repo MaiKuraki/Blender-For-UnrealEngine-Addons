@@ -2,6 +2,7 @@ import bpy
 import math
 import mathutils
 from typing import Dict, Any, List, Union, TYPE_CHECKING, Optional, Tuple
+from .. import bbpl
 from . import bfu_spline_utils
 from . import bfu_spline_unreal_utils
 
@@ -183,7 +184,8 @@ class BFU_SimpleSplinePoint():
             # Opposite direction
             # Choose an arbitrary axis perpendicular to default_up
             ortho = mathutils.Vector((1, 0, 0)) if abs(default_up.x) < 0.99 else mathutils.Vector((0, 1, 0))
-            axis = default_up.cross(ortho).normalized()
+            axis: mathutils.Vector = default_up.cross(ortho)  # type: ignore
+            axis = axis.normalized()
             return mathutils.Quaternion(axis, math.pi)
 
         return default_up.rotation_difference(in_up_vector)
@@ -204,8 +206,8 @@ class BFU_SimpleSplinePoint():
 
     @staticmethod
     def rotator_to_up_vector_fixed(roll: float, pitch: float, yaw: float) -> mathutils.Vector:
-        def deg_to_rad(deg): return deg * math.pi / 180.0
-        def normalize(a): return ((a + 180) % 360) - 180
+        def deg_to_rad(deg: float) -> float: return deg * math.pi / 180.0
+        def normalize(a: float) -> float: return ((a + 180) % 360) - 180
 
         # Unreal: Pitch left-handed, Roll left-handed, Yaw normal
         pitch = deg_to_rad(-normalize(pitch))
@@ -432,17 +434,24 @@ class BFU_SimpleSpline():
         elif spline_data.type in ["NURBS"]:
             
             # Duplicate and resample spline
-            resampled_spline_obj: bpy.types.Object = bfu_spline_utils.create_resampled_spline(spline_data, spline_obj.bfu_spline_resample_resolution)
-            new_spline_data = resampled_spline_obj.data.splines[0]
-            for i, nurbs_point in enumerate(new_spline_data.bezier_points):
-                nurbs_point: bpy.types.BezierSplinePoint
-                self.spline_points[i] = BFU_SimpleSplinePoint(i, self, spline_obj, nurbs_point, new_spline_data.type)
+            if TYPE_CHECKING:
+                spline_resample_resolution: int = 12
+            else:
+                spline_resample_resolution: int = spline_obj.bfu_spline_resample_resolution
 
-            # Clear
-            objects_to_remove: List[bpy.types.Object] = [resampled_spline_obj]
-            data_to_remove: List[bpy.types.ID] = [resampled_spline_obj.data]
-            bpy.data.batch_remove(objects_to_remove)
-            bpy.data.batch_remove(data_to_remove)
+            resampled_spline_obj: Optional[bpy.types.Object] = bfu_spline_utils.create_resampled_spline(spline_data, spline_resample_resolution)
+            if resampled_spline_obj and resampled_spline_obj.data:
+                if isinstance(resampled_spline_obj.data, bpy.types.Curve):
+                    new_spline_data = resampled_spline_obj.data.splines[0]
+                    for i, nurbs_point in enumerate(new_spline_data.bezier_points):
+                        nurbs_point: bpy.types.BezierSplinePoint
+                        self.spline_points[i] = BFU_SimpleSplinePoint(i, self, spline_obj, nurbs_point, new_spline_data.type)
+
+                # Clear temporary objects
+                objects_to_remove: List[bpy.types.Object] = [resampled_spline_obj]
+                data_to_remove: List[bpy.types.ID] = [resampled_spline_obj.data]
+                bpy.data.batch_remove(objects_to_remove)
+                bpy.data.batch_remove(data_to_remove)
             
         elif spline_data.type in ["BEZIER"]:
             for i, bezier_point in enumerate(spline_data.bezier_points):
@@ -457,15 +466,13 @@ class BFU_SplinesList():
 
     def __init__(self, spline: bpy.types.Object):
         # Context stats
-        scene = bpy.context.scene
-
-        self.spline_name = spline.name
-        self.desired_spline_type = spline.bfu_desired_spline_type
-        self.ue_spline_component_class = bfu_spline_unreal_utils.get_spline_unreal_component(spline)
+        self.spline_name: str = spline.name
+        self.desired_spline_type: str = spline.bfu_desired_spline_type  # type: ignore
+        self.ue_spline_component_class: str = bfu_spline_unreal_utils.get_spline_unreal_component(spline)
         self.simple_splines: Dict[int, BFU_SimpleSpline] = {}
 
     def get_spline_list_values_as_dict(self) -> Dict[str, Any]:
-        data = {}
+        data: Dict[str, Any] = {}
         # Static data
         data["spline_name"] = self.spline_name
         data["desired_spline_type"] = self.desired_spline_type
@@ -486,11 +493,11 @@ class BFU_SplinesList():
         return data
     
 
-    def evaluate_spline_obj_data(self, spline_obj: bpy.types.Object):
-        
-        for x, spline_data in enumerate(spline_obj.data.splines):
-            simple_spline = self.simple_splines[x] = BFU_SimpleSpline(spline_data)
-            simple_spline.evaluate_spline_data(spline_obj, spline_data, x)
+    def evaluate_spline_obj_data(self, spline_obj: bpy.types.Object) -> None:
+        if spline_obj and spline_obj.data and isinstance(spline_obj.data, bpy.types.Curve):
+            for x, spline_data in enumerate(spline_obj.data.splines):
+                simple_spline = self.simple_splines[x] = BFU_SimpleSpline(spline_data)
+                simple_spline.evaluate_spline_data(spline_obj, spline_data, x)
 
         #print("Evaluate " + spline_obj.name + " finished in " + counter.get_str_time())
         #print("-----")
@@ -515,10 +522,9 @@ class BFU_MultiSplineTracks():
             return
 
         # Save scene data
-        save_current_frame = scene.frame_current
         if not preview:
-            save_use_simplify = bpy.context.scene.render.use_simplify
-            bpy.context.scene.render.use_simplify = True
+            save_simplfy = bbpl.utils.SaveUserRenderSimplify()
+            save_simplfy.simplify_scene()
 
         for spline in self.splines_to_evaluate:
             self.evaluate_splines[spline.name] = BFU_SplinesList(spline)
@@ -529,8 +535,8 @@ class BFU_MultiSplineTracks():
             evaluate.evaluate_spline_obj_data(spline)
 
         if not preview:
-            scene.frame_current = save_current_frame
-            bpy.context.scene.render.use_simplify = save_use_simplify
+            save_simplfy.reset_scene()
+
 
     def get_evaluate_spline_data(self, obj: bpy.types.Object):
         return self.evaluate_splines[obj.name]

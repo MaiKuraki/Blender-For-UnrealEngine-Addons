@@ -339,7 +339,7 @@ class BFU_MultiCameraTracks():
         self.frame_start = frame_start
         self.frame_end = frame_end
 
-    def evaluate_all_cameras(self, ignore_marker_sequences = False):
+    def evaluate_all_cameras(self, ignore_marker_sequences = False, preview: bool = False):
         # Evalutate all cameras at same time will avoid frames switch
 
         def optimizated_evaluate_track_at_frame(evaluate: BFU_CameraTracks):
@@ -362,8 +362,9 @@ class BFU_MultiCameraTracks():
 
         # Save scene data
         save_current_frame = scene.frame_current
-        save_use_simplify = bpy.context.scene.render.use_simplify
-        bpy.context.scene.render.use_simplify = True
+        if not preview:
+            save_simplfy = bbpl.utils.SaveUserRenderSimplify()
+            save_simplfy.simplify_scene()
 
         for camera in self.cameras_to_evaluate:
             self.evaluate_cameras[camera.name] = BFU_CameraTracks(camera)
@@ -381,8 +382,9 @@ class BFU_MultiCameraTracks():
                     # Bake all frames
                     evaluate.evaluate_track_at_frame(camera, frame)
 
+        if not preview:
+            save_simplfy.reset_scene()
         scene.frame_current = save_current_frame
-        bpy.context.scene.render.use_simplify = save_use_simplify
 
     def get_evaluate_camera_data(self, obj: bpy.types.Object):
         return self.evaluate_cameras[obj.name]

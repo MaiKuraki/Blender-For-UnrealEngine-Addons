@@ -82,11 +82,12 @@ def export_single_text_file(text: str, fullpath: Path):
         file.write(text)
         
 
-def export_single_json_file(json_data: Dict[str, Any], fullpath: Path):
+def export_single_json_file(json_data: Dict[str, Any], fullpath: Path) -> bool:
 
     if is_read_only(fullpath):
         print(f"Cannot write to '{fullpath}': File is read-only.")
-        return None
+        return False
 
     with open(fullpath, 'w') as json_file:
         json.dump(json_data, json_file, ensure_ascii=False, sort_keys=False, indent=4)
+    return True

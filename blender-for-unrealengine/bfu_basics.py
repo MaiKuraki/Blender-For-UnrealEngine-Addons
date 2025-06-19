@@ -16,15 +16,13 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-import os
 import string
 from pathlib import Path
-from typing import Any, List, Dict, Optional
 import bpy
 import shutil
 import bmesh
 
-def RemoveFolderTree(folder):
+def RemoveFolderTree(folder: str) -> None:
     dirpath = Path(folder)
     if dirpath.exists() and dirpath.is_dir():
         shutil.rmtree(dirpath, ignore_errors=True)
@@ -46,33 +44,35 @@ def SetCollectionUse(collection: bpy.types.Collection) -> None:
     # Set if collection is hide and selectable
     collection.hide_viewport = False
     collection.hide_select = False
-    layer_collection = bpy.context.view_layer.layer_collection
-    if collection.name in layer_collection.children:
-        layer_collection.children[collection.name].hide_viewport = False
-    else:
-        print(collection.name, " not found in view_layer.layer_collection")
+    if bpy.context.view_layer:
+        layer_collection = bpy.context.view_layer.layer_collection
+        if collection.name in layer_collection.children:
+            layer_collection.children[collection.name].hide_viewport = False
+        else:
+            print(collection.name, " not found in view_layer.layer_collection")
 
 
-
-
-def ConvertToConvexHull(obj):
+def ConvertToConvexHull(obj: bpy.types.Object, recalc_face_normals: bool = False) -> None:
     # Convert obj to Convex Hull
     mesh = obj.data
-    if not mesh.is_editmode:
-        bm = bmesh.new()
-        bm.from_mesh(mesh)  # Mesh to Bmesh
-        convex_hull = bmesh.ops.convex_hull(
-            bm, input=bm.verts,
-            use_existing_faces=True
-        )
-        # convex_hull = bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-        bm.to_mesh(mesh)  # BMesh to Mesh
+    if isinstance(mesh, bpy.types.Mesh):
+        if not mesh.is_editmode:
+            bm = bmesh.new()
+            bm.from_mesh(mesh)  # Mesh to Bmesh
+            bmesh.ops.convex_hull(
+                bm=bm, 
+                input=bm.verts,  # type: ignore
+                use_existing_faces=True
+            )
+            if recalc_face_normals:
+                bmesh.ops.recalc_face_normals(bm, faces=bm.faces)  # type: ignore
+            bm.to_mesh(mesh)  # BMesh to Mesh
 
 
-def verifi_dirs(directory):
+def verifi_dirs(directory: Path) -> bool:
     # Check and create a folder if it does not exist
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not directory.exists():
+        directory.mkdir()
         return True
     return False
 
@@ -116,13 +116,16 @@ def get_if_action_can_associate_bone(action: bpy.types.Action, bone_names: list[
 
 
 def get_surface_area(obj: bpy.types.Object) -> float:
-    bm = bmesh.new()
-    bm.from_mesh(obj.data)
-    area = sum(f.calc_area() for f in bm.faces)
-    bm.free()
-    return area
+    if isinstance(obj.data, bpy.types.Mesh):
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        area = sum(f.calc_area() for f in bm.faces)
+        bm.free()
+        return area
+    return -1.0
 
 
-def set_windows_clipboard(text):
-    bpy.context.window_manager.clipboard = text
+def set_windows_clipboard(text: str) -> None:
+    if bpy.context.window_manager:
+        bpy.context.window_manager.clipboard = text
     # bpy.context.window_manager.clipboard.encode('utf8')

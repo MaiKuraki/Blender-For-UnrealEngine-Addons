@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import List, Set
+from typing import List, Set, TYPE_CHECKING
 import bpy
 from .. import bfu_basics
 from .. import bbpl
@@ -73,7 +73,7 @@ class BFU_OT_ConvertAnyCurveToBezier(bpy.types.Operator):
     bl_description = "Convert selected curves to Bezier for Unreal Engine export."
     bl_options = {'REGISTER', 'UNDO'}  # Ajoutez 'UNDO' pour permettre l'annulation de l'opération
     
-    resolution: bpy.props.IntProperty(
+    resolution: bpy.props.IntProperty(  # type: ignore
         name="Resolution",
         description="Number of computed points in the U direction between every pair of control points.",
         default=12,
@@ -81,16 +81,19 @@ class BFU_OT_ConvertAnyCurveToBezier(bpy.types.Operator):
         max=64
     )
 
-    def execute(self, context):
+    if TYPE_CHECKING:
+        resolution: int
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:  # type: ignore
         print(f"Resolution set to: {self.resolution}")
         # Votre logique de conversion ici
         bfu_spline_utils.convert_select_curves_to_bezier(self.resolution)
         return {'FINISHED'}
     
 
-    def invoke(self, context, event):
+    def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:  # type: ignore
         # Cela appelle la boîte de dialogue permettant à l'utilisateur de modifier les propriétés avant l'exécution
-        return context.window_manager.invoke_props_dialog(self)
+        return context.window_manager.invoke_props_dialog(self)  # type: ignore
 
         return {'FINISHED'}
 
@@ -109,17 +112,17 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     
-    bpy.types.Scene.bfu_spline_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Spline Properties")
-    bpy.types.Scene.bfu_spline_tools_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Spline")
+    bpy.types.Scene.bfu_spline_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Spline Properties")  # type: ignore
+    bpy.types.Scene.bfu_spline_tools_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Spline")  # type: ignore
 
-    bpy.types.Object.bfu_desired_spline_type = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_desired_spline_type = bpy.props.EnumProperty(  # type: ignore
         name="Spline Type",
         description="Choose the type of spline",
         items=bfu_spline_utils.get_enum_splines_list(),
         default=bfu_spline_utils.get_enum_splines_default()
     )
 
-    bpy.types.Object.bfu_spline_resample_resolution = bpy.props.IntProperty(
+    bpy.types.Object.bfu_spline_resample_resolution = bpy.props.IntProperty(  # type: ignore
         name="Resample resolution",
         description="NURBS curves must be resampled. You can choose the resampling resolution. 12 It's nice to keep the same quality but consume a lot of performance in Unreal Engine.",
         max=64,
@@ -127,21 +130,21 @@ def register():
         default=12,
     )
 
-    bpy.types.Object.bfu_custom_spline_component = bpy.props.StringProperty(
+    bpy.types.Object.bfu_custom_spline_component = bpy.props.StringProperty(  # type: ignore
         name="Custom spline Component",
         description=('Ref adress for an custom spline component'),
         override={'LIBRARY_OVERRIDABLE'},
         default="/Script/Engine.MySplineComponent",
         )
     
-    bpy.types.Object.bfu_export_spline_as_static_mesh = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_export_spline_as_static_mesh = bpy.props.BoolProperty(  # type: ignore
         name="Export as Static Mesh",
         description="If true this mesh will be exported as a Static Mesh",
         override={'LIBRARY_OVERRIDABLE'},
         default=False
         )
     
-    bpy.types.Scene.bfu_spline_vector_scale = bpy.props.FloatVectorProperty(
+    bpy.types.Scene.bfu_spline_vector_scale = bpy.props.FloatVectorProperty(  # type: ignore
         name="Spline Vector Scale (Apply on all splines)",
         description="Spline export scale for Unreal Engine.\n" \
          "- If you use glTF with unit scale at 1.0 keep 100.0.\n" \
@@ -154,12 +157,12 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.bfu_spline_vector_scale
-    del bpy.types.Object.bfu_export_spline_as_static_mesh
-    del bpy.types.Object.bfu_custom_spline_component
-    del bpy.types.Object.bfu_spline_resample_resolution
-    del bpy.types.Object.bfu_desired_spline_type
-    del bpy.types.Scene.bfu_spline_tools_expanded
-    del bpy.types.Scene.bfu_spline_properties_expanded
+    del bpy.types.Scene.bfu_spline_vector_scale  # type: ignore
+    del bpy.types.Object.bfu_export_spline_as_static_mesh  # type: ignore
+    del bpy.types.Object.bfu_custom_spline_component  # type: ignore
+    del bpy.types.Object.bfu_spline_resample_resolution  # type: ignore
+    del bpy.types.Object.bfu_desired_spline_type  # type: ignore
+    del bpy.types.Scene.bfu_spline_tools_expanded  # type: ignore
+    del bpy.types.Scene.bfu_spline_properties_expanded  # type: ignore
 
 

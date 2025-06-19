@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import bpy
 from . import bfu_spline_data
 from . import bfu_spline_unreal_utils
@@ -31,14 +31,13 @@ def add_spline_to_command(spline: bpy.types.Object, pre_bake_spline: bfu_spline_
 
         # First I get the spline data.
         # This is a very bad way to do this. I need do a new python file specific to spline with class to get data.
-        data = bfu_spline_write_text.write_spline_points_data(spline, pre_bake_spline)
+        data: Dict[str, Any] = bfu_spline_write_text.write_spline_points_data(spline, pre_bake_spline)
 
         # Engine ref:
         target_spline_component = bfu_spline_unreal_utils.get_spline_unreal_component(spline)
         ue_format_spline_list: List[str] = pre_bake_spline.get_ue_format_spline_list()
 
         for x, spline_key in enumerate(data["simple_splines"]):
-            simple_spline: bfu_spline_data.BFU_SimpleSpline
             simple_spline = data["simple_splines"][spline_key]
             if x == 0:
                 spline_name = spline.name

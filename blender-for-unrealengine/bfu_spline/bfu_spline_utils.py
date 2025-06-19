@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 import math
 import mathutils
 from .. import bbpl
@@ -88,12 +88,12 @@ def get_enum_splines_default():
     return "SPLINE"
 
 def transform_point_data(points: List[Any]) -> str:
-    transformed_points = []
+    transformed_points: List[str] = []
     for point in points:
-        point_parts = []
+        point_parts: List[str] = []
         for key, val in point.items():
             if isinstance(val, dict):  # Pour OutVal, ArriveTangent, LeaveTangent
-                val_str = ",".join([f"{k}={v}" for k, v in val.items()])
+                val_str = ",".join([f"{k}={v}" for k, v in val.items()])  # type: ignore
                 point_parts.append(f"{key}=({val_str})")
             else:  # Pour InVal, InterpMode
                 point_parts.append(f"{key}={val}")
@@ -102,10 +102,10 @@ def transform_point_data(points: List[Any]) -> str:
 
 
 def json_to_ue_format(json_data: Dict[str, Any]) -> str:
-    result_parts = []
+    result_parts: List[str] = []
     for spline, data in json_data.items():  # SplineCurves, ReparamTable, etc.
         if spline == "SplineCurves":
-            spline_parts = []
+            spline_parts: List[str] = []
             for key, value in data.items():  # Position, Rotation, Scale
                 points = transform_point_data(value["Points"])
                 points_data = ""
@@ -126,35 +126,36 @@ def json_to_ue_format(json_data: Dict[str, Any]) -> str:
             result_parts.append(f"{spline}=(Points={points})")
     return ", ".join(result_parts)
 
-def convert_select_curves_to_bezier(curve_resolution=12):
+def convert_select_curves_to_bezier(curve_resolution: int = 12):
     context = bpy.context
     for obj in context.selected_objects:
         convert_curve_to_bezier(obj, curve_resolution)
 
-def convert_curve_to_bezier(obj: bpy.types.Object, curve_resolution=12):
+def convert_curve_to_bezier(obj: bpy.types.Object, curve_resolution: int = 12):
     if obj.type == 'CURVE':
-        # Set curve resolution_u
-        for spline in obj.data.splines:
-            spline.resolution_u = curve_resolution
-        
-        # Select object for conversion
-        bbpl.utils.select_specific_object(obj)
-        
-        # Convert to Mesh
-        bpy.ops.object.convert(target='MESH')
+        if isinstance(obj.data, bpy.types.Curve):
+            # Set curve resolution_u
+            for spline in obj.data.splines:
+                spline.resolution_u = curve_resolution
+            
+            # Select object for conversion
+            bbpl.utils.select_specific_object(obj)
+            
+            # Convert to Mesh
+            bpy.ops.object.convert(target='MESH')
 
-        # Convert back to Curve
-        bpy.ops.object.convert(target='CURVE')
-        
-        # Set spline type to 'BEZIER'
-        bbpl.utils.select_specific_object(obj)
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.curve.select_all(action='SELECT')
-        bpy.ops.curve.spline_type_set(type='BEZIER')
-        bpy.ops.curve.handle_type_set(type='AUTOMATIC')
-        bpy.ops.object.mode_set(mode='OBJECT')
+            # Convert back to Curve
+            bpy.ops.object.convert(target='CURVE')
+            
+            # Set spline type to 'BEZIER'
+            bbpl.utils.select_specific_object(obj)
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.curve.select_all(action='SELECT')
+            bpy.ops.curve.spline_type_set(type='BEZIER')
+            bpy.ops.curve.handle_type_set(type='AUTOMATIC')
+            bpy.ops.object.mode_set(mode='OBJECT')
 
-def create_resampled_spline(spline_data: bpy.types.Spline, curve_resolution=12):
+def create_resampled_spline(spline_data: bpy.types.Spline, curve_resolution: int = 12) -> Optional[bpy.types.Object]:
     # Create a new curve data block
     new_curve_data = bpy.data.curves.new(name="ResampledCurve", type='CURVE')
     new_curve_data.dimensions = '3D'
@@ -199,25 +200,27 @@ def create_resampled_spline(spline_data: bpy.types.Spline, curve_resolution=12):
     else:
         # Add handling for other types if necessary
         print(f"Spline type {spline_data.type} is not supported.")
-        return
-    
+        return None
+
     # Create a new curve object with this curve data block
     new_curve_obj = bpy.data.objects.new("ResampledCurveObject", new_curve_data)
     
     # Add object to the active scene
-    bpy.context.collection.objects.link(new_curve_obj)
+    if bpy.context.collection:
+        bpy.context.collection.objects.link(new_curve_obj)
     convert_curve_to_bezier(new_curve_obj, curve_resolution)
     return new_curve_obj
 
-def contain_nurbs_spline(obj: bpy.types.Object):
+def contain_nurbs_spline(obj: bpy.types.Object) -> bool:
     if obj.type == "CURVE":
-        for spline in obj.data.splines:
-            if spline.type == "NURBS":
-                return True
+        if isinstance(obj.data, bpy.types.Curve):
+            for spline in obj.data.splines:
+                if spline.type == "NURBS":
+                    return True
     return False
 
 
-def is_spline(obj):
+def is_spline(obj: bpy.types.Object) -> bool:
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     if asset_class:
         if asset_class.get_asset_type(obj) == AssetType.SPLINE:

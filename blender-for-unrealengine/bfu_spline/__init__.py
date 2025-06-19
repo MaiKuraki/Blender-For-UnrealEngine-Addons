@@ -25,7 +25,6 @@ from . import bfu_spline_ui
 from . import bfu_spline_utils
 from . import bfu_spline_unreal_utils
 from . import bfu_spline_data
-from . import bfu_spline_export_utils
 from . import bfu_spline_write_text
 from . import bfu_spline_write_paste_commands
 from . import bfu_spline_type
@@ -43,8 +42,6 @@ if "bfu_spline_unreal_utils" in locals():
     importlib.reload(bfu_spline_unreal_utils)
 if "bfu_spline_data" in locals():
     importlib.reload(bfu_spline_data)
-if "bfu_spline_export_utils" in locals():
-    importlib.reload(bfu_spline_export_utils)
 if "bfu_spline_write_text" in locals():
     importlib.reload(bfu_spline_write_text)
 if "bfu_spline_write_paste_commands" in locals():
