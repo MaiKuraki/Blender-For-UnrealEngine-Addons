@@ -39,7 +39,8 @@
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",
@@ -54,7 +55,8 @@
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",
@@ -69,7 +71,8 @@
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",
@@ -84,7 +87,8 @@
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",
