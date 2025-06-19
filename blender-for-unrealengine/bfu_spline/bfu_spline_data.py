@@ -166,8 +166,6 @@ class BFU_SimpleSplinePoint():
         )
 
     def get_out_val_rotation(self) -> mathutils.Quaternion:
-
-
         roll, pitch, yaw = self.get_ue_point_rotation()  # mathutils.Quaternion (WXYZ)
 
         # Normalize angles like Unreal
@@ -251,6 +249,10 @@ class BFU_SimpleSplinePoint():
         spline_rot_up_vector *= 0.5
         spline_z_up_vector = mathutils.Vector((0, 0, 0.5))  # Unreal Engine Z-up vector
         tan = spline_z_up_vector + (spline_rot_up_vector - spline_z_up_vector) * 0.5  # Calculate the tangent vector
+
+        # Save the vector in a quaternion format.
+        # Unreal Engine uses a quaternion to store the tangent vector here.
+
         # X -> Y
         # -Y -> X
         # Z -> w
@@ -260,15 +262,6 @@ class BFU_SimpleSplinePoint():
         quat.y = tan.x
         quat.z = 0
         return quat
-
-
-        next_p = self.get_next_point()
-        if next_p:
-            curr = self.get_ue_point_rotation(False, False)
-            next_q = next_p.get_ue_point_rotation(False, False)
-            delta = (next_q - curr) * 0.5
-            return curr + delta
-        return self.get_ue_point_rotation(False, False)
 
 
     def get_human_readable_ue_rotation(self) -> str:
@@ -367,7 +360,7 @@ class BFU_SimpleSpline():
             point_rotation = {}
             point_scale = {}
 
-            point_location["InVal"] = "{:.6f}".format(spline_point_index)
+            point_location["InVal"] = float_as_ue(spline_point_index)
             point_location["OutVal"] = vector_as_ue(spline_point.get_ue_position())
             point_location["ArriveTangent"] = vector_as_ue(spline_point.get_arrive_tangent_loc())
             point_location["LeaveTangent"] = vector_as_ue(spline_point.get_leave_tangent_loc())
