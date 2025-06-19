@@ -77,16 +77,6 @@ def get_as_unreal_quaternion(roll: float, pitch: float, yaw: float) -> mathutils
     quat.normalize()
     return quat
 
-def get_enum_splines_list():
-    spline_types = [
-        ("SPLINE", "Spline", "Regular Spline component."),
-        ("CUSTOM", "Custom", "If you use an custom spline component."),
-    ]
-    return spline_types
-
-def get_enum_splines_default():
-    return "SPLINE"
-
 def transform_point_data(points: List[Any]) -> str:
     transformed_points: List[str] = []
     for point in points:

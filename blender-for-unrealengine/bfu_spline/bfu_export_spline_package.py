@@ -57,13 +57,10 @@ def export_single_fbx_spline(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     # Export single spline
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
-    scene = bpy.context.scene
+
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
@@ -189,7 +186,9 @@ def export_single_fbx_spline(
     saved_selection_names.restore_names()
     saved_simplify.reset_scene()
 
-    for obj in scene.objects:
-        bfu_utils.clear_all_bfu_temp_vars(obj)
+    scene = bpy.context.scene
+    if scene:
+        for obj in scene.objects:
+            bfu_utils.clear_all_bfu_temp_vars(obj)
     my_timer_group.end_last_timer()
     return True

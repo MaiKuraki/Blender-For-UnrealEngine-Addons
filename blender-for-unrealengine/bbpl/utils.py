@@ -425,19 +425,43 @@ class SaveUserRenderSimplify():
             return
 
         # General
-        self.use_simplify: bool = scene.render.use_simplify
+        self.use_simplify: bool = False
 
         # Viewport
-        self.simplify_subdivision: int = scene.render.simplify_subdivision
-        self.simplify_child_particles: float = scene.render.simplify_child_particles
-        self.simplify_volumes: float = scene.render.simplify_volumes
-        self.use_simplify_normals: bool = scene.render.use_simplify_normals
+        self.simplify_subdivision: int = 6
+        self.simplify_child_particles: float = 1.0
+        self.simplify_volumes: float = 1.0
+        self.use_simplify_normals: bool = False
 
         # Render
-        self.simplify_subdivision_render: int = scene.render.simplify_subdivision_render
-        self.simplify_child_particles_render: float = scene.render.simplify_child_particles_render
+        self.simplify_subdivision_render: int = 6
+        self.simplify_child_particles_render: float = 1.0
+
+    def save_scene(self):
+        """
+        Save the current scene render simplify settings.
+        """
+        scene = bpy.context.scene
+        if scene is None:
+            return
+
+        # General
+        self.use_simplify = scene.render.use_simplify
+
+        # Viewport
+        self.simplify_subdivision = scene.render.simplify_subdivision
+        self.simplify_child_particles = scene.render.simplify_child_particles
+        self.simplify_volumes = scene.render.simplify_volumes
+        self.use_simplify_normals = scene.render.use_simplify_normals
+
+        # Render
+        self.simplify_subdivision_render = scene.render.simplify_subdivision_render
+        self.simplify_child_particles_render = scene.render.simplify_child_particles_render
 
     def simplify_scene(self):
+        """
+        Simplifies the current scene render settings.
+        """
         scene = bpy.context.scene
         if scene is None:
             return
@@ -456,7 +480,9 @@ class SaveUserRenderSimplify():
         scene.render.simplify_child_particles_render = 0
 
     def unsimplify_scene(self):
-        # Reset scene for without data loose.
+        """
+        Resets the scene render settings to saved original values.
+        """
         scene = bpy.context.scene
         if scene is None:
             return
@@ -465,7 +491,9 @@ class SaveUserRenderSimplify():
         scene.render.use_simplify = False
 
     def reset_scene(self):
-        # Reset scene to saved scene.
+        """
+        Resets the scene to the saved scene.
+        """
         scene = bpy.context.scene
         if scene is None:
             return

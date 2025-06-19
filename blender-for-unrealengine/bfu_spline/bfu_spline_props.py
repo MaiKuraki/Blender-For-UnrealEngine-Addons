@@ -17,13 +17,37 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import List, Set, TYPE_CHECKING
+from typing import List, Set, TYPE_CHECKING, Tuple
+from enum import Enum
 import bpy
 from .. import bfu_basics
 from .. import bbpl
 from . import bfu_spline_utils
 from . import bfu_spline_write_paste_commands
 
+
+class BFU_SplineDesiredComponent(str, Enum):
+    SPLINE = "Spline"
+    CUSTOM = "Custom"
+
+    @staticmethod
+    def default() -> "BFU_SplineDesiredComponent":
+        return BFU_SplineDesiredComponent.SPLINE
+
+def get_spline_desired_component_enum_property_list() -> List[Tuple[str, str, str, int]]:
+    return [
+        (BFU_SplineDesiredComponent.SPLINE.value,
+            "Spline",
+            "Regular Spline component.",
+            1),
+        (BFU_SplineDesiredComponent.CUSTOM.value,
+            "Custom",
+            "Use a custom spline component.",
+            2),
+        ]
+
+def get_default_spline_desired_component() -> str:
+    return BFU_SplineDesiredComponent.default().value
 
 def get_preset_values() -> List[str]:
     preset_values = [
@@ -40,14 +64,18 @@ class BFU_OT_CopyActivesplineOperator(bpy.types.Operator):
     bl_idname = "object.bfu_copy_active_spline_data"
     bl_description = "Copy active spline data. (Use CTRL+V in Unreal viewport)"
 
-    def execute(self, context: bpy.types.Context) -> Set[str]:
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:  # type: ignore
         obj = context.object
-        result = bfu_spline_write_paste_commands.get_spline_unreal_clipboard([obj])
-        if result[0]:
-            bfu_basics.set_windows_clipboard(result[1])
-            self.report({'INFO'}, result[2])
+        if obj:
+            result = bfu_spline_write_paste_commands.get_spline_unreal_clipboard([obj])
+            if result[0]:
+                bfu_basics.set_windows_clipboard(result[1])
+                self.report({'INFO'}, result[2])
+            else:
+                self.report({'WARNING'}, result[2])
         else:
-            self.report({'WARNING'}, result[2])
+            self.report({'WARNING'}, "No active object found. Please select a spline (Curve) object.")
         return {'FINISHED'}
 
 # Scene button
@@ -56,7 +84,7 @@ class BFU_OT_CopySelectedsplinesOperator(bpy.types.Operator):
     bl_idname = "object.copy_selected_splines_data"
     bl_description = "Copy selected spline(s) data. (Use CTRL+V in Unreal viewport)"
 
-    def execute(self, context: bpy.types.Context) -> Set[str]:
+    def execute(self, context: bpy.types.Context) -> Set[str]:  # type: ignore
         objs = context.selected_objects
         result = bfu_spline_write_paste_commands.get_spline_unreal_clipboard(objs)
         if result[0]:
@@ -118,8 +146,8 @@ def register():
     bpy.types.Object.bfu_desired_spline_type = bpy.props.EnumProperty(  # type: ignore
         name="Spline Type",
         description="Choose the type of spline",
-        items=bfu_spline_utils.get_enum_splines_list(),
-        default=bfu_spline_utils.get_enum_splines_default()
+        items=get_spline_desired_component_enum_property_list(),
+        default=get_default_spline_desired_component()
     )
 
     bpy.types.Object.bfu_spline_resample_resolution = bpy.props.IntProperty(  # type: ignore

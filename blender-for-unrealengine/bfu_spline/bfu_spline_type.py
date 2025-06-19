@@ -52,9 +52,9 @@ class BFU_Spline(BFU_ObjectAssetClass):
         return AssetType.SPLINE
     
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
         scene = bpy.context.scene
+        if scene is None:
+            return False
         return scene.bfu_use_spline_export  # type: ignore
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
@@ -91,9 +91,6 @@ class BFU_Spline(BFU_ObjectAssetClass):
 # ####################################################################
 
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-        if bpy.context is None:
-            return []
-
         asset_list: List[AssetToExport] = []
 
         # One asset per alembic animation pack

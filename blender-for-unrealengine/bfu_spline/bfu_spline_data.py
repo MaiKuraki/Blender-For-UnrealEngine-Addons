@@ -521,9 +521,11 @@ class BFU_MultiSplineTracks():
         if scene is None:
             return
 
+        save_simplfy = bbpl.utils.SaveUserRenderSimplify()
+
         # Save scene data
         if not preview:
-            save_simplfy = bbpl.utils.SaveUserRenderSimplify()
+            save_simplfy.save_scene()
             save_simplfy.simplify_scene()
 
         for spline in self.splines_to_evaluate:
