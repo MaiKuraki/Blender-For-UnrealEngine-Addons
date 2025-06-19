@@ -9,6 +9,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - New: Better and more checks for potential issue checker.
 - New: Experimental glTF 2.0 export procedure.
 - New: Interchange import now is supported on Unreal 5.1, (before it was only 5.5 and above).
+- New: Roll/Twist support on splines.
 - Changed: "Check Potential Errors" renamed "Check Potential Issues".
 - Changed: New wiki button for open Lods page.
 - Changed: The default export folder "ExportedFbx" is now "ExportedAssets".
