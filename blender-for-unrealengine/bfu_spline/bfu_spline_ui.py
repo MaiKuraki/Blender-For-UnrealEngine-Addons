@@ -110,7 +110,7 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
     if obj.type != "CURVE":
         return
 
-    show_spline_debug_panel = True
+    show_spline_debug_panel = False
 
     scene = context.scene 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):

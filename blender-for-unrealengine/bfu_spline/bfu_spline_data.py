@@ -2,7 +2,6 @@ import bpy
 import math
 import mathutils
 from typing import Dict, Any, List, Union, TYPE_CHECKING, Optional, Tuple
-from .. import bfu_utils
 from . import bfu_spline_utils
 from . import bfu_spline_unreal_utils
 
@@ -158,7 +157,7 @@ class BFU_SimpleSplinePoint():
 
 
     def get_ue_point_rotation(self) -> Tuple[float, float, float]:
-        return bfu_utils.get_spline_unreal_rotation(
+        return bfu_spline_utils.get_spline_unreal_rotation(
             self.position, 
             self.handle_right, 
             self.curve_roll
@@ -235,7 +234,7 @@ class BFU_SimpleSplinePoint():
         if next_p is None or prev_p is None:
             # Use the point rotation at spline start and end
             roll, pitch, yaw = self.get_ue_point_rotation()
-            return bfu_utils.get_as_unreal_quaternion(roll, pitch, yaw)
+            return bfu_spline_utils.get_as_unreal_quaternion(roll, pitch, yaw)
 
         roll, pitch, yaw = self.get_ue_point_rotation()  # mathutils.Quaternion (WXYZ)
 
@@ -524,7 +523,7 @@ class BFU_MultiSplineTracks():
         for spline in self.splines_to_evaluate:
             self.evaluate_splines[spline.name] = BFU_SplinesList(spline)
 
-        print(f"Start evaluate {str(len(self.splines_to_evaluate))} spline(s).")
+        #print(f"Start evaluate {str(len(self.splines_to_evaluate))} spline(s).")
         for spline in self.splines_to_evaluate:
             evaluate = self.evaluate_splines[spline.name]
             evaluate.evaluate_spline_obj_data(spline)

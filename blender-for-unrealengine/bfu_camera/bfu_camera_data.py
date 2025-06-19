@@ -297,7 +297,7 @@ class BFU_CameraTracks():
         scene = bpy.context.scene
         addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
-        print(f"Start evaluate camera {camera.name} Frames:({str(frame_start)}-{str(frame_end)})")
+        #print(f"Start evaluate camera {camera.name} Frames:({str(frame_start)}-{str(frame_end)})")
         counter = bpl.utils.CounterTimer()
         
         slms = bfu_utils.TimelineMarkerSequence()
@@ -368,7 +368,7 @@ class BFU_MultiCameraTracks():
         for camera in self.cameras_to_evaluate:
             self.evaluate_cameras[camera.name] = BFU_CameraTracks(camera)
 
-        print(f"Start evaluate {str(len(self.cameras_to_evaluate))} camera(s). Frames:({str(frame_start)}-{str(frame_end)})")
+        #print(f"Start evaluate {str(len(self.cameras_to_evaluate))} camera(s). Frames:({str(frame_start)}-{str(frame_end)})")
         for frame in range(frame_start, frame_end):
             for camera in self.cameras_to_evaluate:
                 evaluate = self.evaluate_cameras[camera.name]

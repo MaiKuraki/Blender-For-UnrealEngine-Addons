@@ -495,59 +495,6 @@ def lerp_quaternion(q1: mathutils.Quaternion, q2: mathutils.Quaternion, alpha: f
     result.normalize()
     return result
 
-def get_spline_unreal_rotation(
-    point_position: mathutils.Vector, 
-    right_handle: mathutils.Vector, 
-    tilt_rad: float
-) -> Tuple[float, float, float]:
-    """
-    Returns a quaternion aligned with the forward direction (from point_position to right_handle),
-    and applies a tilt angle as roll. This matches Unreal Engine 5.6's conventions.
-
-    NOTES:
-    - Unreal Engine 5.6 uses a **left-handed**, **Z-up**, **X-forward** coordinate system.
-    - Blender uses **right-handed**, **Z-up**, **-Y-forward** system.
-    - Unreal applies rotations in ZYX order (Yaw → Pitch → Roll).
-    - When exporting from Blender, you must flip the Y axis of vectors to match Unreal space.
-    - The spline point rotation in Unreal is aligned to the **Leave Tangent**, which corresponds to **handle_right** in Blender.
-    """
-
-    """
-    Returns a quaternion aligned with the forward direction (from point_position to right_handle),
-    and applies a tilt angle as roll. This matches Unreal Engine 5.6's conventions.
-
-    NOTES:
-    - Unreal Engine 5.6 uses a left-handed, Z-up, X-forward coordinate system.
-    - Blender uses right-handed, Z-up, -Y-forward system.
-    """
-    bebug_print = True
-
-    direction = (right_handle - point_position).normalized()
-
-    if direction.length == 0:
-        return (0.0, 0.0, 0.0)
-
-    # Convert to Unreal space: flip Y
-    direction = mathutils.Vector((direction.x, -direction.y, direction.z))
-
-    yaw = math.atan2(direction.y, direction.x)
-    xy_len = math.sqrt(direction.x ** 2 + direction.y ** 2)
-    pitch = -math.atan2(direction.z, xy_len)
-    roll = tilt_rad
-    roll = ((roll + math.pi) % (2 * math.pi)) - math.pi
-
-    if bebug_print:
-        print("Yaw:", math.degrees(yaw), "Pitch:", math.degrees(pitch), "Roll:", math.degrees(roll))
-
-    return roll, pitch, yaw
-
-def get_as_unreal_quaternion(roll: float, pitch: float, yaw: float) -> mathutils.Quaternion:
-    # Invert pitch to compensate Blender's right-handed system
-    euler = mathutils.Euler((roll, -pitch, yaw), 'ZYX')
-    quat = euler.to_quaternion()
-    quat.normalize()
-    return quat
-
 def evaluate_camera_position_for_unreal(camera, previous_euler=mathutils.Euler()):
     # Get Transfrom
     unit_scale = get_scene_unit_scale()
