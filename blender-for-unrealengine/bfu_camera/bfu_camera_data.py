@@ -1,30 +1,33 @@
 import bpy
 import math
-from typing import Dict, Any
+import mathutils
+from typing import Dict, Any, List, Tuple, TYPE_CHECKING
 from . import bfu_camera_unreal_utils
 from .. import bpl
 from .. import bbpl
-from .. import languages
-from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_addon_prefs
 
 
-def set_current_frame(new_frame):
+def set_current_frame(new_frame: int) -> None:
     scene = bpy.context.scene
+    if scene is None:
+        return
     scene.frame_set(new_frame)
 
 
-def getCameraFocusDistance(Camera, Target):
+def getCameraFocusDistance(Camera: bpy.types.Object, Target: bpy.types.Object) -> float:
     global_loc_obj1 = Camera.matrix_world.translation
     global_loc_obj2 = Target.matrix_world.translation
     diff = global_loc_obj2 - global_loc_obj1
     return diff.length
 
-def getAllCamDistKeys(Camera, Target, frame_start, frame_end):
+def getAllCamDistKeys(Camera: bpy.types.Object, Target: bpy.types.Object, frame_start: int, frame_end: int) -> List[Tuple[int, float]]:
     scene = bpy.context.scene
+    if scene is None:
+        return []
     saveFrame = scene.frame_current  # Save current frame
-    keys = []
+    keys: List[Tuple[int, float]] = []
     for frame in range(frame_start, frame_end):
         set_current_frame(frame)
         v = getCameraFocusDistance(Camera, Target)
@@ -32,10 +35,13 @@ def getAllCamDistKeys(Camera, Target, frame_start, frame_end):
     set_current_frame(saveFrame)  # Resets previous start frame
     return keys
 
-def getAllKeysByMatrix(obj, frame_start, frame_end):
+def getAllKeysByMatrix(obj: bpy.types.Object, frame_start: int, frame_end: int) -> List[Tuple[int, Any]]:
     scene = bpy.context.scene
+    if scene is None:
+        return []
+
     saveFrame = scene.frame_current  # Save current frame
-    keys = []
+    keys: List[Tuple[int, Any]] = []
     for frame in range(frame_start, frame_end):
         set_current_frame(frame)
         v = obj.matrix_world*1
@@ -43,87 +49,91 @@ def getAllKeysByMatrix(obj, frame_start, frame_end):
     set_current_frame(saveFrame)  # Resets previous start frame
     return keys
 
-def getOneKeysByFcurves(obj, DataPath, DataValue, Frame, IsData=True):
-    scene = bpy.context.scene
-    if IsData:
+def get_one_keys_by_fcurves(obj: bpy.types.Object, data_path: str, data_value: Any, frame: int, is_data: bool = True) -> Any:
+    if is_data and obj.data is not None:
         if obj.data.animation_data is not None:
             if obj.data.animation_data.action is not None:
-                f = obj.data.animation_data.action.fcurves.find(DataPath)
-                if f is not None:
-                    return f.evaluate(Frame)
+                f = obj.data.animation_data.action.fcurves.find(data_path)
+                if f:
+                    return f.evaluate(frame)
     else:
         if obj.animation_data is not None:
             if obj.animation_data.action is not None:
-                f = obj.animation_data.action.fcurves.find(DataPath)
-                if f is not None:
-                    return f.evaluate(Frame)
-    return DataValue
+                f = obj.animation_data.action.fcurves.find(data_path)
+                if f:
+                    return f.evaluate(frame)
+    return data_value
 
-def getAllKeysByFcurves(obj, DataPath, DataValue, frame_start, frame_end, IsData=True):
-    scene = bpy.context.scene
-    keys = []
+def get_all_keys_by_fcurves(obj: bpy.types.Object, data_path: str, data_value: Any, frame_start: int, frame_end: int, is_data: bool = True) -> List[Tuple[int, Any]]:
+    keys: List[Tuple[int, Any]] = []
     f = None
-    if IsData:
+    if is_data and obj.data is not None:
         if obj.data.animation_data is not None:
             if obj.data.animation_data.action is not None:
-                f = obj.data.animation_data.action.fcurves.find(DataPath)
+                f = obj.data.animation_data.action.fcurves.find(data_path)
     else:
         if obj.animation_data is not None:
             if obj.animation_data.action is not None:
-                f = obj.animation_data.action.fcurves.find(DataPath)
+                f = obj.animation_data.action.fcurves.find(data_path)
 
     if f is not None:
         for frame in range(frame_start, frame_end):
             v = f.evaluate(frame)
             keys.append((frame, v))
         return keys
-    return[(frame_start, DataValue)]
+    return[(frame_start, data_value)]
 
 class BFU_CameraTracks():
 
     def __init__(self, camera: bpy.types.Object):
         # Context stats
         scene = bpy.context.scene
-        self.resolution_x = scene.render.resolution_x
-        self.resolution_y = scene.render.resolution_y
-        self.pixel_aspect_x = bpy.context.scene.render.pixel_aspect_x
-        self.pixel_aspect_y = bpy.context.scene.render.pixel_aspect_y
-        
-        self.camera_name = camera.name
-        self.camera_type = camera.bfu_desired_camera_type
-        self.projection_mode = camera.data.type
-        self.ortho_scale = camera.data.ortho_scale
-        
-        self.ue_projection_mode = bfu_camera_unreal_utils.get_camera_unreal_projection(camera)
-        self.ue_camera_actor = bfu_camera_unreal_utils.get_camera_unreal_actor(camera)
+        if scene is None:
+            return
+        if not isinstance(camera.data, bpy.types.Camera):
+            print("Error: The provided object is not a camera.")
+            return
+
+        self.resolution_x: int = scene.render.resolution_x
+        self.resolution_y: int = scene.render.resolution_y
+        self.pixel_aspect_x: float = scene.render.pixel_aspect_x
+        self.pixel_aspect_y: float = scene.render.pixel_aspect_y
+
+        self.camera_name: str = camera.name
+        self.camera_type: str = camera.bfu_desired_camera_type  # type: ignore
+        self.projection_mode: str = camera.data.type
+        self.ortho_scale: float = camera.data.ortho_scale
+
+        self.ue_projection_mode: str = bfu_camera_unreal_utils.get_camera_unreal_projection(camera)
+        self.ue_camera_actor: str = bfu_camera_unreal_utils.get_camera_unreal_actor(camera)
 
         # Blender Camera Data
-        self.transform_track = {}
-        self.near_clipping_plane = {}
-        self.far_clipping_plane = {}
-        self.field_of_view = {}
-        self.angle = {}
-        self.lens = {}
-        self.sensor_width = {}
-        self.sensor_height = {}
-        self.projection_shift = {}
-        self.focus_distance = {}
-        self.aperture_fstop = {}
-        self.hide_viewport = {}
+        self.transform_track: Dict[int, Any] = {}
+        self.near_clipping_plane: Dict[int, Any] = {}
+        self.far_clipping_plane: Dict[int, Any] = {}
+        self.field_of_view: Dict[int, Any] = {}
+        self.angle: Dict[int, Any] = {}
+        self.lens: Dict[int, Any] = {}
+        self.sensor_width: Dict[int, Any] = {}
+        self.sensor_height: Dict[int, Any] = {}
+        self.projection_shift: Dict[int, Any] = {}
+        self.focus_distance: Dict[int, Any] = {}
+        self.aperture_fstop: Dict[int, Any] = {}
+        self.hide_viewport: Dict[int, Any] = {}
 
         # Formated data for Unreal Engine
-        self.ue_transform_track = {}
-        self.ue_sensor_width = {}
-        self.ue_sensor_height = {}
-        self.ue_lens_min_fstop = 1.2 #Default value in Unreal Engine
-        self.ue_lens_max_fstop = 22.0 #Default value in Unreal Engine
+        self.ue_transform_track: Dict[int, Any] = {}
+        self.ue_sensor_width: Dict[int, Any] = {}
+        self.ue_sensor_height: Dict[int, Any] = {}
+        self.ue_lens_min_fstop: float = 1.2  # Default value in Unreal Engine
+        self.ue_lens_max_fstop: float = 22.0  # Default value in Unreal Engine
 
         # Formated data for ArchVis Tools in Unreal Engine
-        self.arch_projection_shift = {}
+        self.arch_projection_shift: Dict[int, Any] = {}
 
 
     def get_animated_values_as_dict(self) -> Dict[str, Any]:
-        data = {}
+        data: Dict[str, Any] = {}
         # Static data
         data["camera_name"] = self.camera_name
         data["camera_type"] = self.camera_type
@@ -157,7 +167,7 @@ class BFU_CameraTracks():
     
 
 
-    def fix_transform_axis_flippings(self, camera: bpy.types.Object, array_rotation, frame: int, target_use: str):
+    def fix_transform_axis_flippings(self, camera: bpy.types.Object, array_rotation: List[float], frame: int, target_use: str):
 
         # Define constants for target use
         TRANSFORM_TRACKS = {
@@ -171,7 +181,11 @@ class BFU_CameraTracks():
             raise ValueError(f"Invalid target_use: {target_use}. Must be 'Blender' or 'UnrealEngine'.")
            
         # convert warp_target to degrees        
-        warp_target_degrees = [round(math.degrees(v), 1) for v in camera.bfu_fix_axis_flippings_warp_target]
+        if TYPE_CHECKING:
+            fix_axis_flippings_warp_target: mathutils.Vector = mathutils.Vector((0.0, 0.0, 0.0))
+        else:
+            fix_axis_flippings_warp_target = camera.bfu_fix_axis_flippings_warp_target
+        warp_target_degrees = [round(math.degrees(v), 1) for v in fix_axis_flippings_warp_target]
 
         # Create a copy of the current rotation array
         new_array_rotation = array_rotation.copy()
@@ -190,29 +204,52 @@ class BFU_CameraTracks():
         return new_array_rotation
 
     def evaluate_camera_transform(self, camera: bpy.types.Object, frame: int, target_use: str):
-        if target_use == "Blender":
-            camera_transform = bfu_utils.evaluate_camera_position(camera)
-        elif target_use == "UnrealEngine":
+        
+
+        transform: Dict[str, float] = {}
+
+
+        if target_use == "UnrealEngine":
+            camera_transform: Tuple[mathutils.Vector, List[float], mathutils.Vector]
             camera_transform = bfu_utils.evaluate_camera_position_for_unreal(camera)
-        array_location = camera_transform[0]
-        array_rotation = camera_transform[1]
-        array_scale = camera_transform[2]
+            array_location: mathutils.Vector = camera_transform[0]
+            array_rotation: List[float] = camera_transform[1]
+            array_scale: mathutils.Vector = camera_transform[2]
 
-        # Fix axis flippings
-        if camera.bfu_fix_axis_flippings:
-            array_rotation = self.fix_transform_axis_flippings(camera, array_rotation, frame, target_use)
+            # Fix axis flippings
+            if TYPE_CHECKING:
+                fix_axis_flippings: bool = True
+            else:
+                fix_axis_flippings = camera.bfu_fix_axis_flippings
+            if fix_axis_flippings:
+                array_rotation = self.fix_transform_axis_flippings(camera, array_rotation, frame, target_use)
 
-        transform = {}
-        transform["location_x"] = round(array_location.x, 8)
-        transform["location_y"] = round(array_location.y, 8)
-        transform["location_z"] = round(array_location.z, 8)
-        transform["rotation_x"] = round(array_rotation[0], 8)
-        transform["rotation_y"] = round(array_rotation[1], 8)
-        transform["rotation_z"] = round(array_rotation[2], 8)
-        transform["scale_x"] = round(array_scale.x, 4)
-        transform["scale_y"] = round(array_scale.y, 4)
-        transform["scale_z"] = round(array_scale.z, 4)
-        return transform
+            transform: Dict[str, float] = {}
+            transform["location_x"] = round(array_location.x, 8)
+            transform["location_y"] = round(array_location.y, 8)
+            transform["location_z"] = round(array_location.z, 8)
+            transform["rotation_x"] = round(array_rotation[0], 8)
+            transform["rotation_y"] = round(array_rotation[1], 8)
+            transform["rotation_z"] = round(array_rotation[2], 8)
+            transform["scale_x"] = round(array_scale.x, 4)
+            transform["scale_y"] = round(array_scale.y, 4)
+            transform["scale_z"] = round(array_scale.z, 4)
+            return transform
+
+        else:
+            camera_transform = bfu_utils.evaluate_camera_position(camera)
+            transform: Dict[str, float] = {}
+            transform["location_x"] = round(camera.location.x, 8)
+            transform["location_y"] = round(camera.location.y, 8)
+            transform["location_z"] = round(camera.location.z, 8)
+            transform["rotation_x"] = round(camera.rotation_euler.x, 8)
+            transform["rotation_y"] = round(camera.rotation_euler.y, 8)
+            transform["rotation_z"] = round(camera.rotation_euler.z, 8)
+            transform["scale_x"] = round(camera.scale.x, 4)
+            transform["scale_y"] = round(camera.scale.y, 4)
+            transform["scale_z"] = round(camera.scale.z, 4)
+            return transform
+        
 
     def get_ue_crop_sensor_height(self, sensor_width: float, sensor_height: float):
         res_ratio = self.resolution_x / self.resolution_y
@@ -222,6 +259,12 @@ class BFU_CameraTracks():
 
     def evaluate_track_at_frame(self, camera: bpy.types.Object, frame: int):
         scene = bpy.context.scene
+        if scene is None:
+            return
+        if not isinstance(camera.data, bpy.types.Camera):
+            print("Error: The provided object is not a camera.")
+            return
+
         addon_prefs = bfu_addon_prefs.get_addon_prefs()
         unit_scale = bfu_utils.get_scene_unit_scale()
         set_current_frame(frame)
@@ -230,11 +273,11 @@ class BFU_CameraTracks():
         self.ue_transform_track[frame] = self.evaluate_camera_transform(camera, frame, "UnrealEngine")
 
         # Get FOV FocalLength SensorWidth SensorHeight
-        self.angle[frame] = getOneKeysByFcurves(camera, "angle", camera.data.angle, frame)
-        self.lens[frame] = getOneKeysByFcurves(camera, "lens", camera.data.lens, frame)
+        self.angle[frame] = get_one_keys_by_fcurves(camera, "angle", camera.data.angle, frame)
+        self.lens[frame] = get_one_keys_by_fcurves(camera, "lens", camera.data.lens, frame)
 
-        sensor_width = getOneKeysByFcurves(camera, "sensor_width", camera.data.sensor_width, frame)
-        sensor_height = getOneKeysByFcurves(camera, "sensor_height", camera.data.sensor_height, frame)
+        sensor_width = get_one_keys_by_fcurves(camera, "sensor_width", camera.data.sensor_width, frame)
+        sensor_height = get_one_keys_by_fcurves(camera, "sensor_height", camera.data.sensor_height, frame)
 
         self.sensor_width[frame] = sensor_width 
         self.sensor_height[frame] = sensor_height
@@ -242,8 +285,8 @@ class BFU_CameraTracks():
         self.ue_sensor_height[frame] = self.get_ue_crop_sensor_height(sensor_width, sensor_height)
 
         # Camera shift
-        shift_x = getOneKeysByFcurves(camera, "shift_x", camera.data.shift_x, frame)
-        shift_y = getOneKeysByFcurves(camera, "shift_y", camera.data.shift_y, frame)
+        shift_x = get_one_keys_by_fcurves(camera, "shift_x", camera.data.shift_x, frame)
+        shift_y = get_one_keys_by_fcurves(camera, "shift_y", camera.data.shift_y, frame)
         self.projection_shift[frame] = {"x": shift_x, "y": shift_y}
 
         arch_shift_x = shift_x * 2 # x2
@@ -254,16 +297,16 @@ class BFU_CameraTracks():
         self.field_of_view[frame] = round(math.degrees(self.angle[frame]), 8)
 
         # Get Clip
-        self.near_clipping_plane[frame] = getOneKeysByFcurves(camera, "clip_start", camera.data.clip_start, frame) * 100 * unit_scale
-        self.far_clipping_plane[frame] = getOneKeysByFcurves(camera, "clip_end", camera.data.clip_end, frame) * 100 * unit_scale
+        self.near_clipping_plane[frame] = get_one_keys_by_fcurves(camera, "clip_start", camera.data.clip_start, frame) * 100 * unit_scale
+        self.far_clipping_plane[frame] = get_one_keys_by_fcurves(camera, "clip_end", camera.data.clip_end, frame) * 100 * unit_scale
 
         # Get FocusDistance
-        if camera.data.dof.use_dof:
+        if camera.data.dof and camera.data.dof.use_dof:
             if camera.data.dof.focus_object is not None:
                 key = getCameraFocusDistance(camera, camera.data.dof.focus_object)
 
             else:
-                key = getOneKeysByFcurves(camera, "dof.focus_distance", camera.data.dof.focus_distance, frame)
+                key = get_one_keys_by_fcurves(camera, "dof.focus_distance", camera.data.dof.focus_distance, frame)
 
             if addon_prefs.scale_camera_focus_distance_with_unit_scale:
                 self.focus_distance[frame] = key * 100 * unit_scale
@@ -275,8 +318,8 @@ class BFU_CameraTracks():
 
         # Write Aperture (Depth of Field) keys
         render_engine = scene.render.engine
-        if render_engine in ["BLENDER_EEVEE", "CYCLES", "BLENDER_WORKBENCH"]:
-            key = getOneKeysByFcurves(camera, "dof.aperture_fstop", camera.data.dof.aperture_fstop, frame)
+        if render_engine in ["BLENDER_EEVEE", "CYCLES", "BLENDER_WORKBENCH"] and camera.data.dof:
+            key = get_one_keys_by_fcurves(camera, "dof.aperture_fstop", camera.data.dof.aperture_fstop, frame)
             key = round(key, 8) # Avoid microscopic offsets.
             if addon_prefs.scale_camera_fstop_with_unit_scale:
                 self.aperture_fstop[frame] = key / unit_scale
@@ -289,12 +332,15 @@ class BFU_CameraTracks():
         self.ue_lens_min_fstop = min(self.ue_lens_min_fstop, self.aperture_fstop[frame])
         self.ue_lens_max_fstop = max(self.ue_lens_max_fstop, self.aperture_fstop[frame])
 
-        boolKey = getOneKeysByFcurves(camera, "hide_viewport", camera.hide_viewport, frame, False)
+        boolKey = get_one_keys_by_fcurves(camera, "hide_viewport", camera.hide_viewport, frame, False)
         self.hide_viewport[frame] = (boolKey < 1)  # Inversed for convert hide to spawn
 
-    def evaluate_all_tracks(self, camera, frame_start, frame_end):
-        
+    def evaluate_all_tracks(self, camera: bpy.types.Object, frame_start: int, frame_end: int):
+
         scene = bpy.context.scene
+        if scene is None:
+            return
+
         addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         #print(f"Start evaluate camera {camera.name} Frames:({str(frame_start)}-{str(frame_end)})")
@@ -308,10 +354,9 @@ class BFU_CameraTracks():
         for frame in range(frame_start, frame_end+1):
             if len(slms.marker_sequences) > 0 and addon_prefs.bake_only_key_visible_in_cut:
                 # Bake only frames visible in cut
-                marker_sequence = slms.GetMarkerSequenceAtFrame(frame)
-                if marker_sequence:
-                    marker = marker_sequence.marker
-                    if marker.camera == camera:
+                marker_sequence = slms.get_marker_sequence_at_frame(frame)
+                if marker_sequence and marker_sequence.marker:
+                    if marker_sequence.marker.camera == camera:
                         self.evaluate_track_at_frame(camera, frame)
             else:
                 # Bake all frames
@@ -327,9 +372,9 @@ class BFU_CameraTracks():
 class BFU_MultiCameraTracks():
 
     def __init__(self):
-        self.cameras_to_evaluate = []
-        self.frame_start = 0
-        self.frame_end = 1
+        self.cameras_to_evaluate: List[bpy.types.Object] = []
+        self.frame_start: int = 0
+        self.frame_end: int = 1
         self.evaluate_cameras: Dict[str, BFU_CameraTracks] = {}
 
     def add_camera_to_evaluate(self, obj: bpy.types.Object):
@@ -339,31 +384,34 @@ class BFU_MultiCameraTracks():
         self.frame_start = frame_start
         self.frame_end = frame_end
 
-    def evaluate_all_cameras(self, ignore_marker_sequences = False, preview: bool = False):
+    def evaluate_all_cameras(self, ignore_marker_sequences: bool = False, preview: bool = False, print_counter: bool = False):
         # Evalutate all cameras at same time will avoid frames switch
 
+        scene = bpy.context.scene
+        if scene is None:
+            return
+
         def optimizated_evaluate_track_at_frame(evaluate: BFU_CameraTracks):
-            marker_sequence = slms.GetMarkerSequenceAtFrame(frame)
+            marker_sequence = slms.get_marker_sequence_at_frame(frame)
             if marker_sequence:
                 marker = marker_sequence.marker
-                if marker.camera == camera:
+                if marker and marker.camera == camera:
                     evaluate.evaluate_track_at_frame(camera, frame)
 
 
 
         frame_start = self.frame_start
         frame_end = self.frame_end
-        scene = bpy.context.scene
         addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
         counter = bpl.utils.CounterTimer()
-
         slms = bfu_utils.TimelineMarkerSequence()
+        save_simplfy = bbpl.utils.SaveUserRenderSimplify()
 
         # Save scene data
         save_current_frame = scene.frame_current
         if not preview:
-            save_simplfy = bbpl.utils.SaveUserRenderSimplify()
+            save_simplfy.save_scene()
             save_simplfy.simplify_scene()
 
         for camera in self.cameras_to_evaluate:
@@ -386,11 +434,15 @@ class BFU_MultiCameraTracks():
             save_simplfy.reset_scene()
         scene.frame_current = save_current_frame
 
+        if print_counter:
+            print("Evaluate all cameras finished in " + counter.get_str_time())
+            print("-----")
+
     def get_evaluate_camera_data(self, obj: bpy.types.Object):
         return self.evaluate_cameras[obj.name]
     
     def get_evaluate_camera_data_as_dict(self, obj: bpy.types.Object) -> Dict[str, Any]:
-        data = {}
+        data: Dict[str, Any] = {}
         data.update(self.evaluate_cameras[obj.name].get_animated_values_as_dict())
         data.update(self.evaluate_cameras[obj.name].get_animated_values_as_dict())
         return data

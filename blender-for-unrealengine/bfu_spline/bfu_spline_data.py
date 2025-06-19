@@ -3,6 +3,7 @@ import math
 import mathutils
 from typing import Dict, Any, List, Union, TYPE_CHECKING, Optional, Tuple
 from .. import bbpl
+from .. import bpl
 from . import bfu_spline_utils
 from . import bfu_spline_unreal_utils
 
@@ -305,7 +306,6 @@ class BFU_SimpleSplinePoint():
         return data
 
 
-
 class BFU_SimpleSpline():
 
     def __init__(self, spline_data: bpy.types.Spline):
@@ -462,6 +462,7 @@ class BFU_SimpleSpline():
         #print("-----")
         return
 
+
 class BFU_SplinesList():
 
     def __init__(self, spline: bpy.types.Object):
@@ -499,11 +500,9 @@ class BFU_SplinesList():
                 simple_spline = self.simple_splines[x] = BFU_SimpleSpline(spline_data)
                 simple_spline.evaluate_spline_data(spline_obj, spline_data, x)
 
-        #print("Evaluate " + spline_obj.name + " finished in " + counter.get_str_time())
-        #print("-----")
         return
-
  
+
 class BFU_MultiSplineTracks():
 
     def __init__(self):
@@ -514,13 +513,14 @@ class BFU_MultiSplineTracks():
         self.splines_to_evaluate.append(obj)
 
 
-    def evaluate_all_splines(self, preview: bool = False):
+    def evaluate_all_splines(self, preview: bool = False, print_counter: bool = False):
         # Evaluate all splines at the same time to avoid frame switching
 
         scene = bpy.context.scene
         if scene is None:
             return
 
+        counter = bpl.utils.CounterTimer()
         save_simplfy = bbpl.utils.SaveUserRenderSimplify()
 
         # Save scene data
@@ -538,6 +538,10 @@ class BFU_MultiSplineTracks():
 
         if not preview:
             save_simplfy.reset_scene()
+
+        if print_counter:
+            print("Evaluate all splines finished in " + counter.get_str_time())
+            print("-----")
 
 
     def get_evaluate_spline_data(self, obj: bpy.types.Object):

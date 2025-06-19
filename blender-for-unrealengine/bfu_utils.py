@@ -24,7 +24,7 @@ import fnmatch
 import mathutils
 import math
 import os
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union, TYPE_CHECKING, Any
 from . import bbpl
 from . import bfu_basics
 from . import bfu_export_control
@@ -55,11 +55,14 @@ class SavedViewLayerChildren():
 
 
 class MarkerSequence():
-    def __init__(self, marker):
+    def __init__(self, marker: Optional[bpy.types.TimelineMarker] = None):
         scene = bpy.context.scene
-        self.marker = marker
-        self.start = 0
-        self.end = scene.frame_end
+        if scene is None:
+            return
+
+        self.marker: Optional[bpy.types.TimelineMarker] = marker
+        self.start: int = 0
+        self.end: int = scene.frame_end
 
         if marker is not None:
             self.start = marker.frame
@@ -69,19 +72,19 @@ class TimelineMarkerSequence():
 
     def __init__(self):
         scene = bpy.context.scene
-        timeline = scene.timeline_markers
-        self.marker_sequences: List[MarkerSequence] = self.GetMarkerSequences(timeline)
+        if scene is None:
+            return
+        
+        timeline: bpy.types.TimelineMarkers = scene.timeline_markers
+        self.marker_sequences: List[MarkerSequence] = self.get_marker_sequences(timeline)
 
-    def GetMarkerSequences(self, timeline_markers):
+    def get_marker_sequences(self, timeline_markers: bpy.types.TimelineMarkers) -> List[MarkerSequence]:
         if len(timeline_markers) == 0:
             print("Scene has no timeline_markers.")
             return []
 
-        def GetFisrtMarket(marker_list):
-            if len(marker_list) == 0:
-                return None
-
-            best_marker = ""
+        def get_first_marker(marker_list: List[bpy.types.TimelineMarker]) -> bpy.types.TimelineMarker:
+            best_marker: bpy.types.TimelineMarker
             best_marker_frame = 0
             init = False
 
@@ -98,17 +101,17 @@ class TimelineMarkerSequence():
 
             return best_marker
 
-        marker_list = []
+        marker_list: List[bpy.types.TimelineMarker] = []
         for marker in timeline_markers:
             marker_list.append(marker)
 
-        order_marker_list = []
+        order_marker_list: List[bpy.types.TimelineMarker] = []
         while len(marker_list) != 0:
-            first_marker = GetFisrtMarket(marker_list)
+            first_marker = get_first_marker(marker_list)
             order_marker_list.append(first_marker)
             marker_list.remove(first_marker)
 
-        marker_sequences = []
+        marker_sequences: List[MarkerSequence] = []
 
         for marker in order_marker_list:
             marker_sequence = MarkerSequence(marker)
@@ -121,7 +124,7 @@ class TimelineMarkerSequence():
 
         return marker_sequences
 
-    def GetMarkerSequenceAtFrame(self, frame):
+    def get_marker_sequence_at_frame(self, frame: int) -> Optional[MarkerSequence]:
         if self.marker_sequences:
             for marker_sequence in self.marker_sequences:
                 # print(marker_sequence.start, marker_sequence.end, frame)
@@ -261,90 +264,102 @@ def remove_all_bones_consraints(obj: bpy.types.Object):
             c.enabled = False
             b.constraints.remove(c)
 
+class ProxyRigConsraint():
+    def __init__(self, constraint: bpy.types.Constraint):
+        self.constraint = constraint
+        # STRETCH_TO
+        if constraint.type == "STRETCH_TO":
+            if isinstance(constraint, bpy.types.StretchToConstraint):
+                self.rest_length = constraint.rest_length  # Can be bigger than 10?... wtf
+
+        # LIMIT_LOCATION
+        if constraint.type == "LIMIT_LOCATION":
+            if isinstance(constraint, bpy.types.LimitLocationConstraint):
+                self.min_x = constraint.min_x
+                self.min_y = constraint.min_y
+                self.min_z = constraint.min_z
+                self.max_x = constraint.max_x
+                self.max_y = constraint.max_y
+                self.max_z = constraint.max_z
+
+        # LIMIT_DISTANCE
+        if constraint.type == "LIMIT_DISTANCE":
+            if isinstance(constraint, bpy.types.LimitDistanceConstraint):
+                self.distance = constraint.distance
+
 
 class RigConsraintScale():
 
-    def __init__(self, armature, rescale_rig_factor):
+    def __init__(self, armature: bpy.types.Object, rescale_rig_factor: float):
         self.armature = armature
-        self.rescale_rig_factor = rescale_rig_factor  # rigRescaleFactor
-        self.consraint_proxys = []
+        if not isinstance(armature.data, bpy.types.Armature):
+            raise TypeError(f"Object {armature.name} is not an armature")
+        self.rescale_rig_factor: float = rescale_rig_factor  # rigRescaleFactor
+        self.consraint_proxys: List[ProxyRigConsraint] = []
 
-        class ProxyRigConsraint():
-            def __init__(self, constraint):
-                self.constraint = constraint
-                # STRETCH_TO
-                if constraint.type == "STRETCH_TO":
-                    self.rest_length = constraint.rest_length  # Can be bigger than 10?... wtf
+        if armature.pose:
+            for bone in armature.pose.bones:
+                for constraint in bone.constraints:
+                    self.consraint_proxys.append(ProxyRigConsraint(constraint))
 
-                # LIMIT_LOCATION
-                if constraint.type == "LIMIT_LOCATION":
-                    self.min_x = constraint.min_x
-                    self.min_y = constraint.min_y
-                    self.min_z = constraint.min_z
-                    self.max_x = constraint.max_x
-                    self.max_y = constraint.max_y
-                    self.max_z = constraint.max_z
-
-                # LIMIT_DISTANCE
-                if constraint.type == "LIMIT_DISTANCE":
-                    self.distance = constraint.distance
-
-        for bone in armature.pose.bones:
-            for constraint in bone.constraints:
-                self.consraint_proxys.append(ProxyRigConsraint(constraint))
-
-    def RescaleRigConsraintForUnrealEngine(self):
+    def rescale_rig_consraint_for_unreal_engine(self):
         scale = self.rescale_rig_factor
         for consraint_proxy in self.consraint_proxys:
-            c = consraint_proxy.constraint
+            constraint = consraint_proxy.constraint
             # STRETCH_TO
-            if c.type == "STRETCH_TO":
-                c.rest_length *= scale  # Can be bigger than 10?... wtf
+            if constraint.type == "STRETCH_TO":
+                if isinstance(constraint, bpy.types.StretchToConstraint):
+                    constraint.rest_length *= scale  # Can be bigger than 10?... wtf
 
             # LIMIT_LOCATION
-            if c.type == "LIMIT_LOCATION":
-                c.min_x *= scale
-                c.min_y *= scale
-                c.min_z *= scale
-                c.max_x *= scale
-                c.max_y *= scale
-                c.max_z *= scale
+            if constraint.type == "LIMIT_LOCATION":
+                if isinstance(constraint, bpy.types.LimitLocationConstraint):
+                    constraint.min_x *= scale
+                    constraint.min_y *= scale
+                    constraint.min_z *= scale
+                    constraint.max_x *= scale
+                    constraint.max_y *= scale
+                    constraint.max_z *= scale
 
             # LIMIT_DISTANCE
-            if c.type == "LIMIT_DISTANCE":
-                c.distance *= scale
+            if constraint.type == "LIMIT_DISTANCE":
+                if isinstance(constraint, bpy.types.LimitDistanceConstraint):
+                    constraint.distance *= scale
 
-    def ResetScaleAfterExport(self):
+    def reset_scale_after_export(self):
         for consraint_proxy in self.consraint_proxys:
-            c = consraint_proxy.constraint
+            constraint = consraint_proxy.constraint
             # STRETCH_TO
-            if c.type == "STRETCH_TO":
-                c.rest_length = consraint_proxy.rest_length  # Can be bigger than 10?... wtf
+            if constraint.type == "STRETCH_TO":
+                if isinstance(constraint, bpy.types.StretchToConstraint):
+                    constraint.rest_length = consraint_proxy.rest_length  # Can be bigger than 10?... wtf
 
             # LIMIT_LOCATION
-            if c.type == "LIMIT_LOCATION":
-                c.min_x = consraint_proxy.min_x
-                c.min_y = consraint_proxy.min_y
-                c.min_z = consraint_proxy.min_z
-                c.max_x = consraint_proxy.max_x
-                c.max_y = consraint_proxy.max_y
-                c.max_z = consraint_proxy.max_z
+            if constraint.type == "LIMIT_LOCATION":
+                if isinstance(constraint, bpy.types.LimitLocationConstraint):
+                    constraint.min_x = consraint_proxy.min_x
+                    constraint.min_y = consraint_proxy.min_y
+                    constraint.min_z = consraint_proxy.min_z
+                    constraint.max_x = consraint_proxy.max_x
+                    constraint.max_y = consraint_proxy.max_y
+                    constraint.max_z = consraint_proxy.max_z
 
             # LIMIT_DISTANCE
-            if c.type == "LIMIT_DISTANCE":
-                c.distance = consraint_proxy.distance
+            if constraint.type == "LIMIT_DISTANCE":
+                if isinstance(constraint, bpy.types.LimitDistanceConstraint):
+                    constraint.distance = consraint_proxy.distance
 
 
 class ShapeKeysCurveScale():
 
-    def __init__(self, rescale_rig_factor, is_a_proxy=False):
+    def __init__(self, rescale_rig_factor: float, is_a_proxy: bool = False):
         self.export_as_proxy = is_a_proxy
         self.rescale_rig_factor = rescale_rig_factor  # rigRescaleFactor
         self.default_unit_length = get_scene_unit_scale()
-        self.proxy_drivers = self.ShapeKeysDriverRefs()  # Save driver data as proxy
+        self.proxy_drivers = self.shape_keys_driver_refs()  # Save driver data as proxy
 
     class DriverProxyData():
-        def __init__(self, obj, driver):
+        def __init__(self, obj: bpy.types.Object, driver: bpy.types.FCurve):
             self.obj = obj
             self.driver = driver
             self.keyframe_points = []
@@ -365,7 +380,7 @@ class ShapeKeysCurveScale():
             def __init__(self, modifier):
                 self.coefficients = modifier.coefficients
 
-    def RescaleForUnrealEngine(self):
+    def rescale_for_unreal_engine(self):
         scale = 1/self.rescale_rig_factor
         for proxy_driver in self.proxy_drivers:
             for key in proxy_driver.driver.keyframe_points:
@@ -378,7 +393,7 @@ class ShapeKeysCurveScale():
                     mod.coefficients[0] *= scale  # coef: +
                     mod.coefficients[1] *= scale  # coef: x
 
-    def ResetScaleAfterExport(self):
+    def reset_scale_after_export(self):
         for proxy_driver in self.proxy_drivers:
             for x, key in enumerate(proxy_driver.driver.keyframe_points):
                 key.co[1] = proxy_driver.keyframe_points[x].co
@@ -398,19 +413,20 @@ class ShapeKeysCurveScale():
         #    if driver_name in 
         #    bpy.context.selected_objects[0].data.shape_keys.key_blocks[1]
 
-    def ShapeKeysDriverRefs(self):
-        drivers = []
+    def shape_keys_driver_refs(self):
+        drivers: List[Any] = []
         obj_list = bpy.context.selected_objects
+
         if self.export_as_proxy is False:
             for obj in obj_list:
-                if obj.type == "MESH":
+                if isinstance(obj.data, bpy.types.Mesh):
                     if obj.data.shape_keys is not None:
                         if obj.data.shape_keys.animation_data is not None:
-                            if obj.data.shape_keys.animation_data.drivers is not None:
-                                for driver_curve in obj.data.shape_keys.animation_data.drivers:
-                                    # Check if has location context.
-                                    need_rescale_curve = False
-                                    driver = driver_curve.driver
+                            for driver_curve in obj.data.shape_keys.animation_data.drivers:
+                                # Check if has location context.
+                                need_rescale_curve = False
+                                driver = driver_curve.driver
+                                if driver:
                                     for variable in driver.variables:
                                         if variable.type == "TRANSFORMS":
                                             for target in variable.targets:
@@ -495,38 +511,39 @@ def lerp_quaternion(q1: mathutils.Quaternion, q2: mathutils.Quaternion, alpha: f
     result.normalize()
     return result
 
-def evaluate_camera_position_for_unreal(camera, previous_euler=mathutils.Euler()):
-    # Get Transfrom
+def evaluate_camera_position(camera: bpy.types.Object, previous_euler: mathutils.Euler = mathutils.Euler()) -> Tuple[mathutils.Vector, List[float], mathutils.Vector]:
+    pass
+    # TODO
+
+def evaluate_camera_position_for_unreal(camera: bpy.types.Object, previous_euler: mathutils.Euler = mathutils.Euler()) -> Tuple[mathutils.Vector, List[float], mathutils.Vector]:
+    # Get Transform
+    if not isinstance(camera.data, bpy.types.Camera):
+        raise TypeError(f"Object {camera.name} is not a camera")
+
     unit_scale = get_scene_unit_scale()
     display_size = camera.data.display_size
 
     matrix_y = mathutils.Matrix.Rotation(math.radians(90.0), 4, 'Y')
     matrix_x = mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X')
-    matrix = camera.matrix_world @ matrix_y @ matrix_x
-    loc = matrix.to_translation() * 100 * unit_scale
-    loc += camera.bfu_additional_location_for_export
-    r = matrix.to_euler("XYZ", previous_euler)
-    s = matrix.to_scale() * unit_scale * display_size
+    matrix: mathutils.Matrix = camera.matrix_world @ matrix_y @ matrix_x
+    loc: mathutils.Vector = matrix.to_translation() * 100 * unit_scale
+    if TYPE_CHECKING:
+        additional_location_for_export: mathutils.Vector = mathutils.Vector((0, 0, 0))
+    else:
+        additional_location_for_export = camera.bfu_additional_location_for_export
+    loc += additional_location_for_export
+    rot: mathutils.Euler = matrix.to_euler("XYZ", previous_euler)
+    scale: mathutils.Vector = matrix.to_scale() * unit_scale * display_size
 
     loc *= mathutils.Vector([1, -1, 1])
-    array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]  # Roll, Pitch, Yaw: XYZ
-    array_transform = [loc, array_rotation, s]
+    array_rotation: List[float] = [math.degrees(rot[0]), math.degrees(rot[1])*-1, math.degrees(rot[2])*-1]  # Roll, Pitch, Yaw: XYZ
+    array_transform: Tuple[mathutils.Vector, List[float], mathutils.Vector] = (loc, array_rotation, scale)
 
     return array_transform
 
 
-def evaluate_camera_rotation_for_blender(transform):
-    x = transform["rotation_x"]
-    y = transform["rotation_y"]*-1
-    z = transform["rotation_z"]*-1
-    euler = mathutils.Euler([x, y, z], "XYZ")
-    return euler
-
-
 def get_desired_action_start_end_range(obj: bpy.types.Object, action: bpy.types.Action)-> Tuple[float, float]:
     # Returns desired action or camera anim start/end time
-    if bpy.context is None:
-        return (0.0, 1.0)
     scene = bpy.context.scene
 
     if obj.bfu_anim_action_start_end_time_enum == "with_keyframes":
