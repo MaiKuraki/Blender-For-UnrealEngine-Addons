@@ -101,7 +101,9 @@ def update_bone_shape(
     Raises:
         KeyError: If the bone name or override transform bone name is not found in the armature.
     '''
-    
+    if armature.pose is None:
+        return False
+
     bone = armature.pose.bones.get(bone_name)
     if not bone:
         raise KeyError(f"Bone '{bone_name}' not found in the armature.")

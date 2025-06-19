@@ -39,13 +39,14 @@ def select_specific_object_list(active: Optional[bpy.types.Object], objs: List[b
     Returns:
         None
     """
-    if bpy.context is None:
-        print("In select_specific_object_list the context is None!")
+    view_layer = bpy.context.view_layer
+    if view_layer is None:
+        print("In select_specific_object_list the view_layer is None!")
         return []
     if active is None:
         print("In select_specific_object_list the active object is None!")
         return []
-    if active.name not in bpy.context.view_layer.objects:
+    if active.name not in view_layer.objects:
         print(f"The active object {active.name} not found in bpy.context.view_layer.objects!")
         return []
 
@@ -54,22 +55,22 @@ def select_specific_object_list(active: Optional[bpy.types.Object], objs: List[b
     # Deselect all
     for obj in bpy.context.selected_objects:
         obj.select_set(False)
-    bpy.context.view_layer.objects.active = None
+    view_layer.objects.active = None
 
     # Select specific objects
     for obj in objs:
-        if obj.name in bpy.context.window.view_layer.objects:
+        if obj.name in view_layer.objects:
             obj.select_set(True)  # type: ignore
             selected_objs.append(obj)
 
     # Set active at end
     active.select_set(True)  # type: ignore
-    bpy.context.view_layer.objects.active = active
+    view_layer.objects.active = active
     selected_objs.append(active)
 
     return selected_objs
 
-def select_specific_object(active: Optional[bpy.types.Object]):
+def select_specific_object(active: Optional[bpy.types.Object]) -> Optional[bpy.types.Object]:
     """
     - Deselect all
     - Selects a specific object in Blender.
@@ -81,24 +82,25 @@ def select_specific_object(active: Optional[bpy.types.Object]):
         None
     """
 
-    if bpy.context is None:
-        print("In select_specific_object_list the context is None!")
+    view_layer = bpy.context.view_layer
+    if view_layer is None:
+        print("In select_specific_object the view_layer is None!")
         return None
     if active is None:
-        print("In select_specific_object_list the active object is None!")
+        print("In select_specific_object the active object is None!")
         return None
-    if active.name not in bpy.context.view_layer.objects:
+    if active.name not in view_layer.objects:
         print(f"The active object {active.name} not found in bpy.context.view_layer.objects!")
         return None
 
     # Deselect all
     for obj in bpy.context.selected_objects:
         obj.select_set(False)
-    bpy.context.view_layer.objects.active = None
+    view_layer.objects.active = None
 
     # Select specific object and set active
     active.select_set(True)  # type: ignore
-    bpy.context.view_layer.objects.active = active
+    view_layer.objects.active = active
     return active
 
 class UserArmatureDataSave():
@@ -141,7 +143,7 @@ def mode_set_on_target(target_object: Optional[bpy.types.Object] = None, target_
     """
     Set the target object to the specified mode.
     """
-    if bpy.context:
+    if bpy.context.view_layer:
         # Exit current mode
         if bpy.ops.object.mode_set.poll():  # type: ignore
             bpy.ops.object.mode_set(mode='OBJECT')  # type: ignore
@@ -192,7 +194,8 @@ def update_bone_rot_mode(armature: bpy.types.Object, bone_name: str, rotation_mo
     """
     Update the rotation mode of a specific bone in an armature.
     """
-    armature.pose.bones[bone_name].rotation_mode = rotation_mode
+    if armature.pose:
+        armature.pose.bones[bone_name].rotation_mode = rotation_mode  # type: ignore
 
 def get_visual_bone_pos(obj: bpy.types.Object, bone: bpy.types.PoseBone) -> Tuple[mathutils.Vector, mathutils.Euler, mathutils.Vector]:
     """
@@ -265,7 +268,7 @@ def set_visual_bone_pos(
     if not use_rot:
         bone.rotation_euler = base_rot
         bone.rotation_quaternion = base_quaternion
-        bone.rotation_mode = rot_mode_base
+        bone.rotation_mode = rot_mode_base  # type: ignore
     if not use_scale:
         bone.scale = base_scale
 
@@ -285,7 +288,7 @@ def set_visual_bones_pos_packed(
     use_loc: bool, 
     use_rot: bool, 
     use_scale: bool
-):
+) -> None:
     """
     Set the visual positions, rotations, and scales of multiple bones using a packed position list,
     allowing control over which values to apply.
@@ -293,9 +296,9 @@ def set_visual_bones_pos_packed(
     for pl in position_list:
         target_bone = find_item_in_list_by_name(pl[0], target_bones)
         if target_bone is not None:
-            loc = mathutils.Vector(pl[1])
-            rot = mathutils.Euler(pl[2], 'XYZ')
-            scale = mathutils.Vector(pl[3])
+            loc = mathutils.Vector(pl[1])  # type: ignore
+            rot = mathutils.Euler(pl[2], 'XYZ')  # type: ignore
+            scale = mathutils.Vector(pl[3])  # type: ignore
             set_visual_bone_pos(obj, target_bone, loc, rot, scale, use_loc, use_rot, use_scale)
 
 def get_safe_collection(collection_name: str) -> bpy.types.Collection:
@@ -322,8 +325,11 @@ def set_collection_exclude(collection: bpy.types.Collection, exclude: bool):
     """
     Set the exclude property for a collection in all view layers.
     """
+    scene = bpy.context.scene
+    if scene is None:
+        return
+
     if bpy.context:
-        scene = bpy.context.scene
         for vl in scene.view_layers:
             for layer in get_recursive_layer_collection(vl.layer_collection):
                 if layer.collection == collection:
@@ -414,12 +420,68 @@ def recursive_delete_collection(collection: bpy.types.Collection):
 
 class SaveUserRenderSimplify():
     def __init__(self):
-        if bpy.context:
-            self.use_simplify = bpy.context.scene.render.use_simplify
+        scene = bpy.context.scene
+        if scene is None:
+            return
 
-    def LoadUserRenderSimplify(self):
-        if bpy.context:
-            bpy.context.scene.render.use_simplify = self.use_simplify
+        # General
+        self.use_simplify: bool = scene.render.use_simplify
+
+        # Viewport
+        self.simplify_subdivision: int = scene.render.simplify_subdivision
+        self.simplify_child_particles: float = scene.render.simplify_child_particles
+        self.simplify_volumes: float = scene.render.simplify_volumes
+        self.use_simplify_normals: bool = scene.render.use_simplify_normals
+
+        # Render
+        self.simplify_subdivision_render: int = scene.render.simplify_subdivision_render
+        self.simplify_child_particles_render: float = scene.render.simplify_child_particles_render
+
+    def simplify_scene(self):
+        scene = bpy.context.scene
+        if scene is None:
+            return
+
+        # General
+        scene.render.use_simplify = True
+
+        # Viewport
+        scene.render.simplify_subdivision = 0
+        scene.render.simplify_child_particles = 0
+        scene.render.simplify_volumes = 0
+        scene.render.use_simplify_normals = False
+
+        # Render
+        scene.render.simplify_subdivision_render = 0
+        scene.render.simplify_child_particles_render = 0
+
+    def unsimplify_scene(self):
+        # Reset scene for without data loose.
+        scene = bpy.context.scene
+        if scene is None:
+            return
+
+        # General
+        scene.render.use_simplify = False
+
+    def reset_scene(self):
+        # Reset scene to saved scene.
+        scene = bpy.context.scene
+        if scene is None:
+            return
+
+        # General
+        scene.render.use_simplify = self.use_simplify
+
+        # Viewport
+        scene.render.simplify_subdivision = self.simplify_subdivision
+        scene.render.simplify_child_particles = self.simplify_child_particles
+        scene.render.simplify_volumes = self.simplify_volumes
+        scene.render.use_simplify_normals = self.use_simplify_normals
+
+        # Render
+        scene.render.simplify_subdivision_render = self.simplify_subdivision_render
+        scene.render.simplify_child_particles_render = self.simplify_child_particles_render
 
 class SaveObjectReferanceUser():
     """
@@ -440,22 +502,23 @@ class SaveObjectReferanceUser():
 
         :param obj: The target bpy.types.Object to find references to.
         """
-        if bpy.context is None:
-            return
         
         scene = bpy.context.scene
+        if scene is None:
+            return
 
         for obj in scene.objects:
             if obj.type == 'ARMATURE':  # type: ignore
-                for bone in obj.pose.bones:
-                    for contrainte in bone.constraints:
-                        if hasattr(contrainte, 'target') and contrainte.target and contrainte.target.name == targe_obj.name:  # type: ignore
-                            constraint_info = {
-                                'armature_object': obj.name,
-                                'bone': bone.name,
-                                'constraint': contrainte.name
-                            }
-                            self.using_constraints.append(constraint_info)
+                if obj.pose:
+                    for bone in obj.pose.bones:
+                        for contrainte in bone.constraints:
+                            if hasattr(contrainte, 'target') and contrainte.target and contrainte.target.name == targe_obj.name:  # type: ignore
+                                constraint_info = {
+                                    'armature_object': obj.name,
+                                    'bone': bone.name,
+                                    'constraint': contrainte.name
+                                }
+                                self.using_constraints.append(constraint_info)
     
     def update_refs_with_object(self, targe_obj: bpy.types.Object):
         """
@@ -463,10 +526,10 @@ class SaveObjectReferanceUser():
 
         :param obj: The new bpy.types.Object to be used as the target for the saved constraints.
         """
-        if bpy.context is None:
-            return
         
         scene = bpy.context.scene
+        if scene is None:
+            return
 
         for info in self.using_constraints:
             if info['armature_object'] in scene.objects:
@@ -479,8 +542,6 @@ class SaveObjectReferanceUser():
 
 def active_mode_is(target_mode: str):
     # Return True is active obj mode == target_mode
-    if bpy.context is None:
-        return False
 
     obj = bpy.context.active_object
     if obj is not None:
@@ -490,8 +551,6 @@ def active_mode_is(target_mode: str):
 
 def active_type_is(target_type: str):
     # Return True is active obj type == target_type
-    if bpy.context is None:
-        return False
 
     obj = bpy.context.active_object
     if obj is not None:
@@ -501,8 +560,6 @@ def active_type_is(target_type: str):
 
 def active_type_is_not(target_type: str):
     # Return True is active obj type != target_type
-    if bpy.context is None:
-        return False
 
     obj = bpy.context.active_object
     if obj is not None:
@@ -512,8 +569,6 @@ def active_type_is_not(target_type: str):
 
 def found_type_in_selection(target_type: str, include_active: bool = True):
     # Return True if a specific type is found in current user selection
-    if bpy.context is None:
-        return False
 
     select = bpy.context.selected_objects
     if not include_active:
