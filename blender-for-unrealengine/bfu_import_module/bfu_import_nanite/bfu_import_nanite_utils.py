@@ -36,7 +36,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
     if "build_nanite" in asset_additional_data:
         build_nanite = asset_additional_data["build_nanite"]
 
-        if itask.use_interchange:
+        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             if asset_type == ExportAssetType.STATIC_MESH:
                 if "build_nanite" in asset_additional_data:
                     itask.get_igap_mesh().set_editor_property('build_nanite', build_nanite)

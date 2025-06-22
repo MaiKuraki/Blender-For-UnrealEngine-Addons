@@ -91,12 +91,12 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
         return
 
     vertex_override_color = get_vertex_override_color(asset_additional_data)
-    if itask.use_interchange:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         vertex_color_import_option = get_interchange_vertex_color_import_option(asset_additional_data)
     else:
         vertex_color_import_option = get_vertex_color_import_option(asset_additional_data)
 
-    if itask.use_interchange:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         itask.get_igap_common_mesh().set_editor_property('vertex_color_import_option', vertex_color_import_option)
         if vertex_override_color:
             itask.get_igap_common_mesh().set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())

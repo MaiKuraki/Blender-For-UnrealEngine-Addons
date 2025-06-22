@@ -23,7 +23,7 @@ from .. import import_module_tasks_class
 
 def apply_post_import_assets_changes(itask: import_module_tasks_class.ImportTask, asset_data):
     """Applies post-import changes based on whether Interchange or FBX is used."""
-    if itask.use_interchange:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         apply_interchange_post_import(itask, asset_data)
     else:
         apply_fbxui_post_import(itask, asset_data)

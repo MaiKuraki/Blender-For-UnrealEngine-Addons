@@ -95,7 +95,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
             # desired_lod_group = asset_additional_data["static_mesh_lod_group"]
             desired_lod_group = "None"
 
-            if itask.use_interchange:
+            if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
                 itask.get_igap_mesh().set_editor_property('lod_group', desired_lod_group)
             else:
                 itask.get_static_mesh_import_data().set_editor_property('static_mesh_lod_group', desired_lod_group)

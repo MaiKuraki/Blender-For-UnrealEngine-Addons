@@ -32,7 +32,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
         return
 
     # Material and texture import settings
-    if itask.use_interchange:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         if "import_materials" in asset_additional_data:
             itask.get_igap_material().set_editor_property('import_materials', asset_additional_data["import_materials"])
 
@@ -82,7 +82,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
             texture_import_data.set_editor_property('invert_normal_maps', asset_additional_data["flip_normal_map_green_channel"])
     
     # Mat order
-    if itask.use_interchange:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         # @TODO reorder_material_to_fbx_order Removed with InterchangeGenericAssetsPipeline? 
         # I yes need also remove reorder_material_to_fbx_order from the addon propertys.
         pass

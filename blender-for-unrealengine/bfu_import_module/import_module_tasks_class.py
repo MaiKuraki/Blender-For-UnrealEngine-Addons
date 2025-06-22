@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import os
-from typing import List, Optional, Union
+from typing import List, Optional, Union, TYPE_CHECKING
 import unreal
 from . import import_module_unreal_utils
 from . import constrcut_utils
@@ -31,14 +31,18 @@ class ImportTask():
         self.task: unreal.AssetImportTask = unreal.AssetImportTask() 
         self.task_option: Optional[Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]] = None  # Type hint for task_option, can be FbxImportUI or InterchangeGenericAssetsPipeline
 
-        # @TODO @DEPRECATED: Use isinstance(use.task_option, unreal.InterchangeGenericAssetsPipeline) instead
-        self.use_interchange = should_use_interchange
+    def get_preview_import_refs(self) -> str:
+        if TYPE_CHECKING:
+            filename: str = ""
+            destination_path: str = ""
+        else:
+            filename: str = self.task.get_editor_property('filename')
+            destination_path: str = self.task.get_editor_property('destination_path')
 
-    def get_preview_import_refs(self):
-        filename_without_ext = os.path.splitext(os.path.basename(self.task.filename))[0]
+        filename_without_ext: str = os.path.splitext(os.path.basename(filename))[0]
         assetname = import_module_unreal_utils.clean_filename_for_unreal(filename_without_ext)
-        return self.task.destination_path+"/"+assetname+"."+assetname
-                    
+        return destination_path+"/"+assetname+"."+assetname
+
     def set_task_option(self, new_task_option):
         self.task_option = new_task_option
 
@@ -134,7 +138,7 @@ class ImportTask():
     
     def import_asset_task(self):
         # InterchangePipelineStackOverride was added in Unreal Engine 5.2
-        if hasattr(unreal, 'InterchangePipelineStackOverride'):
+        if hasattr(unreal, 'InterchangePipelineStackOverride') and isinstance(self.task_option, unreal.InterchangeGenericAssetsPipeline):
             self.task.set_editor_property('options', unreal.InterchangePipelineStackOverride())
 
             # unreal.InterchangePipelineStackOverride.add_pipeline was added in Unreal Engine 5.3
@@ -149,7 +153,7 @@ class ImportTask():
     
     def get_task_options(self):
         # InterchangePipelineStackOverride was added in Unreal Engine 5.2
-        if hasattr(unreal, 'InterchangePipelineStackOverride'):
+        if hasattr(unreal, 'InterchangePipelineStackOverride') and isinstance(self.task_option, unreal.InterchangeGenericAssetsPipeline):
             new_option = unreal.InterchangePipelineStackOverride()
 
             # unreal.InterchangePipelineStackOverride.add_pipeline was added in Unreal Engine 5.3
