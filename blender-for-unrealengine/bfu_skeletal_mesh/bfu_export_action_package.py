@@ -146,11 +146,12 @@ def export_as_action_animation(
     should_rescale_rig = bfu_export.bfu_export_utils.get_should_rescale_skeleton_for_fbx_export(active)
     if should_rescale_rig:
         rrf = bfu_export.bfu_export_utils.get_rescale_rig_factor()  # rigRescaleFactor
+        print(f"Rescale rig factor: {rrf}")
         scene.unit_settings.scale_length = 0.01
         my_skeletal_export_scale = bfu_utils.SkeletalExportScale(active)
         my_skeletal_export_scale.apply_skeletal_export_scale(rrf)
         my_action_curve_scale = bfu_utils.ActionCurveScale(rrf*active.scale.z)
-        my_action_curve_scale.RescaleForUnrealEngine()
+        my_action_curve_scale.rescale_for_export()
         my_shape_keys_curve_scale = bfu_utils.ShapeKeysCurveScale(rrf)
         my_shape_keys_curve_scale.rescale_for_unreal_engine()
         my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf)
@@ -282,7 +283,7 @@ def export_as_action_animation(
     if should_rescale_rig:
         my_rig_consraints_scale.reset_scale_after_export()  # type: ignore
         my_skeletal_export_scale.ResetSkeletalExportScale()  # type: ignore
-        my_action_curve_scale.ResetScaleAfterExport()  # type: ignore
+        my_action_curve_scale.restore_scale_after_export()  # type: ignore
         my_shape_keys_curve_scale.reset_scale_after_export()  # type: ignore
         my_modifiers_data_scale.ResetScaleAfterExport()  # type: ignore
 

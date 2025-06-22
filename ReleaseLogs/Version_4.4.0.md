@@ -2,7 +2,6 @@
 Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Release-Logs
 
 ### Version 4.4.0
-
 - Full refactorig about asset management and addon in general.
 - New: Support materials and textures export using glTF 2.0 format.
 - New: Sub folder support for modular skeletal meshs.
@@ -10,6 +9,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - New: Experimental glTF 2.0 export procedure.
 - New: Interchange import now is supported on Unreal 5.1, (before it was only 5.5 and above).
 - New: Roll/Twist support on splines.
+- New: Support action slots rescale for fbx when not using unit scale 0.01. (Action slots was added in Blender 4.4)
 - Changed: "Check Potential Errors" renamed "Check Potential Issues".
 - Changed: New wiki button for open Lods page.
 - Changed: The default export folder "ExportedFbx" is now "ExportedAssets".

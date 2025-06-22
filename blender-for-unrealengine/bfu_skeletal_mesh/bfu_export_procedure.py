@@ -72,7 +72,7 @@ def get_export_file_type(procedure: BFU_SkeletonExportProcedure) -> BFU_FileType
         return BFU_FileTypeEnum.GLTF
 
 def is_fbx_file_export(obj: bpy.types.Object) -> bool:
-    return get_obj_export_file_type(obj) == BFU_FileTypeEnum.FBX
+    return get_obj_export_file_type(obj).value == BFU_FileTypeEnum.FBX.value
 
 def get_obj_skeleton_fbx_procedure_preset(obj: bpy.types.Object) -> Dict[str, str | bool]:
     return get_skeleton_procedure_preset(get_object_export_procedure(obj))

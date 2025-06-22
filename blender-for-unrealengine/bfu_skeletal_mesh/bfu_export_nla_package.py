@@ -145,7 +145,7 @@ def process_nla_anim_export(
         my_skeletal_export_scale = bfu_utils.SkeletalExportScale(active)
         my_skeletal_export_scale.apply_skeletal_export_scale(rrf, target_animation_data=animation_data)
         my_action_curve_scale = bfu_utils.ActionCurveScale(rrf*active.scale.z)
-        my_action_curve_scale.RescaleForUnrealEngine()
+        my_action_curve_scale.rescale_for_export()
         my_shape_keys_curve_scale = bfu_utils.ShapeKeysCurveScale(rrf)
         my_shape_keys_curve_scale.rescale_for_unreal_engine()
         my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf)
@@ -273,7 +273,7 @@ def process_nla_anim_export(
     if should_rescale_rig:
         my_rig_consraints_scale.reset_scale_after_export()  # type: ignore
         my_skeletal_export_scale.ResetSkeletalExportScale()  # type: ignore
-        my_action_curve_scale.ResetScaleAfterExport()  # type: ignore
+        my_action_curve_scale.restore_scale_after_export()  # type: ignore
         my_shape_keys_curve_scale.reset_scale_after_export()  # type: ignore
         my_modifiers_data_scale.ResetScaleAfterExport()  # type: ignore
 
