@@ -17,18 +17,40 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import unreal
+from typing import Any, Dict
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
+from ..asset_types import ExportAssetType
 
-
-def apply_post_import_assets_changes(itask: import_module_tasks_class.ImportTask, asset_data):
+def set_animation_sample_rate(itask: import_module_tasks_class.ImportTask, asset_additional_data: Dict[str, Any], asset_type: ExportAssetType, filetype: str) -> None:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        if asset_type.is_skeletal_animation():
+            if asset_additional_data and "animation_frame_rate_denominator" in asset_additional_data and "animation_frame_rate_numerator" in asset_additional_data:
+                if filetype == "GLTF":
+                    # Interchange use sample rate to set the animation frame rate.
+                    sequencer_frame_rate_denominator = asset_additional_data['animation_frame_rate_denominator']
+                    sequencer_frame_rate_numerator = asset_additional_data['animation_frame_rate_numerator']
+                    # For GLTF, the sample rate is the frame rate.
+                    animation_sample_rate = sequencer_frame_rate_numerator / sequencer_frame_rate_denominator
+                    print("Set GLTF animation sample rate to:", animation_sample_rate)
+                    animation_pipeline = itask.get_igap_animation()
+                    animation_pipeline.set_editor_property('custom_bone_animation_sample_rate', animation_sample_rate)
+                    animation_pipeline.set_editor_property('snap_to_closest_frame_boundary', True)
+                    return
+                
+            # For other file types, use automatic sample rate.
+            animation_pipeline = itask.get_igap_animation()
+            animation_pipeline.set_editor_property('custom_bone_animation_sample_rate', 0)
+        
+            
+def apply_post_import_assets_changes(itask: import_module_tasks_class.ImportTask, asset_data: Dict[str, Any]) -> None:
     """Applies post-import changes based on whether Interchange or FBX is used."""
     if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         apply_interchange_post_import(itask, asset_data)
     else:
         apply_fbxui_post_import(itask, asset_data)
 
-def apply_interchange_post_import(itask: import_module_tasks_class.ImportTask, asset_data):
+def apply_interchange_post_import(itask: import_module_tasks_class.ImportTask, asset_data: Dict[str, Any]) -> None:
 
 
     # When Import FBX animation using the Interchange it create Anim_0_Root and Root_MorphAnim_0. 

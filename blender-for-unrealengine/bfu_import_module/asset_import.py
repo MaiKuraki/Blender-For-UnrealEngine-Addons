@@ -65,12 +65,12 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
             if asset_data["import_as_lod_mesh"] == True:  # Lod should not be imported here so return if lod is not 0.
                 return "FAIL", None
 
-    def found_additional_data():
+    def found_additional_data() -> Dict[str, Any]:
         files: List[Dict[str, Any]] = asset_data["files"]
         for file in files:
             if file["content_type"] == "ADDITIONAL_DATA":
                 return import_module_utils.json_load_file(Path(file["file_path"]))
-        return None
+        return {}
 
     asset_additional_data = found_additional_data()
 
@@ -181,7 +181,6 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
                 if origin_skeleton:
                     itask.get_igap_skeletal_mesh().set_editor_property('skeleton', origin_skeleton)
                     itask.get_igap_skeletal_mesh().set_editor_property('import_only_animations', True)
-
             else:
                 if origin_skeleton:
                     itask.get_fbx_import_ui().set_editor_property('skeleton', origin_skeleton)
@@ -256,6 +255,7 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
         if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             if asset_type.is_skeletal_animation():
                 itask.get_igap_animation().set_editor_property('import_animations', True)
+                bfu_import_animations.bfu_import_animations_utils.set_animation_sample_rate(itask, asset_additional_data, asset_type, filetype)
                 itask.get_igap_mesh().set_editor_property('import_skeletal_meshes', False)
                 itask.get_igap_mesh().set_editor_property('import_static_meshes', False)
                 itask.get_igap_mesh().set_editor_property('create_physics_asset',False)

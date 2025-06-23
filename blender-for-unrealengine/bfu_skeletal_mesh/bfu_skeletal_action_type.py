@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Dict
 from pathlib import Path
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_ObjectAssetClass
@@ -161,6 +161,15 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
         asset_list.append(asset)
         return asset_list
 
+    def get_asset_additional_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> Dict[str, Any]:
+        additional_data: Dict[str, Any] = {}
+
+        scene = bpy.context.scene
+        if scene:
+            # Used for set animation sample rate with glTF imports
+            additional_data['animation_frame_rate_denominator'] = scene.render.fps_base
+            additional_data['animation_frame_rate_numerator'] = scene.render.fps
+        return additional_data
 
 # --------------------------------------------
 # Register and Unregister functions

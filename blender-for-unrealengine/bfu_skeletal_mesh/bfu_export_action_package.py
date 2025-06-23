@@ -66,9 +66,6 @@ def export_as_action_animation(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     if not isinstance(armature.data, bpy.types.Armature):
         raise TypeError(f"The armature object is not a valid Armature type! Inputs: armature: {armature.name}")  
 
@@ -76,6 +73,9 @@ def export_as_action_animation(
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+
     addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # [SAVE ASSET DATA]
@@ -134,8 +134,9 @@ def export_as_action_animation(
 
     # Apply only desirect action for export
     if active.animation_data is None:  # type: ignore
-        active.animation_data_create()
-    active.animation_data.action = target_action  # Apply desired action
+        active.animation_data_create().action = target_action  # Apply desired action
+    else:
+        active.animation_data.action = target_action  # Apply desired action
     
     if addon_prefs.bakeArmatureAction:
         bfu_export.bfu_export_utils.bake_armature_animation(active, scene.frame_start, scene.frame_end)
@@ -165,18 +166,20 @@ def export_as_action_animation(
 
     # animation_data.action is ReadOnly with tweakmode in 2.8
     if (scene.is_nla_tweakmode):
-        active.animation_data.use_tweak_mode = False
+        if active.animation_data:
+            active.animation_data.use_tweak_mode = False
 
     if addon_prefs.ignoreNLAForAction:  # Reset NLA
-        active.animation_data.action_extrapolation = 'HOLD'
-        active.animation_data.action_blend_type = 'REPLACE'
-        active.animation_data.action_influence = 1
+        if active.animation_data:
+            active.animation_data.action_extrapolation = 'HOLD'
+            active.animation_data.action_blend_type = 'REPLACE'
+            active.animation_data.action_influence = 1
 
     # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
     if frame_range:
         scene.frame_start = int(frame_range[0])
-        scene.frame_end = int(frame_range[1]) + 1
+        scene.frame_end = int(frame_range[1])
     saved_simplify.unsimplify_scene()
 
     my_timer_group.end_last_timer()
@@ -262,6 +265,12 @@ def export_as_action_animation(
             export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active, is_animation=True),
             export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active, is_animation=True),
             export_apply = True,
+            export_animations=True,
+            export_animation_mode='SCENE',
+            export_anim_scene_split_object=False,
+            export_frame_range=True,
+            export_negative_frame="CROP",
+            export_anim_slide_to_zero=True,
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")

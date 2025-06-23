@@ -63,9 +63,6 @@ def process_nla_anim_export(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     if not isinstance(armature.data, bpy.types.Armature):
         raise TypeError(f"The armature object is not a valid Armature type! Inputs: armature: {armature.name}")  
 
@@ -73,6 +70,9 @@ def process_nla_anim_export(
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+    
     addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # [SAVE ASSET DATA]
@@ -161,7 +161,7 @@ def process_nla_anim_export(
     # Prepare scene for export (frame range, simplefying, etc.)
     if frame_range:
         scene.frame_start = int(frame_range[0])
-        scene.frame_end = int(frame_range[1]) + 1
+        scene.frame_end = int(frame_range[1])
     saved_simplify.unsimplify_scene()
 
     my_timer_group.end_last_timer()
@@ -245,6 +245,12 @@ def process_nla_anim_export(
             export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active, is_animation=True),
             export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active, is_animation=True),
             export_apply = True,
+            export_animations=True,
+            export_animation_mode='SCENE',
+            export_anim_scene_split_object=False,
+            export_frame_range=True,
+            export_negative_frame="CROP",
+            export_anim_slide_to_zero=True,
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
