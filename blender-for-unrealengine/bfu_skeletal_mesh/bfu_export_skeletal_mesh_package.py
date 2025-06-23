@@ -62,9 +62,6 @@ def export_as_skeletal_mesh(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     if not isinstance(armature.data, bpy.types.Armature):
         raise TypeError(f"The armature object is not a valid Armature type! Inputs: armature: {armature.name}")  
 
@@ -72,6 +69,8 @@ def export_as_skeletal_mesh(
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
