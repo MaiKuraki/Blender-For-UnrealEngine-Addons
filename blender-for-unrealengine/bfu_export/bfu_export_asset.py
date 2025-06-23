@@ -89,8 +89,8 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     post_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("Clean after all export")
 
     # Reset scene data after export
-    user_scene_save.reset_select(use_names = True)
     user_scene_save.reset_scene_at_save(print_removed_items = True)
+    user_scene_save.reset_select(use_names = True)
 
     # Clean actions
     for action in bpy.data.actions:
