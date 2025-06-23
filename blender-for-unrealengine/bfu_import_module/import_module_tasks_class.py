@@ -49,6 +49,9 @@ class ImportTask():
     def get_task(self) -> unreal.AssetImportTask:
         return self.task
     
+    def set_filename(self, filename: str):
+        self.task.set_editor_property('filename', filename)
+    
     def get_fbx_import_ui(self) -> unreal.FbxImportUI:
         return self.task_option
     

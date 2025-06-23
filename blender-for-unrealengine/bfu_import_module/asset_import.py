@@ -19,6 +19,7 @@
 
 import os.path
 from typing import List, Dict, Any, Optional, Tuple
+from pathlib import Path
 import unreal
 from . import bpl
 from . import import_module_utils
@@ -68,7 +69,7 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
         files: List[Dict[str, Any]] = asset_data["files"]
         for file in files:
             if file["content_type"] == "ADDITIONAL_DATA":
-                return import_module_utils.JsonLoadFile(file["file_path"])
+                return import_module_utils.json_load_file(Path(file["file_path"]))
         return None
 
     asset_additional_data = found_additional_data()
@@ -106,26 +107,28 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
                 message += f" -{skeletal_mesh_search_str}" + "\n"
                 import_module_unreal_utils.show_warning_message("Skeleton not found.", message)
 
+    print("######################################### origin_skeleton ->", origin_skeleton)
+
     itask = import_module_tasks_class.ImportTask()
 
-    def get_file_from_types(file_types: List[str]) -> Optional[Tuple[str, str]]:
+    def get_file_from_types(file_types: List[str]) -> Tuple[str, str]:
         for file in asset_data["files"]:
             if file["type"] in file_types:
                 return file["file_path"], file["type"]
-        return None
+        return "", ""
 
     # Search for the file to import
     if asset_type == ExportAssetType.ANIM_ALEMBIC:
-        filename = get_file_from_types(["ABC"])
+        filename, filetype = get_file_from_types(["ABC"])
         if not filename:
             return "FAIL", None
-        itask.get_task().filename = filename
+        itask.set_filename(filename)
         print("Target Alembic file:", filename)
     else:
         filename, filetype = get_file_from_types(["GLTF", "FBX"])
         if not filename:
             return "FAIL", None
-        itask.get_task().filename = filename
+        itask.set_filename(filename)
         print("Target file:", filename)
 
     itask.get_task().destination_path = "/" + os.path.normpath(asset_data["asset_import_path"])
@@ -133,7 +136,6 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
     itask.get_task().save = False
     itask.get_task().replace_existing = True
     task_option = import_module_tasks_helper.init_options_data(asset_type, filetype)
-    print("task_option -> ", task_option)
     itask.set_task_option(task_option)
 
 
@@ -177,17 +179,17 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
         if asset_type.is_skeletal_animation():
             if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
                 if origin_skeleton:
-                    itask.get_igap_skeletal_mesh().set_editor_property('Skeleton', origin_skeleton)
+                    itask.get_igap_skeletal_mesh().set_editor_property('skeleton', origin_skeleton)
                     itask.get_igap_skeletal_mesh().set_editor_property('import_only_animations', True)
 
             else:
                 if origin_skeleton:
-                    itask.get_fbx_import_ui().set_editor_property('Skeleton', origin_skeleton)
+                    itask.get_fbx_import_ui().set_editor_property('skeleton', origin_skeleton)
 
         if asset_type == ExportAssetType.SKELETAL_MESH:
             if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
                 if origin_skeleton:
-                    itask.get_igap_skeletal_mesh().set_editor_property('Skeleton', origin_skeleton)
+                    itask.get_igap_skeletal_mesh().set_editor_property('skeleton', origin_skeleton)
                     
                     # From Unreal Engine 5.1 to 5.4, the interchange pipeline still creates a new skeleton asset. #Look like a bug.
                     # May do a replace reference after import?
@@ -197,13 +199,18 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
                         print("Skeleton is set, but a new skeleton asset will be created. This is a bug with the Interchange Generic Assets Pipeline in Unreal Engine 5.1 to 5.4.")
                         
                 else:
+                    # Unreal Engine may randomly select a skeleton asset because it thinks it could be used for the skeletal mesh.
+                    # This is a big issue and the Python API does not allow to avoid that...
+                    # Even when I set the skeleton to None, Unreal Engine may still select a skeleton without letting the import create a new one.
+                    itask.get_igap_skeletal_mesh().set_editor_property('skeleton', None)
                     print("Skeleton is not set, a new skeleton asset will be created...")
                     
             elif isinstance(itask.task_option, unreal.FbxImportUI):
                 if origin_skeleton:
-                    itask.get_fbx_import_ui().set_editor_property('Skeleton', origin_skeleton)
+                    itask.get_fbx_import_ui().set_editor_property('skeleton', origin_skeleton)
                     print("Skeleton set, ", origin_skeleton.get_path_name())
                 else:
+                    itask.get_fbx_import_ui().set_editor_property('skeleton', None)
                     print("Skeleton is not set, a new skeleton asset will be created...")                  
    
         import_module_utils.print_debug_step("Set Asset Type")

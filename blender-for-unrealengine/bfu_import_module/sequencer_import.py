@@ -16,7 +16,7 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
+from pathlib import Path
 import unreal
 from . import bpl
 from . import import_module_utils
@@ -83,7 +83,7 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
         # import camera
         print("Start camera import " + str(x+1) + "/" + str(len(sequence_data["cameras"])) + " :" + camera_data["name"])
         # Import camera tracks transform
-        camera_tracks = import_module_utils.JsonLoadFile(camera_data["additional_tracks_path"])
+        camera_tracks = import_module_utils.json_load_file(Path(camera_data["additional_tracks_path"]))
 
 
         camera_name = camera_data["name"]
