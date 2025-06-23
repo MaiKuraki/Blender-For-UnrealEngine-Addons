@@ -20,7 +20,6 @@
 import bpy
 from typing import List
 from .. import bbpl
-from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport
 from .. import bfu_basics
 from .. import bfu_export_logs
@@ -28,38 +27,13 @@ from .. import bfu_addon_prefs
 from . import bfu_export_single_generic
 
 
-def IsValidActionForExport(scene, obj, animType):
-    if animType == "Action":
-        if scene.bfu_use_animation_export:
-            return True
-        else:
-            return False
-    elif animType == "Pose":
-        if scene.bfu_use_animation_export:
-            return True
-        else:
-            return False
-    elif animType == "NLA":
-        if scene.bfu_use_animation_export:
-            return True
-        else:
-            False
-    else:
-        print("Error in IsValidActionForExport() animType not found: ", animType)
-    return False
 
-
-def IsValidDataForExport(scene, obj):
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
-    return asset_class.can_export_asset(obj)
-
-def prepare_scene_for_export():
-    if bpy.context is None:
-        return
-    
+def prepare_scene_for_export():    
     scene = bpy.context.scene
+    if scene is None:
+        raise RuntimeError("Scene is not available for export. Please ensure you are in a valid Blender context.")
 
-    #Unhide all objects, but hide on viewport and make them selectable
+    # Unhide all objects, but hide on viewport and make them selectable
     for obj in scene.objects:
         if obj.hide_select:
             obj.hide_select = False
@@ -76,7 +50,7 @@ def prepare_scene_for_export():
             col.hide_viewport = False
 
     # Unexclude all layer collections and hide them on viewport
-    for vlayer in bpy.context.scene.view_layers:
+    for vlayer in scene.view_layers:
         layer_collections = bbpl.utils.get_layer_collections_recursive(vlayer.layer_collection)
         for layer_collection in layer_collections:
             if layer_collection.exclude:
@@ -91,21 +65,22 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # Save scene data before export
-    local_view_areas = bbpl.scene_utils.move_to_global_view()
+    bbpl.scene_utils.move_to_global_view()
     user_scene_save = bbpl.save_data.scene_save.UserSceneSave()
     user_scene_save.save_current_scene()
     
-    prepare_scene_for_export()
+    # Set object mode before hide object or it will be not possible de switch to object mode.
     bbpl.utils.safe_mode_set('OBJECT', user_scene_save.user_select_class.user_active)
+    prepare_scene_for_export()
 
     if addon_prefs.revertExportPath:
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_static_file_path))
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_skeletal_file_path))
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_alembic_file_path))
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_groom_file_path))
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_camera_file_path))
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_spline_file_path))
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_other_file_path))
+        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_static_file_path))  # type: ignore
+        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_skeletal_file_path))  # type: ignore
+        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_alembic_file_path))  # type: ignore
+        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_groom_file_path))  # type: ignore
+        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_camera_file_path))  # type: ignore
+        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_spline_file_path))  # type: ignore
+        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_other_file_path))  # type: ignore
 
 
     prepare_all_export_time_log.end_time_log()
@@ -127,22 +102,24 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     return exported_asset_log
 
 
-def export_all_from_asset_list(op, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]:
+def export_all_from_asset_list(op: bpy.types.Operator, asset_list: List[AssetToExport]) -> List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]:
     scene = bpy.context.scene
+    if scene is None:
+        raise RuntimeError("Scene is not available for export. Please ensure you are in a valid Blender context.")
 
     export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("TOTAL EXPORT")
-    exported_asset_log = []
+    exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog] = []
 
     for asset in asset_list:
         export_asset_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Export '{asset.name}' as {asset.asset_type.get_friendly_name()}.")
         # Save current start/end frame
-        UserStartFrame = scene.frame_start
-        UserEndFrame = scene.frame_end
+        user_start_frame = scene.frame_start
+        user_end_frame = scene.frame_end
         exported_asset_log.append(bfu_export_single_generic.process_generic_export_from_asset(op, asset))
 
         # Resets previous start/end frame
-        scene.frame_start = UserStartFrame
-        scene.frame_end = UserEndFrame
+        scene.frame_start = user_start_frame
+        scene.frame_end = user_end_frame
         export_asset_time_log.end_time_log()
 
     export_time_log.end_time_log()
