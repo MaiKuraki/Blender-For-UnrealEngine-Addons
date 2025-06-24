@@ -232,6 +232,72 @@ class DuplicateData():
         self.origin_select: Optional[bbpl.save_data.select_save.UserSelectSave] = None
         self.duplicate_select: Optional[bbpl.save_data.select_save.UserSelectSave] = None
 
+    def duplicate_select_for_export(self, context: bpy.types.Context, reset_simplify_after_duplicate: bool = True):
+        duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection")
+
+        # Enable simplify for faster duplicate (Don't )
+        saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+        saved_simplify.simplify_scene()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate")
+        scene = context.scene
+
+        self.set_origin_select()
+        if self.origin_select:
+            for user_selected in self.origin_select.user_selecteds:
+                if user_selected:
+                    bfu_utils.save_obj_current_name(user_selected)
+                    if user_selected.type == "ARMATURE":  # type: ignore
+                        bfu_utils.set_obj_proxy_data(user_selected)
+
+        data_to_remove: list[DelegateOldData] = []
+
+        # Save action befor export
+        action_names: list[str] = []
+        for action in bpy.data.actions:
+            action_names.append(action.name)
+
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate")
+        # Note: Need look for a optimized duplicate, This is too long
+        bpy.ops.object.duplicate()  # type: ignore
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare clean")
+        # Save the name for found after "Make Instances Real"
+        current_select_names: list[str] = []
+        for current_select_name in context.selected_objects:
+            current_select_names.append(current_select_name.name)
+
+        for obj_select in current_select_names:
+            if obj_select not in context.selected_objects:  # type: ignore
+                scene.objects[obj_select].select_set(True)  # type: ignore
+
+        # Make sigle user and clean useless data.
+        for objScene in context.selected_objects:
+            if objScene.data is not None:
+                oldData = objScene.data.name
+                objScene.data = objScene.data.copy()
+                data_to_remove.append(DelegateOldData(oldData, objScene.type))  # type: ignore
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean")
+        # Clean create actions by duplication
+        for action in bpy.data.actions:
+            if action.name not in action_names:
+                bpy.data.actions.remove(action)  # type: ignore
+
+        if reset_simplify_after_duplicate:
+            saved_simplify.reset_scene()
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Update select")
+        self.set_duplicate_select()
+        log_4.end_time_log()
+
+        duplicate_time_log.end_time_log()
+
     def set_origin_select(self):
         select = bbpl.save_data.select_save.UserSelectSave()
         select.save_current_select()
@@ -264,73 +330,8 @@ class DuplicateData():
 
 
 def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after_duplicate: bool = True) -> DuplicateData:
-    duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection")
-
-    
-    
-    # Enable simplify for faster duplicate (Don't )
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
-    saved_simplify.simplify_scene()
-
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate")
-    scene = context.scene
     duplicate_data = DuplicateData()
-    duplicate_data.set_origin_select()
-    for user_selected in duplicate_data.origin_select.user_selecteds:
-        if user_selected:
-            bfu_utils.save_obj_current_name(user_selected)
-            if user_selected.type == "ARMATURE":  # type: ignore
-                bfu_utils.set_obj_proxy_data(user_selected)
-
-    data_to_remove: list[DelegateOldData] = []
-
-    # Save action befor export
-    action_names: list[str] = []
-    for action in bpy.data.actions:
-        action_names.append(action.name)
-
-    log_4.end_time_log()
-
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate")
-    # Note: Need look for a optimized duplicate, This is too long
-    bpy.ops.object.duplicate()  # type: ignore
-    log_4.end_time_log()
-
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare clean")
-    # Save the name for found after "Make Instances Real"
-    current_select_names: list[str] = []
-    for current_select_name in context.selected_objects:
-        current_select_names.append(current_select_name.name)
-
-    for obj_select in current_select_names:
-        if obj_select not in context.selected_objects:  # type: ignore
-            scene.objects[obj_select].select_set(True)  # type: ignore
-
-    # Make sigle user and clean useless data.
-    for objScene in context.selected_objects:
-        if objScene.data is not None:
-            oldData = objScene.data.name
-            objScene.data = objScene.data.copy()
-            data_to_remove.append(DelegateOldData(oldData, objScene.type))  # type: ignore
-    log_4.end_time_log()
-
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean")
-    # Clean create actions by duplication
-    for action in bpy.data.actions:
-        if action.name not in action_names:
-            bpy.data.actions.remove(action)  # type: ignore
-
-    if reset_simplify_after_duplicate:
-        saved_simplify.reset_scene()
-    log_4.end_time_log()
-
-    log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Update select")
-    duplicate_data.set_duplicate_select()
-    log_4.end_time_log()
-
-
-
-    duplicate_time_log.end_time_log()
+    duplicate_data.duplicate_select_for_export(context, reset_simplify_after_duplicate)
     return duplicate_data
 
 

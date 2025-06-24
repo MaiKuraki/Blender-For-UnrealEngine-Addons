@@ -71,6 +71,8 @@ def export_as_skeletal_mesh(
     scene = bpy.context.scene
     if scene is None:
         raise ValueError("No active scene found!")
+    
+    is_library = armature.data.library is not None
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
@@ -88,8 +90,11 @@ def export_as_skeletal_mesh(
     bbpl.utils.select_specific_object_list(armature, mesh_parts)
     # Deselect sockets because Unreal Engine detect them as bones
     bfu_skeletal_mesh.bfu_skeletal_mesh_utils.deselect_socket(armature) 
-    duplicate_data = bfu_export.bfu_export_utils.duplicate_select_for_export(bpy.context, False)
-    duplicate_data.set_duplicate_name_for_export()
+
+    duplicate_data = bfu_export.bfu_export_utils.DuplicateData()
+    if not is_library:
+        duplicate_data.duplicate_select_for_export(bpy.context, False)
+        duplicate_data.set_duplicate_name_for_export()
 
     # Duplicated active that should be used for export.
     if bpy.context.active_object is None:
@@ -268,11 +273,14 @@ def export_as_skeletal_mesh(
     bfu_export.bfu_export_utils.ResetArmatureConstraintToModifiers(active)
     bfu_export.bfu_export_utils.reset_sockets_export_name(active)
     bfu_export.bfu_export_utils.reset_sockets_transform(active)
-    bfu_utils.clean_delete_objects(bpy.context.selected_objects)
-    for data in duplicate_data.data_to_remove:
-        data.remove_data()
+    
+    if not is_library:
+        bfu_utils.clean_delete_objects(bpy.context.selected_objects)
 
-    duplicate_data.reset_duplicate_name_after_export()
+        for data in duplicate_data.data_to_remove:
+            data.remove_data()
+
+        duplicate_data.reset_duplicate_name_after_export()
 
     for obj in scene.objects:
         bfu_utils.clear_all_bfu_temp_vars(obj)
