@@ -105,3 +105,29 @@ class ExportAssetType(Enum):
             ExportAssetType.ANIM_POSE.value, 
             ExportAssetType.ANIM_NLA.value
         ]
+    
+class AssetFileTypeEnum(Enum):
+    # List of file types supported by the addon at export.
+    FBX = "FBX"
+    GLTF = "GLTF"
+    ALEMBIC = "Alembic"
+    JSON = "JSON"
+    UNKNOWN = "Unknown"
+
+    @staticmethod
+    def get_file_type_from_string(file_type_str: str) -> 'AssetFileTypeEnum':
+        for file_type in AssetFileTypeEnum:
+            if file_type.value == file_type_str:
+                return file_type
+        return AssetFileTypeEnum.UNKNOWN
+
+    def get_file_extension(self) -> str:
+        if self == AssetFileTypeEnum.FBX:
+            return ".fbx"
+        elif self == AssetFileTypeEnum.GLTF:
+            return ".glb"
+        elif self == AssetFileTypeEnum.ALEMBIC:
+            return ".abc"
+        elif self == AssetFileTypeEnum.JSON:
+            return ".json"
+        return ".unknown"

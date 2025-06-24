@@ -21,7 +21,7 @@ from typing import Union
 import unreal
 from . import import_module_unreal_utils
 from . import constrcut_utils
-from .asset_types import ExportAssetType 
+from .asset_types import ExportAssetType, AssetFileTypeEnum
 
 
 support_interchange: bool = constrcut_utils.include_interchange_functions()
@@ -83,11 +83,11 @@ if import_module_unreal_utils.alembic_importer_active():
         return options
 
 if support_interchange:
-    def init_options_data(asset_type: ExportAssetType, filetype: str):
+    def init_options_data(asset_type: ExportAssetType, filetype: AssetFileTypeEnum):
         """Initializes task options based on asset type and interchange usage."""
         
         # For FBX file it better to not use interchange before UE 5.5.
-        if filetype == "FBX" and import_module_unreal_utils.get_unreal_version() < (5,5,0):
+        if filetype.value == AssetFileTypeEnum.FBX.value and import_module_unreal_utils.get_unreal_version() < (5,5,0):
             use_interchange = False
         else:
             use_interchange = True
@@ -111,7 +111,7 @@ if support_interchange:
         
         return options
 else:
-    def init_options_data(asset_type: ExportAssetType, filetype: str):
+    def init_options_data(asset_type: ExportAssetType, filetype: AssetFileTypeEnum):
         """Initializes task options based on asset type and interchange usage."""
         
         # Add the function only if alembic importer is active

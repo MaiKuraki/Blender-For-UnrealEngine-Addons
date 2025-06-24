@@ -275,6 +275,11 @@ def export_as_action_animation(
             export_frame_range=True,
             export_negative_frame="CROP",
             export_anim_slide_to_zero=True,
+
+            # If export_try_sparse_sk is True the import fail in Unreal Engine 5.4 and older versions.
+            # It a bug from the Interchange pipeline when the skeletal mesh contrains several shape keys. (morph targets)
+            # That now fixed since Unreal Engine 5.5. but I keep it on False for compatibility.
+            export_try_sparse_sk=False,
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")

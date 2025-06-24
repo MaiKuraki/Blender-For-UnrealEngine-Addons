@@ -34,7 +34,7 @@ from . import bfu_import_vertex_color
 from . import bfu_import_light_map
 from . import bfu_import_nanite
 from . import config
-from .asset_types import ExportAssetType
+from .asset_types import ExportAssetType, AssetFileTypeEnum
 
 
 
@@ -109,31 +109,32 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
 
     itask = import_module_tasks_class.ImportTask()
 
-    def get_file_from_types(file_types: List[str]) -> Tuple[str, str]:
+    def get_file_from_types(file_types: List[str]) -> Tuple[str, AssetFileTypeEnum]:
         for file in asset_data["files"]:
-            if file["type"] in file_types:
-                return file["file_path"], file["type"]
-        return "", ""
+            if "type" in file and "file_path" in file:
+                if file["type"] in file_types:
+                    return file["file_path"], AssetFileTypeEnum.get_file_type_from_string(file["type"])
+        return "", AssetFileTypeEnum.UNKNOWN
 
     # Search for the file to import
     if asset_type == ExportAssetType.ANIM_ALEMBIC:
-        filename, filetype = get_file_from_types(["ABC"])
-        if not filename:
+        file_name, file_type = get_file_from_types([AssetFileTypeEnum.ALEMBIC.value])
+        if not file_name:
             return "FAIL", None
-        itask.set_filename(filename)
-        print("Target Alembic file:", filename)
+        itask.set_filename(file_name)
+        print("Target Alembic file:", file_name)
     else:
-        filename, filetype = get_file_from_types(["GLTF", "FBX"])
-        if not filename:
+        file_name, file_type = get_file_from_types([AssetFileTypeEnum.GLTF.value, AssetFileTypeEnum.FBX.value])
+        if not file_name:
             return "FAIL", None
-        itask.set_filename(filename)
-        print("Target file:", filename)
+        itask.set_filename(file_name)
+        print("Target file:", file_name)
 
     itask.get_task().destination_path = "/" + os.path.normpath(asset_data["asset_import_path"])
     itask.get_task().automated = config.automated_import_tasks
     itask.get_task().save = False
     itask.get_task().replace_existing = True
-    task_option = import_module_tasks_helper.init_options_data(asset_type, filetype)
+    task_option = import_module_tasks_helper.init_options_data(asset_type, file_type)
     itask.set_task_option(task_option)
 
 
@@ -253,7 +254,7 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
         if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             if asset_type.is_skeletal_animation():
                 itask.get_igap_animation().set_editor_property('import_animations', True)
-                bfu_import_animations.bfu_import_animations_utils.set_animation_sample_rate(itask, asset_additional_data, asset_type, filetype)
+                bfu_import_animations.bfu_import_animations_utils.set_animation_sample_rate(itask, asset_additional_data, asset_type, file_type)
                 itask.get_igap_mesh().set_editor_property('import_skeletal_meshes', False)
                 itask.get_igap_mesh().set_editor_property('import_static_meshes', False)
                 itask.get_igap_mesh().set_editor_property('create_physics_asset',False)
@@ -343,6 +344,8 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
     itask.import_asset_task()
     import_module_utils.print_debug_step("Import asset done!")
     
+
+
     if len(itask.get_imported_assets()) == 0:
         fail_reason = 'Error zero imported object for: ' + asset_data["asset_name"]
         return fail_reason, None
@@ -352,7 +355,7 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
 
     import_module_utils.print_debug_step("Process Post treatment")
     if asset_type.is_skeletal_animation():
-        bfu_import_animations.bfu_import_animations_utils.apply_post_import_assets_changes(itask, asset_data)
+        bfu_import_animations.bfu_import_animations_utils.apply_post_import_assets_changes(itask, asset_data, file_type)
 
     if asset_type == ExportAssetType.STATIC_MESH:
 

@@ -18,7 +18,7 @@
 
 import string
 import re
-from typing import List, Tuple, Union
+from typing import List, Tuple, TYPE_CHECKING
 import unreal
 from . import config
 from . import constrcut_config
@@ -44,7 +44,7 @@ def get_package_path_from_any_string(asset_string: str) -> str:
     return asset_path
 
 
-def load_asset(name: str):
+def load_asset(name: str) -> None:
     # Convert ObjectPath to PackageName
     package_name = get_package_path_from_any_string(name)
     asset_exist = unreal.EditorAssetLibrary.does_asset_exist(package_name)
@@ -56,7 +56,17 @@ def load_asset(name: str):
             find_asset = unreal.load_asset(name, follow_redirectors=True)
         return find_asset
     return None
-     
+
+def renamed_asset_name(asset: unreal.Object, new_name: str) -> None:
+    # Rename only the asset name and keep the path.
+    if TYPE_CHECKING:
+        asset_path: str = "<asset_path>"
+    else:
+        asset_path: str = asset.get_path_name()
+    path, _ = asset_path.rsplit('/', 1)
+    new_path: str = path + "/" + new_name + "." + new_name
+    print(f"Renaming asset {asset_path} to {new_path}")
+    unreal.EditorAssetLibrary.rename_asset(asset_path, new_path)
 
 def get_selected_level_actors() -> List[unreal.Actor]:
     """Returns a list of selected actors in the level."""

@@ -111,7 +111,7 @@ class ImportTask():
                 assets.append(search_asset)
         return assets
 
-    def get_imported_assets_of_class(self, search_class) -> List[unreal.Object]:
+    def get_imported_assets_of_class(self, search_class: type) -> List[unreal.Object]:
         assets: List[unreal.Object] = []
         for path in self.task.imported_object_paths:
             search_asset = import_module_unreal_utils.load_asset(path)
@@ -120,7 +120,7 @@ class ImportTask():
                     assets.append(search_asset)
         return assets
 
-    def get_imported_asset_of_class(self, search_class) -> unreal.Object:
+    def get_imported_asset_of_class(self, search_class: type) -> unreal.Object:
         for path in self.task.imported_object_paths:
             search_asset = import_module_unreal_utils.load_asset(path)
             if search_asset:
@@ -138,7 +138,10 @@ class ImportTask():
 
     def get_imported_anim_sequence(self) -> unreal.AnimSequence:
         return self.get_imported_asset_of_class(unreal.AnimSequence)
-    
+
+    def get_imported_anim_sequences(self) -> List[unreal.AnimSequence]:
+        return self.get_imported_assets_of_class(unreal.AnimSequence)
+
     def import_asset_task(self):
         # InterchangePipelineStackOverride was added in Unreal Engine 5.2
         if hasattr(unreal, 'InterchangePipelineStackOverride') and isinstance(self.task_option, unreal.InterchangeGenericAssetsPipeline):
