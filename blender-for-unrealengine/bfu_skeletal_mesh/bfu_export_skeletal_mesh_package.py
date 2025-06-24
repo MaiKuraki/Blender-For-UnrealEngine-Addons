@@ -242,6 +242,11 @@ def export_as_skeletal_mesh(
             export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active),
             export_apply = True,
             export_animations = False,
+
+            # If export_try_sparse_sk is True the import fail in Unreal Engine 5.4 and older versions.
+            # It a bug from the Interchange pipeline when the skeletal mesh contrains several shape keys. (morph targets)
+            # That now fixed since Unreal Engine 5.5. but I keep it on False for compatibility.
+            export_try_sparse_sk=False,
             )
     else:
         print(f"Error: The export procedure '{skeleton_export_procedure}' was not found!")
