@@ -108,11 +108,12 @@ def apply_interchange_post_import(itask: import_module_tasks_class.ImportTask, a
     elif filetype.value == AssetFileTypeEnum.GLTF.value:
         # For glTF I got exactly the same issue but with "Body" and "Scene". 
         # So remove I "Body" or other animations and I rename "Scene".
+        # Scene it the name the the scene in Blender at the export.
         imported_assets = itask.get_imported_anim_sequences()
         cleanup_imported_assets(imported_assets, asset_data["asset_import_name"], "Scene")
 
 
-def apply_fbxui_post_import(itask: import_module_tasks_class.ImportTask, asset_data):
+def apply_fbxui_post_import(itask: import_module_tasks_class.ImportTask, asset_data: Dict[str, Any]) -> None:
     """Applies post-import changes for FBX pipeline."""
     # When Import FBX animation using FbxImportUI it create a skeletal mesh and the animation at this side. 
     # I'm not sure if that a bug too... So remove the extra mesh

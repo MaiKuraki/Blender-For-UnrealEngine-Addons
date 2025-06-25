@@ -344,8 +344,6 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
     itask.import_asset_task()
     import_module_utils.print_debug_step("Import asset done!")
     
-
-
     if len(itask.get_imported_assets()) == 0:
         fail_reason = 'Error zero imported object for: ' + asset_data["asset_name"]
         return fail_reason, None

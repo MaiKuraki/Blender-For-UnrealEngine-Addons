@@ -250,7 +250,10 @@ def process_nla_anim_export(
             export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active, is_animation=True),
             export_apply = True,
             export_animations=True,
-            export_animation_mode='SCENE',
+            export_animation_mode='ACTIVE_ACTIONS',
+            # Set the animation name that imported in Unreal Engine.
+            # Consider that the file name is the asset_import_name
+            export_nla_strips_merged_animation_name=fullpath.stem,
             export_anim_scene_split_object=False,
             export_frame_range=True,
             export_negative_frame="CROP",
