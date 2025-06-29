@@ -142,6 +142,21 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 # # Asset Construction
 # ####################################################################
 
+    @staticmethod
+    def get_valid_childs_meshes(data: bpy.types.Object) -> List[bpy.types.Object]:
+        def get_not_hidden_collection(obj: bpy.types.Object) -> bool:
+            for coll in obj.users_collection:
+                if coll.name == "OVERRIDE_HIDDEN":
+                    return False
+            return True
+
+        meshes: List[bpy.types.Object] = []
+        for obj in bbpl.basics.get_obj_childs(data):
+            if get_not_hidden_collection(obj):
+                if obj.type == "MESH":
+                    meshes.append(obj)
+        return meshes
+
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
 
         if bpy.context is None:
@@ -152,7 +167,6 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
         # Export the armature and all mesh as a single skeletal mesh
         if bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.modular_mode_is_all_in_one(data):
             asset = AssetToExport(self, data.name, AssetType.SKELETAL_MESH)
-
 
             asset.set_import_name(self.get_package_file_name(data, without_extension=True))
             asset.set_import_dirpath(self.get_asset_import_directory_path(data))
@@ -170,7 +184,8 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
         # Export each mesh as a separate skeletal mesh
         elif bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.modular_mode_is_every_meshs(data):
-            for mesh in bbpl.basics.get_obj_childs(data):
+            for mesh in self.get_valid_childs_meshes(data):
+
                 asset_name = data.name + str(data.bfu_modular_skeletal_mesh_every_meshs_separate) + mesh.name # type: ignore[attr-defined]
                 asset = AssetToExport(self, asset_name, AssetType.SKELETAL_MESH)
                 
