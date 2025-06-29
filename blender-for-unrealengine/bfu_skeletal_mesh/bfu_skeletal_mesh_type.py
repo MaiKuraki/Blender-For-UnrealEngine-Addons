@@ -144,17 +144,13 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
     @staticmethod
     def get_valid_childs_meshes(data: bpy.types.Object) -> List[bpy.types.Object]:
-        def get_not_hidden_collection(obj: bpy.types.Object) -> bool:
-            for coll in obj.users_collection:
-                if coll.name == "OVERRIDE_HIDDEN":
-                    return False
-            return True
-
         meshes: List[bpy.types.Object] = []
         for obj in bbpl.basics.get_obj_childs(data):
-            if get_not_hidden_collection(obj):
-                if obj.type == "MESH":
-                    meshes.append(obj)
+            if bfu_base_object.bfu_base_obj_utils.in_hidden_collection(obj):
+                continue  # Skip objects in hidden collections
+            if obj.type != "MESH":
+                continue
+            meshes.append(obj)
         return meshes
 
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
