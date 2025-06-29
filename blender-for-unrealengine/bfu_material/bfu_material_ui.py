@@ -48,19 +48,33 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
         if accordion.is_expend():
             asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
             if asset_class and asset_class.use_materials == True:
-                bfu_material_search_location = panel.column()
-                bbpl.blender_layout.layout_doc_button.add_doc_page_operator(bfu_material_search_location, text="About Materials", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Material")
+
+                bbpl.blender_layout.layout_doc_button.add_doc_page_operator(panel, text="About Materials", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Material")
+
+                # from blender
+                from_blender_ui = panel.column()
+                export_material_ui = from_blender_ui.column()
+                export_material_ui.prop(obj, 'bfu_export_materials')
+
+                export_export_texture_ui = export_material_ui.column()
+                export_export_texture_ui.enabled = obj.bfu_export_materials
+                export_export_texture_ui.prop(obj, 'bfu_export_textures')
+
+                # To Unreal Engine
+                to_unreal_ui = panel.column()
+                bfu_material_search_location = to_unreal_ui.column()
                 bfu_material_search_location.prop(obj, 'bfu_material_search_location')
 
-                material_ui = bfu_material_search_location.column()
-                material_ui.prop(obj, 'bfu_export_materials')
+                import_material_ui = bfu_material_search_location.column()
+                import_material_ui.prop(obj, 'bfu_import_materials')
 
-                texture_ui = material_ui.column()
-                texture_ui.enabled = obj.bfu_export_materials
-                texture_ui.prop(obj, 'bfu_export_textures')
+                import_texture_ui = import_material_ui.column()
+                import_texture_ui.enabled = obj.bfu_import_materials
+                import_texture_ui.prop(obj, 'bfu_import_textures')
 
-                normal_texture_ui = texture_ui.column()
-                normal_texture_ui.enabled = obj.bfu_export_textures and obj.bfu_export_materials
+
+                normal_texture_ui = import_texture_ui.column()
+                normal_texture_ui.enabled = obj.bfu_import_textures and obj.bfu_import_materials
                 normal_texture_ui.prop(obj, 'bfu_flip_normal_map_green_channel')
 
                 material_utils_ui = bfu_material_search_location.column()

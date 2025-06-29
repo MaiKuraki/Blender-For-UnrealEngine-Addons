@@ -66,9 +66,9 @@ def get_material_asset_additional_data(obj: bpy.types.Object, asset_type: AssetT
 
         if asset_type in [AssetType.STATIC_MESH, AssetType.SKELETAL_MESH]:
             # Set import material/texture only is export materials/textures is enabled
-            asset_data["import_materials"] = obj.bfu_export_materials
-            asset_data["import_textures"] = obj.bfu_export_textures
-            
+            asset_data["import_materials"] = obj.bfu_import_materials
+            asset_data["import_textures"] = obj.bfu_import_textures
+
             asset_data["flip_normal_map_green_channel"] = obj.bfu_flip_normal_map_green_channel
             asset_data["reorder_material_to_fbx_order"] = obj.bfu_reorder_material_to_fbx_order
             asset_data["material_search_location"] = obj.bfu_material_search_location

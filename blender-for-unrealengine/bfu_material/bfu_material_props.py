@@ -57,7 +57,19 @@ def register():
         "Work better with glTF file format.\n" \
         "Note: I recommend to use this option only for the first export to save export time.\n" \
         "Note 2: For animation textures export is disabled by default, check the value 'bfu_export_animation_without_textures'.",
-        default=True
+        default=False
+    )
+
+    bpy.types.Object.bfu_import_materials = bpy.props.BoolProperty(
+        name="Import Materials",
+        description="Import materials from the model file when importing in Unreal Engine",
+        default=False
+    )
+
+    bpy.types.Object.bfu_import_textures = bpy.props.BoolProperty(
+        name="Import Textures",
+        description="Import textures from the model file when importing in Unreal Engine", 
+        default=False
     )
 
     # Used for set flip_normal_map_green_channel in FbxTextureImportData
@@ -118,6 +130,8 @@ def unregister():
     del bpy.types.Object.bfu_material_search_location
     del bpy.types.Object.bfu_reorder_material_to_fbx_order
     del bpy.types.Object.bfu_flip_normal_map_green_channel
+    del bpy.types.Object.bfu_import_textures
+    del bpy.types.Object.bfu_import_materials
     del bpy.types.Object.bfu_export_textures
     del bpy.types.Object.bfu_export_materials
     

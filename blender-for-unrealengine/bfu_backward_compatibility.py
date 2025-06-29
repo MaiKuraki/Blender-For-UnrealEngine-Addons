@@ -109,10 +109,6 @@ def update_old_variables():
 
         update_variable(obj, ["exportWithCustomProps", "bfu_export_with_custom_props"], "bfu_fbx_export_with_custom_props")
 
-        update_variable(obj, ["bfu_import_materials"], "bfu_export_materials")
-        update_variable(obj, ["bfu_import_textures"], "bfu_export_textures")
-
-
 
     for col in bpy.data.collections:
         update_variable(col, ["exportFolderName"], "bfu_export_folder_name")
