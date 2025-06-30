@@ -204,8 +204,6 @@ class BFU_CameraTracks():
         return new_array_rotation
 
     def evaluate_camera_transform(self, camera: bpy.types.Object, frame: int, target_use: str):
-        
-
         transform: Dict[str, float] = {}
 
 
@@ -335,7 +333,7 @@ class BFU_CameraTracks():
         boolKey = get_one_keys_by_fcurves(camera, "hide_viewport", camera.hide_viewport, frame, False)
         self.hide_viewport[frame] = (boolKey < 1)  # Inversed for convert hide to spawn
 
-    def evaluate_all_tracks(self, camera: bpy.types.Object, frame_start: int, frame_end: int):
+    def evaluate_all_tracks(self, camera: bpy.types.Object, start_frame: float, end_frame: float):
 
         scene = bpy.context.scene
         if scene is None:
@@ -351,7 +349,10 @@ class BFU_CameraTracks():
         # Save scene data
         save_current_frame = scene.frame_current
 
-        for frame in range(frame_start, frame_end+1):
+        int_frame_start: int = min(int(start_frame) - 1, 0) # -1 for secure range
+        int_frame_end: int = int(end_frame) + 1 # +1 for secure range
+
+        for frame in range(int_frame_start, int_frame_end):
             if len(slms.marker_sequences) > 0 and addon_prefs.bake_only_key_visible_in_cut:
                 # Bake only frames visible in cut
                 marker_sequence = slms.get_marker_sequence_at_frame(frame)

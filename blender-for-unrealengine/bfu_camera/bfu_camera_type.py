@@ -116,6 +116,9 @@ class BFU_Camera(BFU_ObjectAssetClass):
         additional_data: Dict[str, Any] = {}
         if search_mode.value == AssetDataSearchMode.FULL.value:
             pre_bake_camera = bfu_camera.bfu_camera_data.BFU_CameraTracks(data)
+            if search_mode.search_package_content():
+                frame_range = bfu_utils.get_desired_camera_start_end_range(data)
+                pre_bake_camera.evaluate_all_tracks(data, frame_range[0], frame_range[1])
             additional_data.update(bfu_camera.bfu_camera_write_text.WriteCameraAnimationTracks(data, pre_bake_camera=pre_bake_camera))
         return additional_data
     

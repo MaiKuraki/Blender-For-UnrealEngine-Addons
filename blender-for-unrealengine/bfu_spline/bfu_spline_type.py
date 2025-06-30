@@ -116,7 +116,8 @@ class BFU_Spline(BFU_ObjectAssetClass):
         additional_data: Dict[str, Any] = {}
         if search_mode.value == AssetDataSearchMode.FULL.value:
             pre_bake_spline = bfu_spline.bfu_spline_data.BFU_SplinesList(data)
-            pre_bake_spline.evaluate_spline_obj_data(data)
+            if search_mode.search_package_content():
+                pre_bake_spline.evaluate_spline_obj_data(data)
             additional_data.update(bfu_spline.bfu_spline_write_text.write_spline_points_data(data, pre_bake_spline=pre_bake_spline))
         return additional_data
 
