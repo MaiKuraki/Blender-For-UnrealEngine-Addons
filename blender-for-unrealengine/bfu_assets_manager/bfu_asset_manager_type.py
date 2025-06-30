@@ -397,17 +397,16 @@ class BFU_BaseAssetClass(ABC):
 
     def set_additional_data_in_asset(self, asset_to_export: AssetToExport, data: Any, details: Any, search_mode: AssetDataSearchMode) -> None:
         if search_mode.search_packages():
-            if bpy.context is None:
-                return
             scene = bpy.context.scene
-            addon_prefs = bfu_addon_prefs.get_addon_prefs()
-            if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):  # type: ignore[attr-defined]
+            if scene:
+                addon_prefs = bfu_addon_prefs.get_addon_prefs()
+                if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):  # type: ignore[attr-defined]
 
-                # Set additional data for the asset to export.
-                additional_data_data = self.get_asset_additional_data(data, details, search_mode)
-                additional_data = asset_to_export.set_asset_additional_data(additional_data_data)
-                if additional_data:
-                    self.set_additional_data_file(additional_data, data, details)
+                    # Set additional data for the asset to export.
+                    additional_data_data = self.get_asset_additional_data(data, details, search_mode)
+                    additional_data = asset_to_export.set_asset_additional_data(additional_data_data)
+                    if additional_data:
+                        self.set_additional_data_file(additional_data, data, details)
 
     @abstractmethod
     def get_asset_export_data(self, data: Any, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:

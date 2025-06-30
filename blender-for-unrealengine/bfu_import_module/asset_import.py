@@ -57,7 +57,7 @@ def ready_for_asset_import():
 
 
 
-def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetData]]):
+def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetData]]):
     asset_type = ExportAssetType.get_asset_type_from_string(asset_data["asset_type"])
 
     if asset_type in [ExportAssetType.STATIC_MESH, ExportAssetType.SKELETAL_MESH]:
@@ -496,19 +496,19 @@ def ImportTask(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetDa
     # #################################[EndChange]
     return "SUCCESS", itask.get_imported_assets()
 
-def ImportAllAssets(assets_data, show_finished_popup=True):
+def import_all_assets(assets_data: Dict[str, Any], show_finished_popup: bool = True):
     import_counter = 0
-    ImportedList = []
-    ImportFailList = []
+    imported_list = []
+    import_fail_list = []
 
-    def GetAssetByType(types: List[str]):
-        target_assets = []
+    def get_asset_by_type(types: List[str]) -> List[Dict[str, Any]]:
+        target_assets: List[Dict[str, Any]] = []
         for asset in assets_data["assets"]:
             if asset["asset_type"] in types:
                 target_assets.append(asset)
         return target_assets
 
-    def PrepareImportTask(asset_data):
+    def prepare_import_task(asset_data: Dict[str, Any]):
         nonlocal import_counter
         bpl.advprint.print_separator()
         counter = str(import_counter + 1) + "/" + str(len(assets_data["assets"]))
@@ -516,12 +516,12 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
         import_task_message = f"Import asset {counter}: '{asset_name}'"
         print("###", import_task_message)
 
-        result, assets = ImportTask(asset_data)
+        result, assets = import_task(asset_data)
 
         if result == "SUCCESS":
-            ImportedList.append([assets, asset_data["asset_type"]])
+            imported_list.append([assets, asset_data["asset_type"]])
         else:
-            ImportFailList.append(result)
+            import_fail_list.append(result)
         import_counter += 1
 
         bpl.advprint.print_separator()
@@ -534,14 +534,14 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
 
     # Import assets with a specific order
 
-    for asset_data in GetAssetByType(["AlembicAnimation", "GroomSimulation", "Spline", "Camera"]):
-        PrepareImportTask(asset_data)
-    for asset_data in GetAssetByType(["StaticMesh", "CollectionStaticMesh"]):
-        PrepareImportTask(asset_data)
-    for asset_data in GetAssetByType(["SkeletalMesh"]):
-        PrepareImportTask(asset_data)
-    for asset_data in GetAssetByType(["SkeletalAnimation", "Action", "Pose", "NonLinearAnimation"]):
-        PrepareImportTask(asset_data)
+    for asset_data in get_asset_by_type(["AlembicAnimation", "GroomSimulation", "Spline", "Camera"]):
+        prepare_import_task(asset_data)
+    for asset_data in get_asset_by_type(["StaticMesh", "CollectionStaticMesh"]):
+        prepare_import_task(asset_data)
+    for asset_data in get_asset_by_type(["SkeletalMesh"]):
+        prepare_import_task(asset_data)
+    for asset_data in get_asset_by_type(["SkeletalAnimation", "Action", "Pose", "NonLinearAnimation"]):
+        prepare_import_task(asset_data)
 
     bpl.advprint.print_simple_title("Full import completed !")
 
@@ -550,7 +550,7 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
     SkeletalMesh_ImportedList = []
     Alembic_ImportedList = []
     Animation_ImportedList = []
-    for inport_data in ImportedList:
+    for inport_data in imported_list:
         assets = inport_data[0]
         source_asset_type = ExportAssetType.get_asset_type_from_string(inport_data[1])
         if source_asset_type == ExportAssetType.STATIC_MESH:
@@ -567,12 +567,12 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
     import_log.append('Imported SkeletalMesh: '+str(len(SkeletalMesh_ImportedList)))
     import_log.append('Imported Alembic: '+str(len(Alembic_ImportedList)))
     import_log.append('Imported Animation: '+str(len(Animation_ImportedList)))
-    import_log.append('Import failled: '+str(len(ImportFailList)))
+    import_log.append('Import failled: '+str(len(import_fail_list)))
 
     for import_row in import_log:
         print(import_row)
         
-    for error in ImportFailList:
+    for error in import_fail_list:
         print(error)
 
     asset_paths = []
@@ -591,7 +591,7 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
     
     title = "Import finished!"
     if show_finished_popup:
-        if len(ImportFailList) > 0:
+        if len(import_fail_list) > 0:
             message = 'Some asset(s) could not be imported.' + "\n"
         else:
             message = 'All assets imported with success!' + "\n"
@@ -601,9 +601,9 @@ def ImportAllAssets(assets_data, show_finished_popup=True):
         for import_row in import_log:
             message += import_row + "\n"
 
-        if len(ImportFailList) > 0:
+        if len(import_fail_list) > 0:
             message += "\n"
-            for error in ImportFailList:
+            for error in import_fail_list:
                 message += error + "\n"
 
         import_module_unreal_utils.show_simple_message(title, message)

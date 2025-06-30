@@ -98,7 +98,7 @@ if sequencer_scripting_active:
 
             get_section_all_channel(section)[0].add_key(frame, value)
 
-    def create_new_sequence():
+    def create_new_sequence() -> unreal.LevelSequence:
         factory = unreal.LevelSequenceFactoryNew()
         asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
         seq = asset_tools.create_asset_with_dialog('MySequence', '/Game', None, factory)

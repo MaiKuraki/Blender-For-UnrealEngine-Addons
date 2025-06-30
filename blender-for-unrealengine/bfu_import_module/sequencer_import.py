@@ -17,6 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 from pathlib import Path
+from typing import Dict, Any, List, Tuple
 import unreal
 from . import bpl
 from . import import_module_utils
@@ -38,9 +39,8 @@ def ready_for_sequence_import():
         return False
     return True
 
-def CreateSequencer(sequence_data, show_finished_popup=True):
+def create_sequencer(sequence_data: Dict[str, Any], show_finished_popup: bool = True):
 
-    
     is_spawnable_camera = sequence_data['spawnable_camera']
     sequencer_frame_start = sequence_data['sequencer_frame_start']
     sequencer_frame_end = sequence_data['sequencer_frame_end']+1
@@ -49,10 +49,9 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
     sequencer_frame_rate_denominator = sequence_data['sequencer_frame_rate_denominator']
     sequencer_frame_rate_numerator = sequence_data['sequencer_frame_rate_numerator']
     secure_crop = sequence_data['secure_crop']  # add end crop for avoid section overlay
-    ImportedCamera = []  # (CameraName, CameraGuid)
+    imported_cameras: List[Tuple[str, unreal.MovieSceneObjectBindingID]] = []  # (CameraName, CameraGuid)
 
     seq = sequencer_utils.create_new_sequence()
-
     print("Sequencer reference created", seq)
 
     # Process import
@@ -81,31 +80,17 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
 
     for x, camera_data in enumerate(sequence_data["cameras"]):
         # import camera
-        print("Start camera import " + str(x+1) + "/" + str(len(sequence_data["cameras"])) + " :" + camera_data["name"])
+        print("Start camera import " + str(x+1) + "/" + str(len(sequence_data["cameras"])) + " :" + camera_data["asset_name"])
         # Import camera tracks transform
-        camera_tracks = import_module_utils.json_load_file(Path(camera_data["additional_tracks_path"]))
+        imported_cameras.append(import_camera_asset(seq, camera_data, is_spawnable_camera))
 
-
-        camera_name = camera_data["name"]
-        camera_target_class_ref = camera_tracks["camera_actor"]
-        
-        camera_target_class = unreal.load_class(None, camera_target_class_ref)
-        if camera_target_class is None:
-            message = f'WARNING: The camera class {camera_target_class_ref} was not found!' + "\n"
-            message += 'Verify that the class exists or that you have activated the necessary plugins.'
-            import_module_unreal_utils.show_warning_message("Failed to find camera class.", message)
-            camera_target_class = unreal.CineCameraActor
-
-        camera_binding, camera_component_binding = sequencer_utils.Sequencer_add_new_camera(seq, camera_target_class, camera_name, is_spawnable_camera)
-        sequencer_utils.update_sequencer_camera_tracks(seq, camera_binding, camera_component_binding, camera_tracks)
-        ImportedCamera.append((camera_name, camera_binding))
 
 
     # Import camera cut section
     for section in sequence_data['marker_sections']:
         camera_cut_section = camera_cut_track.add_section()
         if section["has_camera"] is not None:
-            for camera in ImportedCamera:
+            for camera in imported_cameras:
                 if camera[0] == section["camera_name"]:
                     camera_binding_id = unreal.MovieSceneObjectBindingID()
                     if import_module_unreal_utils.get_unreal_version() >= (5,3,0):
@@ -124,7 +109,7 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
 
     bpl.advprint.print_simple_title("Imports completed !")
     ImportedCameraStr = []
-    for cam in ImportedCamera:
+    for cam in imported_cameras:
         ImportedCameraStr.append(cam[0])
         print(ImportedCameraStr)
         bpl.advprint.print_separator()
@@ -141,3 +126,26 @@ def CreateSequencer(sequence_data, show_finished_popup=True):
     unreal.EditorAssetLibrary.sync_browser_to_objects([seq.get_path_name()])
     return 'Sequencer created with success !'
 
+def import_camera_asset(seq: unreal.LevelSequence, camera_data: Dict[str, Any], is_spawnable_camera: bool) -> Tuple[str, unreal.MovieSceneObjectBindingID]:
+
+    def found_additional_data() -> Dict[str, Any]:
+        files: List[Dict[str, Any]] = camera_data["files"]
+        for file in files:
+            if file["content_type"] == "ADDITIONAL_DATA":
+                return import_module_utils.json_load_file(Path(file["file_path"]))
+        return {}
+
+    camera_additional_data = found_additional_data()
+    camera_name: str = camera_additional_data["camera_name"]
+    camera_target_class_ref: str = camera_additional_data["camera_actor"]
+
+    camera_target_class = unreal.load_class(None, camera_target_class_ref)
+    if camera_target_class is None:
+        message = f'WARNING: The camera class {camera_target_class_ref} was not found!' + "\n"
+        message += 'Verify that the class exists or that you have activated the necessary plugins.'
+        import_module_unreal_utils.show_warning_message("Failed to find camera class.", message)
+        camera_target_class = unreal.CineCameraActor
+
+    camera_binding, camera_component_binding = sequencer_utils.Sequencer_add_new_camera(seq, camera_target_class, camera_name, is_spawnable_camera)
+    sequencer_utils.update_sequencer_camera_tracks(seq, camera_binding, camera_component_binding, camera_additional_data)
+    return (camera_name, camera_binding)
