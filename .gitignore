@@ -7,7 +7,6 @@ ExportedAssets/
 **.zip
 **.blend[1-32]*
 .git/
-.vscode/
 .vs/
 
 # Byte-compiled / optimized / DLL files
