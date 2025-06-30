@@ -60,28 +60,9 @@ def write_single_asset_data(unreal_exported_asset: bfu_export_logs.bfu_asset_exp
     asset_data["asset_type"] = unreal_exported_asset.exported_asset.asset_type.get_type_as_string()
     asset_data["asset_import_name"] = unreal_exported_asset.exported_asset.import_name
     asset_data["asset_import_path"] = str(unreal_exported_asset.exported_asset.import_dirpath) 
+    asset_data["files"] = unreal_exported_asset.exported_asset.get_asset_files_as_data()
 
     asset_type = unreal_exported_asset.exported_asset.asset_type
-    files: List[Dict[str, Any]] = []
-    for pakages in unreal_exported_asset.exported_asset.asset_packages:
-        file = pakages.file
-        if file:
-            file_data: Dict[str, Any] = {}
-            file_data["type"] = file.file_type.value
-            file_data["content_type"] = file.file_content_type
-            file_data["file_path"] = str(file.get_full_path())
-            files.append(file_data)
-    if unreal_exported_asset.exported_asset.additional_data:
-        additional_data = unreal_exported_asset.exported_asset.additional_data
-        file = additional_data.file
-        if file:
-            file_data: Dict[str, Any] = {}
-            file_data["type"] = file.file_type.value
-            file_data["content_type"] = file.file_content_type
-            file_data["file_path"] = str(file.get_full_path())
-            files.append(file_data)
-    asset_data["files"] = files
-
     if asset_type in [AssetType.SKELETAL_MESH, AssetType.ANIM_ACTION, AssetType.ANIM_POSE, AssetType.ANIM_NLA]:
         main_armature = unreal_exported_asset.exported_asset.asset_packages[0].objects[0]
         # Skeleton

@@ -118,7 +118,6 @@ class BFU_Spline(BFU_ObjectAssetClass):
             pre_bake_spline = bfu_spline.bfu_spline_data.BFU_SplinesList(data)
             pre_bake_spline.evaluate_spline_obj_data(data)
             additional_data.update(bfu_spline.bfu_spline_write_text.write_spline_points_data(data, pre_bake_spline=pre_bake_spline))
-
         return additional_data
 
 # --------------------------------------------

@@ -161,6 +161,14 @@ class PackageFile:
     def get_full_path(self) -> Path:
         # Return the full path of the package file
         return pathlib.Path(self.dirpath) / self.filename
+    
+    def get_file_as_data(self) -> Dict[str, Any]:
+        # Get the file as data, useful for exporting to JSON or other formats
+        file_data: Dict[str, Any] = {}
+        file_data["type"] = self.file_type.value
+        file_data["content_type"] = self.file_content_type
+        file_data["file_path"] = str(self.get_full_path())
+        return file_data
 
 class AssetPackage:
     def __init__(self, name: str, details: Optional[List[str]] = None):
@@ -229,6 +237,19 @@ class AssetToExport:
 
         # Asset Additional Data:
         self.additional_data: Optional[AdditionalAssetData] = None
+
+    def get_asset_files_as_data(self) -> List[Dict[str, Any]]:
+        # Get the asset files as data, useful for exporting to JSON or other formats
+        files_data: List[Dict[str, Any]] = []
+        
+        for package in self.asset_packages:
+            if package.file:
+                files_data.append(package.file.get_file_as_data())
+        
+        if self.additional_data and self.additional_data.file:
+            files_data.append(self.additional_data.file.get_file_as_data())
+        
+        return files_data
 
     def add_asset_package(self, package_name: str, details: Optional[List[str]] = None) -> AssetPackage:
         # Create a new asset package and add it to the list

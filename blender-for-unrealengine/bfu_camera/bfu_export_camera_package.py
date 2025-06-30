@@ -117,42 +117,8 @@ def export_camera_animation(
 
     # Process export
     my_timer_group.start_timer(f"Process export")
-    camera_export_procedure: BFU_CameraExportProcedure = bfu_export_procedure.BFU_CameraExportProcedure(active)
-    if (camera_export_procedure.value == BFU_CameraExportProcedure.CUSTOM_FBX_EXPORT.value):
-        bfu_export.bfu_fbx_export.export_scene_fbx_with_custom_fbx_io(
-            op,
-            bpy.context,
-            filepath=str(fullpath),
-            check_existing=False,
-            use_selection=True,
-            global_matrix=bfu_export.bfu_export_utils.get_static_axis_conversion(active),
-            apply_unit_scale=True,
-            global_scale=bfu_utils.GetObjExportScale(active),
-            apply_scale_options='FBX_SCALE_NONE',
-            object_types={'CAMERA'},
-            use_custom_props=active.bfu_fbx_export_with_custom_props,
-            add_leaf_bones=False,
-            use_armature_deform_only=active.bfu_export_deform_only,
-            bake_anim=True,
-            bake_anim_use_nla_strips=False,
-            bake_anim_use_all_actions=False,
-            bake_anim_force_startend_keying=True,
-            bake_anim_step=bfu_utils.get_anim_sample(active),
-            bake_anim_simplify_factor=active.bfu_simplify_anim_for_export,
-            path_mode='AUTO',
-            embed_textures=False,
-            batch_mode='OFF',
-            use_batch_own_dir=True,
-            use_metadata=active.bfu_export_with_meta_data,
-            mirror_symmetry_right_side_bones=active.bfu_mirror_symmetry_right_side_bones,
-            use_ue_mannequin_bone_alignment=active.bfu_use_ue_mannequin_bone_alignment,
-            disable_free_scale_animation=active.bfu_disable_free_scale_animation,
-            use_space_transform=bfu_export.bfu_export_utils.get_static_fbx_export_use_space_transform(active),
-            axis_forward=bfu_export.bfu_export_utils.get_static_fbx_export_axis_forward(active),
-            axis_up=bfu_export.bfu_export_utils.get_static_fbx_export_axis_up(active),
-            bake_space_transform=False
-            )
-    elif (camera_export_procedure.value == BFU_CameraExportProcedure.STANDARD_FBX.value):
+    camera_export_procedure: BFU_CameraExportProcedure = bfu_export_procedure.get_object_export_procedure(active)
+    if (camera_export_procedure.value == BFU_CameraExportProcedure.STANDARD_FBX.value):
         bfu_export.bfu_fbx_export.export_scene_fbx(
             filepath=str(fullpath),
             check_existing=False,
@@ -184,7 +150,8 @@ def export_camera_animation(
             )
     elif (camera_export_procedure.value == BFU_CameraExportProcedure.STANDARD_GLTF.value):
         # @TODO: Implement GLTF export for camera
-        bfu_export.bfu_gltf_export.export_scene_gltf()
+        # bpy.ops.export_scene.gltf()
+        pass
     else:
         print(f"Error: The export procedure '{camera_export_procedure}' was not found!")
     my_timer_group.end_last_timer()

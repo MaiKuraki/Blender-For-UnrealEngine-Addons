@@ -28,20 +28,19 @@ from . import bfu_export_text_files_asset_data
 from . import bfu_export_text_files_sequencer_data
 from . import bfu_export_text_files_utils
 
-from .. import bpl
 from .. import bbpl
 from .. import languages
 from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_export_logs
 
 
-def write_all_data_files(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]):
-    if bpy.context is None:
-        return
+def write_all_data_files(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]) -> None:
 
     time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("Write text files")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+
     root_dirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path))
 
 
