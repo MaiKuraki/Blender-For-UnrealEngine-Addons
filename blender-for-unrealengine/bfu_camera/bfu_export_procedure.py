@@ -22,25 +22,30 @@ from typing import List, Tuple, Dict
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_CameraExportProcedure(str, Enum):
-    CUSTOM_FBX_EXPORT = "custom_fbx_export"
+    ADITIONAL_DATA_ONLY = "additional_data_only"
     STANDARD_FBX = "standard_fbx"
     STANDARD_GLTF = "standard_gltf"
 
     @staticmethod
     def default() -> "BFU_CameraExportProcedure":
-        return BFU_CameraExportProcedure.STANDARD_FBX
+        return BFU_CameraExportProcedure.ADITIONAL_DATA_ONLY
 
 def get_camera_export_procedure_enum_property_list() -> List[Tuple[str, str, str, str, int]]:
     return [
-        (BFU_CameraExportProcedure.CUSTOM_FBX_EXPORT.value,
-            "UE Standard",
-            "Modified fbx I/O for Unreal Engine",
-            "ARMATURE_DATA",
-            1),
+        (BFU_CameraExportProcedure.ADITIONAL_DATA_ONLY.value,
+            "Additional Data Only",
+            "Export only additional data for camera.",
+            "OUTLINER_OB_GROUP_INSTANCE",
+            0),
         (BFU_CameraExportProcedure.STANDARD_FBX.value,
-            "Blender Standard",
+            "Blender Standard (FBX)",
             "Standard fbx I/O.",
-            "ARMATURE_DATA",
+            "OUTLINER_OB_GROUP_INSTANCE",
+            1),
+        (BFU_CameraExportProcedure.STANDARD_GLTF.value,
+            "Blender Standard (glTF 2.0)",
+            "Standard glTF 2.0.",
+            "OUTLINER_OB_GROUP_INSTANCE",
             2),
         ]
 
@@ -51,7 +56,16 @@ def get_obj_export_file_type(obj: bpy.types.Object) -> BFU_FileTypeEnum:
     return get_export_file_type(get_object_export_procedure(obj))
 
 def get_export_file_type(procedure: BFU_CameraExportProcedure) -> BFU_FileTypeEnum:
-    return BFU_FileTypeEnum.FBX
+    if procedure == BFU_CameraExportProcedure.STANDARD_FBX:
+        return BFU_FileTypeEnum.FBX
+    elif procedure == BFU_CameraExportProcedure.STANDARD_GLTF:
+        return BFU_FileTypeEnum.GLTF
+    else:
+        return BFU_FileTypeEnum.UNKNOWN
+
+def get_object_export_additional_data_only(obj: bpy.types.Object) -> bool:
+    return get_object_export_procedure(obj).value == BFU_CameraExportProcedure.ADITIONAL_DATA_ONLY.value
+
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_CameraExportProcedure:
     for procedure in BFU_CameraExportProcedure:

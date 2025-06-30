@@ -52,8 +52,6 @@ class BFU_Camera(BFU_ObjectAssetClass):
         return AssetType.CAMERA
     
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
         scene = bpy.context.scene
         return scene.bfu_use_camera_export  # type: ignore[attr-defined]
 
@@ -91,9 +89,6 @@ class BFU_Camera(BFU_ObjectAssetClass):
 # ####################################################################
 
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-        if bpy.context is None:
-            return []
-
         asset_list: List[AssetToExport] = []
 
         # One asset per alembic animation pack
@@ -102,8 +97,8 @@ class BFU_Camera(BFU_ObjectAssetClass):
         asset.set_import_dirpath(self.get_asset_import_directory_path(data))
     
         if search_mode.search_packages():
-            if data.bfu_export_fbx_camera:  # type: ignore[attr-defined]
-                pak = asset.add_asset_package(data.name, ["Alembic"])
+            if not bfu_export_procedure.get_object_export_additional_data_only(data):
+                pak = asset.add_asset_package(data.name, ["Camera"])
                 self.set_package_file(pak, data, details)
 
                 if search_mode.search_package_content():

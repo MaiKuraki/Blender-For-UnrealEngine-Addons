@@ -29,7 +29,6 @@ from . import bfu_camera_write_paste_commands
 
 def get_preset_values() -> List[str]:
     preset_values = [
-        'obj.bfu_export_fbx_camera',
         'obj.bfu_fix_axis_flippings',
         'obj.bfu_desired_camera_type',
         'obj.bfu_custom_camera_actor',
@@ -90,12 +89,6 @@ def register():
     bpy.types.Scene.bfu_camera_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Camera Properties")  # type: ignore
     bpy.types.Scene.bfu_camera_tools_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Camera")  # type: ignore
 
-    bpy.types.Object.bfu_export_fbx_camera = bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('export_camera_as_fbx_name')),
-        description=(languages.tt('export_camera_as_fbx_desc')),
-        override={'LIBRARY_OVERRIDABLE'},
-        default=False,
-        )
     bpy.types.Object.bfu_fix_axis_flippings = bpy.props.BoolProperty(  # type: ignore
         name="Fix Camera Axis",
         description=('Enable this option to fix axis flipping caused by rotation wrapping. '
@@ -145,7 +138,6 @@ def unregister():
     del bpy.types.Object.bfu_custom_camera_actor  # type: ignore
     del bpy.types.Object.bfu_desired_camera_type  # type: ignore
     del bpy.types.Object.bfu_fix_axis_flippings  # type: ignore
-    del bpy.types.Object.bfu_export_fbx_camera  # type: ignore
     del bpy.types.Scene.bfu_camera_tools_expanded  # type: ignore
     del bpy.types.Scene.bfu_camera_properties_expanded  # type: ignore
 

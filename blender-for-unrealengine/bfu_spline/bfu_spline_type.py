@@ -99,12 +99,13 @@ class BFU_Spline(BFU_ObjectAssetClass):
         asset.set_import_dirpath(self.get_asset_import_directory_path(data))
     
         if search_mode.search_packages():
-            pak = asset.add_asset_package(data.name, ["Spline"])
-            self.set_package_file(pak, data, details)
+            if not bfu_export_procedure.get_object_export_additional_data_only(data):
+                pak = asset.add_asset_package(data.name, ["Spline"])
+                self.set_package_file(pak, data, details)
 
-            if search_mode.search_package_content():
-                pak.add_object(data)
-                pak.export_function = bfu_export_spline_package.process_spline_export_from_package
+                if search_mode.search_package_content():
+                    pak.add_object(data)
+                    pak.export_function = bfu_export_spline_package.process_spline_export_from_package
 
         # Set the additional data in the asset, add asset to the list and return the list.
         self.set_additional_data_in_asset(asset, data, details, search_mode)

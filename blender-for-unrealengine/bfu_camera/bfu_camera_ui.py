@@ -54,7 +54,6 @@ def draw_ui_object_camera(layout: bpy.types.UILayout, context: bpy.types.Context
                     camera_ui_pop.prop(obj, 'bfu_custom_camera_actor')
                     camera_ui_pop.prop(obj, 'bfu_custom_camera_default_actor')
                     camera_ui_pop.prop(obj, 'bfu_custom_camera_component')
-                camera_ui_pop.prop(obj, 'bfu_export_fbx_camera')
                 camera_ui_fix_axis = camera_ui_pop.box()
                 camera_ui_fix_axis_prop = camera_ui_fix_axis.row()
                 camera_ui_fix_axis_prop.prop(obj, 'bfu_fix_axis_flippings')

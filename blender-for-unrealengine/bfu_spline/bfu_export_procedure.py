@@ -22,18 +22,21 @@ from typing import List, Tuple, Dict
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_SplineExportProcedure(str, Enum):
+    ADITIONAL_DATA_ONLY = "additional_data_only"
     STANDARD_FBX = "standard_fbx"
     STANDARD_GLTF = "standard_gltf"
 
     @staticmethod
     def default() -> "BFU_SplineExportProcedure":
-        # For the momment FBX is the default export procedure.
-        # But in the future I will change on glTF when fully stable and supported by Unreal Engine.
-        # glTF is more modern and open than FBX.
-        return BFU_SplineExportProcedure.STANDARD_FBX
+        return BFU_SplineExportProcedure.ADITIONAL_DATA_ONLY
 
 def get_spline_export_procedure_enum_property_list() -> List[Tuple[str, str, str, str, int]]:
     return [
+        (BFU_SplineExportProcedure.ADITIONAL_DATA_ONLY.value,
+            "Additional Data Only",
+            "Export only additional data for spline.",
+            "OUTLINER_OB_GROUP_INSTANCE",
+            0),
         (BFU_SplineExportProcedure.STANDARD_FBX.value,
             "Blender Standard (FBX)",
             "Standard fbx I/O.",
@@ -57,6 +60,11 @@ def get_export_file_type(procedure: BFU_SplineExportProcedure) -> BFU_FileTypeEn
         return BFU_FileTypeEnum.FBX
     elif procedure == BFU_SplineExportProcedure.STANDARD_GLTF:
         return BFU_FileTypeEnum.GLTF
+    else:
+        return BFU_FileTypeEnum.UNKNOWN
+
+def get_object_export_additional_data_only(obj: bpy.types.Object) -> bool:
+    return get_object_export_procedure(obj).value == BFU_SplineExportProcedure.ADITIONAL_DATA_ONLY.value
 
 def get_object_export_procedure(obj: bpy.types.Object) -> BFU_SplineExportProcedure:
     for procedure in BFU_SplineExportProcedure:

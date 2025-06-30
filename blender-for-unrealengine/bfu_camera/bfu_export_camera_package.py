@@ -60,13 +60,12 @@ def export_camera_animation(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     # Export single camera
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
