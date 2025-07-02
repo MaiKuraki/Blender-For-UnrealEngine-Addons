@@ -563,7 +563,8 @@ def set_duplicated_object_export_name(duplicated_obj: bpy.types.Object, original
     if is_skeletal:
         desired_export_name: str = bfu_utils.get_desired_export_armature_name(original_obj)
     else:
-        desired_export_name: str = original_obj.name # Could be used in future?
+        # Consider duplicated object as already renamed in set_duplicate_name_for_export() so keep the name.
+        desired_export_name: str = duplicated_obj.name # Could be used in future?
 
     # Check if needs change before applying it.
     if duplicated_obj.name != desired_export_name:
