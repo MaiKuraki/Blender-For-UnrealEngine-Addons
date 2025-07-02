@@ -60,8 +60,7 @@ def ConvertToConvexHull(obj: bpy.types.Object, recalc_face_normals: bool = False
             bm = bmesh.new()
             bm.from_mesh(mesh)  # Mesh to Bmesh
             bmesh.ops.convex_hull(
-                bm=bm, 
-                input=bm.verts,  # type: ignore
+                bm, input=bm.verts,  # type: ignore
                 use_existing_faces=True
             )
             if recalc_face_normals:
