@@ -32,7 +32,7 @@ class BFU_OT_ConvertToCollisionButtonBox(bpy.types.Operator):
         " collision ready for export (Boxes type)")
 
     def execute(self, context):
-        ConvertedObj = bfu_collision_utils.Ue4SubObj_set("Box")
+        ConvertedObj = bfu_collision_utils.unreal_engine_sub_objs_set("Box")
         if len(ConvertedObj) > 0:
             self.report(
                 {'INFO'},
@@ -54,7 +54,7 @@ class BFU_OT_ConvertToCollisionButtonCapsule(bpy.types.Operator):
         " ready for export (Capsules type)")
 
     def execute(self, context):
-        ConvertedObj = bfu_collision_utils.Ue4SubObj_set("Capsule")
+        ConvertedObj = bfu_collision_utils.unreal_engine_sub_objs_set("Capsule")
         if len(ConvertedObj) > 0:
             self.report(
                 {'INFO'},
@@ -76,7 +76,7 @@ class BFU_OT_ConvertToCollisionButtonSphere(bpy.types.Operator):
         " to Unreal collision ready for export (Spheres type)")
 
     def execute(self, context):
-        ConvertedObj = bfu_collision_utils.Ue4SubObj_set("Sphere")
+        ConvertedObj = bfu_collision_utils.unreal_engine_sub_objs_set("Sphere")
         if len(ConvertedObj) > 0:
             self.report(
                 {'INFO'},
@@ -98,7 +98,7 @@ class BFU_OT_ConvertToCollisionButtonConvex(bpy.types.Operator):
         " collision ready for export (Convex shapes type)")
 
     def execute(self, context):
-        ConvertedObj = bfu_collision_utils.Ue4SubObj_set("Convex")
+        ConvertedObj = bfu_collision_utils.unreal_engine_sub_objs_set("Convex")
         if len(ConvertedObj) > 0:
             self.report(
                 {'INFO'},
