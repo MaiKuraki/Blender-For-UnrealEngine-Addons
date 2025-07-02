@@ -128,7 +128,7 @@ def update_collision_names(SubType, objList):
                         update_length += 1
     return update_length
 
-def Ue4SubObj_set(SubType):
+def unreal_engine_sub_objs_set(SubType):
     # Convect obj to Unreal Engine sub objects Collisions Shapes
 
     def DeselectAllWithoutActive():
@@ -150,7 +150,10 @@ def Ue4SubObj_set(SubType):
 
             # SkeletalMesh Colider
             if obj.type == 'MESH':
-                bfu_basics.ConvertToConvexHull(obj)
+                if SubType == "Box":
+                    bfu_basics.convert_to_box_shape(obj)
+                else:
+                    bfu_basics.convert_to_convex_hull_shape(obj)
                 obj.modifiers.clear()
                 obj.data.materials.clear()
                 obj.active_material_index = 0

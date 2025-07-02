@@ -21,6 +21,7 @@ from pathlib import Path
 import bpy
 import shutil
 import bmesh
+from mathutils import Vector, Euler
 
 def RemoveFolderTree(folder: str) -> None:
     dirpath = Path(folder)
@@ -52,7 +53,7 @@ def SetCollectionUse(collection: bpy.types.Collection) -> None:
             print(collection.name, " not found in view_layer.layer_collection")
 
 
-def ConvertToConvexHull(obj: bpy.types.Object, recalc_face_normals: bool = False) -> None:
+def convert_to_convex_hull_shape(obj: bpy.types.Object, recalc_face_normals: bool = False) -> None:
     # Convert obj to Convex Hull
     mesh = obj.data
     if isinstance(mesh, bpy.types.Mesh):
@@ -66,6 +67,49 @@ def ConvertToConvexHull(obj: bpy.types.Object, recalc_face_normals: bool = False
             if recalc_face_normals:
                 bmesh.ops.recalc_face_normals(bm, faces=bm.faces)  # type: ignore
             bm.to_mesh(mesh)  # BMesh to Mesh
+
+def convert_to_box_shape(obj: bpy.types.Object) -> None:
+    # Convert obj to Box Shape.
+    # Calculate the bounding box of the mesh and replace all mesh with a perfect box.
+    if not isinstance(obj.data, bpy.types.Mesh):
+        return
+
+    if obj.mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Sauvegarder la rotation actuelle
+    original_rotation = obj.rotation_euler.copy()
+
+    # Appliquer la rotation temporairement
+    obj.rotation_euler = Euler((0.0, 0.0, 0.0), 'XYZ')
+
+    # Calcul du bounding box en local (plus fiable maintenant)
+    bbox = [Vector(corner) for corner in obj.bound_box]
+    min_corner = Vector((min(v[0] for v in bbox),
+                         min(v[1] for v in bbox),
+                         min(v[2] for v in bbox)))
+    max_corner = Vector((max(v[0] for v in bbox),
+                         max(v[1] for v in bbox),
+                         max(v[2] for v in bbox)))
+    size = max_corner - min_corner
+    center = (min_corner + max_corner) * 0.5
+
+    # Générer un cube parfait
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bm.to_mesh(obj.data)
+    bm.free()
+
+    # Positionner l'objet
+    obj.location += center
+    obj.scale = size
+
+
+
+    # Restaurer la rotation d'origine
+    obj.rotation_euler = original_rotation
+
+
 
 
 def verifi_dirs(directory: Path) -> bool:
