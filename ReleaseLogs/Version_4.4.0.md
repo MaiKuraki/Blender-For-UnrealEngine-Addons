@@ -18,6 +18,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Changed: The default export folder "ImportedFbx" is now "ImportedBlenderAssets".
 - Changed: "Export animation without mesh" moved in animations tab and it now False by default.
 - Changed: "Auto Rig Pro export removed"
+- Changed: Box collisions (UBX) now use perfect box shape instead of convex hull. (Better for collision detection at the import)
 - Fixed: Check Potential shape keys issues identify the wrong modifiers.
 - Fixed: In Blender 4.4 the app crash with some constraint. (Removing constraints now also removes the driver's influence to avoid crashing.)
 - Fixed: Import script do not use the the correct name for search and apply pre import setting.
