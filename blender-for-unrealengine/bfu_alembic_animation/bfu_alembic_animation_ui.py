@@ -53,7 +53,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
         scene = bpy.context.scene 
         if bfu_alembic_animation_utils.is_alembic_animation(obj):
             accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_alembic_properties_expanded")
-            header, panel = accordion.draw(layout)
+            _, panel = accordion.draw(layout)
             if accordion.is_expend():
                 AlembicProp = panel.column()
 

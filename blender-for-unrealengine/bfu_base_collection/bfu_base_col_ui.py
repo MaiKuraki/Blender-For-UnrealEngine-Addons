@@ -31,7 +31,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("SCENE", "GENERAL"):
 
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_collection_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             collectionListProperty = panel.column()
             collectionListProperty.template_list(

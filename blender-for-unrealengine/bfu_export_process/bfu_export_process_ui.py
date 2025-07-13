@@ -28,7 +28,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_export_process_properties_expanded")
-    header, panel = accordion.draw(layout)
+    _, panel = accordion.draw(layout)
     if accordion.is_expend():
 
         # Feedback info :
@@ -44,7 +44,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
         exportButton.operator("object.exportforunreal", icon='EXPORT')
 
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_script_tool_expanded")
-    header, panel = accordion.draw(layout)
+    _, panel = accordion.draw(layout)
     if accordion.is_expend():
         if addon_prefs.useGeneratedScripts:
             copyButton = panel.row()

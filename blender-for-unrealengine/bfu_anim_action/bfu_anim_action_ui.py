@@ -47,7 +47,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_action_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             if is_skeletal_mesh:
                 # Action list

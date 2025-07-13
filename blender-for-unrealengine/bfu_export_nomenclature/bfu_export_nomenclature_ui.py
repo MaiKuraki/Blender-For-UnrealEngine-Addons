@@ -27,7 +27,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_nomenclature_properties_expanded")
-    header, panel = accordion.draw(layout)
+    _, panel = accordion.draw(layout)
     if accordion.is_expend():
 
         # Prefix

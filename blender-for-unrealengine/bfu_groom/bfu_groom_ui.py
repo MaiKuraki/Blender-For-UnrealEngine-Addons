@@ -50,7 +50,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
         scene = bpy.context.scene 
         if bfu_groom_utils.is_groom(obj):
             accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_groom_alembic_properties_expanded")
-            header, panel = accordion.draw(layout)
+            _, panel = accordion.draw(layout)
             if accordion.is_expend():
                 AlembicProp = panel.column()
                 AlembicProp.label(text="(Alembic animation are exported with scene position.)")

@@ -49,7 +49,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_collision_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             # StaticMesh prop
             if is_static_mesh:
@@ -77,7 +77,7 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_collision_properties_expanded")
-    header, panel = accordion.draw(layout)
+    _, panel = accordion.draw(layout)
     if accordion.is_expend():
         # Draw user tips and check can use buttons
         ready_for_convert_collider = False

@@ -47,7 +47,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
 
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_vertex_color_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             # Vertex color
             bfu_vertex_color_settings = panel.column()

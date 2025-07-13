@@ -40,7 +40,7 @@ def draw_ui_object_camera(layout: bpy.types.UILayout, context: bpy.types.Context
     scene = bpy.context.scene 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_camera_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             camera_ui = panel.column()
             if obj.type == "CAMERA":
@@ -93,7 +93,7 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_camera_tools_expanded")
-    header, panel = accordion.draw(layout)
+    _, panel = accordion.draw(layout)
     if accordion.is_expend():
         camera_ui = panel.column()
         camera_ui.operator("object.copy_selected_cameras_data", icon="COPYDOWN")

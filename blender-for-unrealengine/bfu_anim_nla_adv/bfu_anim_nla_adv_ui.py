@@ -42,7 +42,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_nla_advanced_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             transformProp2 = panel.column()
             transformProp2.enabled = obj.bfu_anim_nla_use

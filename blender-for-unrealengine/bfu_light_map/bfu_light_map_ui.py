@@ -45,7 +45,7 @@ def draw_obj_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_light_map_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
             if is_static_mesh:
                 StaticMeshLightMapRes = panel.box()
@@ -70,7 +70,7 @@ def draw_obj_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy
 def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_light_map_properties_expanded")
-    header, panel = accordion.draw(layout)
+    _, panel = accordion.draw(layout)
     if accordion.is_expend():
         checkButton = panel.column()
         checkButton.operator("object.comput_all_lightmap", icon='TEXTURE')

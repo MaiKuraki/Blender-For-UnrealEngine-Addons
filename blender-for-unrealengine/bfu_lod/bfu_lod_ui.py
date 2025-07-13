@@ -48,7 +48,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
     # Draw UI
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):   
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_lod_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
 
             # Wiki page

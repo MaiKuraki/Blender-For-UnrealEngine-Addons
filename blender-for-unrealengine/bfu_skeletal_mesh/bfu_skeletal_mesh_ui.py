@@ -67,7 +67,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_skeleton_properties_expanded")
-        header, panel = accordion.draw(layout)
+        _, panel = accordion.draw(layout)
         if accordion.is_expend():
 
             # SkeletalMesh prop
