@@ -59,35 +59,45 @@ def create_safe_bone(arm, bone_name, context_id=None) -> Optional[bpy.types.Edit
 
     return bone
 
-def get_mirror_bone_name(original_bones):
+def get_mirror_bone_name(original_bones: str | list[str]) -> str | list[str]:
     """
-    Get the mirror bone name for the given bone(s).
+    Returns the mirror name of a bone or a list of bones.
+    Automatically handles .l/.r, .L/.R, _l/_r, _L/_R, _left/_right, Left/Right, etc.
     """
-    if not isinstance(original_bones, list):
-        bones = [original_bones]  # Convert to list
-    else:
-        bones = original_bones
+    from typing import Union
+    bones: list[str] = [original_bones] if isinstance(original_bones, str) else original_bones
 
-    def try_to_invert_bones(bone):
-        change = [
-            ("_l", "_r"),
-            ("_L", "_R")
-        ]
-
-        for old, new in change:
-            if bone.endswith(old):
-                return bone[:-len(old)] + new
-            elif bone.endswith(new):
-                return bone[:-len(new)] + old
-
-        # Return original if no invert found
+    def mirror_name(bone: str) -> str:
+        bases = [("l", "r"), ("left", "right")]
+        seps = [".", "_", ""]
+        patterns = []
+        for sep in seps:
+            for l, r in bases:
+                for lcase, rcase in [
+                    (l.lower(), r.lower()),
+                    (l.upper(), r.upper()),
+                    (l.capitalize(), r.capitalize()),
+                ]:
+                    patterns.append((sep + lcase, sep + rcase))
+        patterns.sort(key=lambda x: len(x[0]), reverse=True)
+        for lpat, rpat in patterns:
+            if bone.endswith(lpat):
+                if len(lpat) == 1 and lpat in "lr" and len(bone) > 1 and bone[-2].isalnum():
+                    continue
+                return bone[:-len(lpat)] + rpat
+            if bone.endswith(rpat):
+                if len(rpat) == 1 and rpat in "lr" and len(bone) > 1 and bone[-2].isalnum():
+                    continue
+                return bone[:-len(rpat)] + lpat
+            if lpat.startswith(("Left", "RIGHT", "LEFT", "Right")):
+                if bone.startswith(lpat):
+                    return rpat + bone[len(lpat):]
+                if bone.startswith(rpat):
+                    return lpat + bone[len(rpat):]
         return bone
 
-    # Using list comprehension for performance
-    new_bones = [try_to_invert_bones(bone) for bone in bones]
-
-    # Return a single element if the input was not a list
-    return new_bones[0] if not isinstance(original_bones, list) else new_bones
+    mirrored = [mirror_name(b) for b in bones]
+    return mirrored[0] if isinstance(original_bones, str) else mirrored
 
 def get_name_with_new_prefix(name, old_prefix, new_prefix):
     """
