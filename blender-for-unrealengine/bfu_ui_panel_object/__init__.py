@@ -149,7 +149,8 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             text = "Open Github page",
             icon="HELP"
             )
-
+        
+        # Active object properties
         if context is None:
             layout.row().label(text='No active context.')
             return

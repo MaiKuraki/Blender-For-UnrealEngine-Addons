@@ -69,6 +69,9 @@ try:
     from . import bfu_assets_references
     from . import bfu_custom_property
     from . import bfu_addon_parts
+    from . import bfu_ui_panel_object
+    from . import bfu_ui_panel_tools
+    from . import bfu_ui_panel_export
     from . import bfu_export_nomenclature
     from . import bfu_export_filter
     from . import bfu_export_process
@@ -153,6 +156,12 @@ try:
         importlib.reload(bfu_custom_property)
     if "bfu_addon_parts" in locals():
         importlib.reload(bfu_addon_parts)
+    if "bfu_ui_panel_object" in locals():
+        importlib.reload(bfu_ui_panel_object)
+    if "bfu_ui_panel_tools" in locals():
+        importlib.reload(bfu_ui_panel_tools)
+    if "bfu_ui_panel_export" in locals():
+        importlib.reload(bfu_ui_panel_export)
     if "bfu_export_nomenclature" in locals():
         importlib.reload(bfu_export_nomenclature)
     if "bfu_export_filter" in locals():
@@ -223,6 +232,9 @@ try:
         bfu_nanite.register()
         bfu_assets_references.register()
         bfu_custom_property.register()
+        bfu_ui_panel_export.register()
+        bfu_ui_panel_tools.register()
+        bfu_ui_panel_object.register()
         bfu_addon_parts.register()
         bfu_export_nomenclature.register()
         bfu_export_filter.register()
@@ -278,8 +290,8 @@ try:
 
         for cls in reversed(classes):
             bpy.utils.unregister_class(cls)  # type: ignore
+            
 
-# Try/Execpt is useful for dev, need to make BBAM automatically add at build time in dev mode.
 except Exception as e:
     import traceback
     print("Failed to import addon modules:")
