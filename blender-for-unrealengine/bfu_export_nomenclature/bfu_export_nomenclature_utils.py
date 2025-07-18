@@ -23,9 +23,6 @@ from .. import bfu_basics
 
 def get_import_location()-> Path:
     """Get the path to import assets into Unreal Engine."""
-
-    if bpy.context is None:
-        return Path()
     
     scene = bpy.context.scene
     if TYPE_CHECKING:
