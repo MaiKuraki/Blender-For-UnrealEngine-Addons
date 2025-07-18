@@ -78,15 +78,13 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
             return AssetType.ANIM_ACTION
 
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
         scene = bpy.context.scene
         return scene.bfu_use_animation_export  # type: ignore[attr-defined]
     
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
         scene = bpy.context.scene
         if scene is not None:
-            dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+            dirpath: Path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
             dirpath /= scene.bfu_anim_subfolder_name
             return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
@@ -143,10 +141,6 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
 # ####################################################################
 
     def get_asset_export_data(self, data: bpy.types.Object, details: bpy.types.Action, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-
-        if bpy.context is None:
-            return []
-        
         asset_list: List[AssetToExport] = []
 
         # One asset per action. Can be action or pose for one frame actions.
