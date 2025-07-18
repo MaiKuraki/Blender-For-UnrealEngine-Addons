@@ -127,7 +127,7 @@ class FBXExporterGenerate:
     def update_fbx_addon_version(self):
         source_file = Path(self.get_addon_init_path())
 
-        with open(source_file, 'r') as file:
+        with open(source_file, 'r', newline='\n') as file:
             file_content = file.read()
             
             # Utiliser les expressions régulières pour trouver bl_info et la version
@@ -156,6 +156,11 @@ class FBXExporterGenerate:
             destination_file = dest_folder / file_name
             if source_file.exists():
                 shutil.copy2(source_file, destination_file)
+                # Force LF line endings
+                with open(destination_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                with open(destination_file, 'w', encoding='utf-8', newline='\n') as f:
+                    f.write(content)
                 new_files.append(destination_file)
             else:
                 print(f"File does not exist: {source_file}")
@@ -169,7 +174,7 @@ class FBXExporterGenerate:
     def create_init_file(self, dest_folder: Path) -> Path:
         files = self.files
         init_file_path = dest_folder / '__init__.py'
-        with open(init_file_path, 'w') as init_file:
+        with open(init_file_path, 'w', newline='\n') as init_file:
             # Write imports
             for file_name in files:
                 module_name = os.path.splitext(file_name)[0]
@@ -226,7 +231,7 @@ def run_all_generate():
 
 def create_root_init_file(generated_list: List[Tuple[Tuple[int, int, int], str]]) -> Path:
     init_file_path: Path = Path(parent_directory) / '__init__.py'
-    with open(init_file_path, 'w') as init_file:
+    with open(init_file_path, 'w', newline='\n') as init_file:
         init_file.write("import bpy\n")
         init_file.write("import importlib\n")
         init_file.write("blender_version = bpy.app.version\n\n")

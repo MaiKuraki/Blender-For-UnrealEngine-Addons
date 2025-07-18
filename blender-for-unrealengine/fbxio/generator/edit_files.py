@@ -5,7 +5,7 @@ def print_edit_error(text: str):
 
 def get_file_content(file_path: Path) -> str:
     # Lire le contenu du fichier Python
-    with open(file_path, 'r+', encoding='utf-8') as f:
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
     return content
 
@@ -24,16 +24,16 @@ def add_header_to_file(file_path: Path):
     )
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8', newline='\n') as f:
             original_content = f.read()
     except FileNotFoundError:
         original_content = ""  # Si le fichier n'existe pas, le contenu sera vide
 
-    with open(file_path, 'w', encoding='utf-8') as f:
+    with open(file_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(header + original_content)
 
 def lines_exist(file_path: Path, search_string: str) -> bool:
-    with open(file_path, 'r+', encoding='utf-8') as f:
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
@@ -43,7 +43,7 @@ def lines_exist(file_path: Path, search_string: str) -> bool:
     return False
 
 def replace_lines(file_path: Path, search_string: str, content_to_add: str):
-    with open(file_path, 'r+', encoding='utf-8') as f:
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
@@ -58,7 +58,7 @@ def replace_lines(file_path: Path, search_string: str, content_to_add: str):
         f.truncate()
 
 def add_after_lines(file_path: Path, search_string: str, content_to_add: str):
-    with open(file_path, 'r+', encoding='utf-8') as f:
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
@@ -73,7 +73,7 @@ def add_after_lines(file_path: Path, search_string: str, content_to_add: str):
         f.truncate()
 
 def add_before_lines(file_path: Path, search_string: str, content_to_add: str):
-    with open(file_path, 'r+', encoding='utf-8') as f:
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
