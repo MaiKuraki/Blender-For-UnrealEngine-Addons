@@ -45,6 +45,8 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
     def support_asset_type(self, data: Any, details: Any = None) -> bool:
         if not isinstance(data, bpy.types.Object):
             return False
+        if data.bfu_export_as_lod_mesh:  # type: ignore[attr-defined]
+            return False
         if details is not None:
             return False
         if data.type == "ARMATURE" and data.bfu_anim_nla_use:  # type: ignore[attr-defined]

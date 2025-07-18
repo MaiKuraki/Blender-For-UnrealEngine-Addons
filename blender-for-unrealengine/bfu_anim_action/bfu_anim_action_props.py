@@ -16,11 +16,62 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
-from typing import List
+from enum import Enum
+from typing import List, Tuple, TYPE_CHECKING
 import bpy
 from .. import bbpl
 
+class BFU_AnimActionExportEnum(str, Enum):
+    EXPORT_AUTO = "export_auto"
+    EXPORT_SPECIFIC_LIST = "export_specific_list"
+    EXPORT_SPECIFIC_PREFIX = "export_specific_prefix"
+    EXPORT_CURRENT = "export_current"
+    DONT_EXPORT = "dont_export"
+
+    @staticmethod
+    def default() -> "BFU_AnimActionExportEnum":
+        return BFU_AnimActionExportEnum.EXPORT_AUTO
+
+def get_anim_action_export_enum_list() -> List[Tuple[str, str, str, str, int]]:
+    return [
+        (BFU_AnimActionExportEnum.EXPORT_AUTO.value,
+            "Export auto",
+            "Export all actions connected to the bones names.",
+            "FILE_SCRIPT",
+            1),
+        (BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST.value,
+            "Export specific list",
+            "Export only actions that are checked in the list.",
+            "LINENUMBERS_ON",
+            3),
+        (BFU_AnimActionExportEnum.EXPORT_SPECIFIC_PREFIX.value,
+            "Export specific prefix",
+            "Export only actions with a specific prefix" +
+            " or the beginning of the actions names.",
+            "SYNTAX_ON",
+            4),
+        (BFU_AnimActionExportEnum.DONT_EXPORT.value,
+            "Not exported",
+            "No action will be exported.",
+            "MATPLANE",
+            5),
+        (BFU_AnimActionExportEnum.EXPORT_CURRENT.value,
+            "Export Current",
+            "Export only the current actions.",
+            "FILE_SCRIPT",
+            6),
+    ]
+
+def get_default_anim_action_export_enum() -> str:
+    return BFU_AnimActionExportEnum.default().value
+
+def get_object_anim_action_export_enum(obj: bpy.types.Object) -> BFU_AnimActionExportEnum:
+    for enum in BFU_AnimActionExportEnum:
+        if obj.bfu_anim_action_export_enum == enum.value:  # type: ignore
+            return enum
+
+    print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_anim_action_export_enum}'. Falling back to default export procedure...")  # type: ignore
+    return BFU_AnimActionExportEnum.default()
 
 def get_preset_values() -> List[str]:
     preset_values = [
@@ -96,6 +147,15 @@ class BFU_OT_ObjExportAction(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Action data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'})
     use: bpy.props.BoolProperty(name="use this action", default=False, override={'LIBRARY_OVERRIDABLE'})
 
+    if TYPE_CHECKING:
+        name: str
+        use: bool
+
+def get_object_action_asset_list(obj: bpy.types.Object) -> List[BFU_OT_ObjExportAction]:
+    return obj.bfu_action_asset_list
+
+def get_object_prefix_name_to_export(obj: bpy.types.Object) -> str:
+    return obj.bfu_prefix_name_to_export
 
 # -------------------------------------------------------------------
 #   Register & Unregister
@@ -131,36 +191,10 @@ def register():
         name="Action to export",
         description="Export procedure for actions (Animations and poses)",
         override={'LIBRARY_OVERRIDABLE'},
-        items=[
-            ("export_auto",
-                "Export auto",
-                "Export all actions connected to the bones names",
-                "FILE_SCRIPT",
-                1),
-            ("export_specific_list",
-                "Export specific list",
-                "Export only actions that are checked in the list",
-                "LINENUMBERS_ON",
-                3),
-            ("export_specific_prefix",
-                "Export specific prefix",
-                "Export only actions with a specific prefix" +
-                " or the beginning of the actions names",
-                "SYNTAX_ON",
-                4),
-            ("dont_export",
-                "Not exported",
-                "No action will be exported",
-                "MATPLANE",
-                5),
-            ("export_current",
-                "Export Current",
-                "Export only the current actions",
-                "FILE_SCRIPT",
-                6),
-            ]
-        )
-    
+        items=get_anim_action_export_enum_list(),
+        default=get_default_anim_action_export_enum()
+    )
+
     bpy.types.Object.bfu_prefix_name_to_export = bpy.props.StringProperty(
         # properties used with ""export_specific_prefix" on bfu_anim_action_export_enum
         name="Prefix name",

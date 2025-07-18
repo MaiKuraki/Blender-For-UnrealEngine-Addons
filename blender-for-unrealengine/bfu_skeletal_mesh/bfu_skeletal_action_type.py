@@ -26,6 +26,8 @@ from .. import bfu_basics
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
 from .. import bfu_base_object
+from .. import bfu_anim_action
+from ..bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum
 from . import bfu_export_action_package
 from . import bfu_export_procedure
 
@@ -45,6 +47,8 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
     def support_asset_type(self, data: Any, details: Any = None) -> bool:
         if not isinstance(data, bpy.types.Object):
             return False
+        if data.bfu_export_as_lod_mesh:  # type: ignore[attr-defined]
+            return False
         if data.bfu_anim_nla_use:  # type: ignore[attr-defined]
             return False
         if not isinstance(details, bpy.types.Action):
@@ -52,7 +56,19 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
         if data.bfu_export_skeletal_mesh_as_static_mesh:  # type: ignore[attr-defined]
             return False
         if data.type == "ARMATURE":  # type: ignore[attr-defined]
+            return self.check_action_export_enum(data, details)
+        return False
+
+    def check_action_export_enum(self, obj: bpy.types.Object, action: bpy.types.Action) -> bool:
+        action_export_enum = bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj)
+        if action_export_enum == BFU_AnimActionExportEnum.EXPORT_AUTO:
             return True
+        elif action_export_enum == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST:
+            return bfu_anim_action.bfu_anim_action_utils.get_action_is_in_action_asset_list(obj, action)
+        elif action_export_enum == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_PREFIX:
+            return bfu_anim_action.bfu_anim_action_utils.get_action_use_prefix(obj, action)
+        elif action_export_enum == BFU_AnimActionExportEnum.EXPORT_CURRENT:
+            return bfu_anim_action.bfu_anim_action_utils.get_action_is_current(obj, action)
         return False
 
     def get_asset_type(self, data: Any, details: Any = None) -> AssetType:
