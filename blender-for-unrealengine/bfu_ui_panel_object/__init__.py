@@ -203,7 +203,6 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             bfu_anim_nla.bfu_anim_nla_ui.draw_ui(layout, context, obj)
             bfu_anim_nla_adv.bfu_anim_nla_adv_ui.draw_ui(layout, context, obj)
             bfu_anim_base.bfu_anim_base_ui.draw_ui(layout, context, obj)
-            bfu_anim_base.bfu_anim_base_ui.draw_animation_tab_footer_ui(layout, context, obj)
 
         # Scene
         bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)

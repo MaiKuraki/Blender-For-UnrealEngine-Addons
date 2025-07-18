@@ -18,7 +18,6 @@
 
 
 import bpy
-from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
@@ -27,7 +26,8 @@ from .. import bfu_alembic_animation
 from .. import bfu_cached_assets
 from .. import bfu_export_control
 from .. import bfu_addon_prefs
-
+from .. import bfu_asset_preview
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
     
@@ -64,7 +64,15 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
             props_animation_textures.prop(obj, "bfu_export_animation_without_textures")
             props_animation_textures.enabled = not obj.bfu_export_animation_without_materials and not obj.bfu_export_animation_without_mesh
 
-def draw_animation_tab_footer_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
+    draw_animation_tab_footer_ui(layout, context, obj)
+
+def draw_animation_tab_footer_ui(
+    layout: bpy.types.UILayout, 
+    context: bpy.types.Context, 
+    obj: bpy.types.Object
+) -> None:
+
+    bfu_asset_preview.bfu_asset_preview_ui.draw_asset_preview_bar(layout, context, asset_to_search=AssetToSearch.ANIMATION_ONLY)
 
     scene = bpy.context.scene 
     addon_prefs = bfu_addon_prefs.get_addon_prefs()

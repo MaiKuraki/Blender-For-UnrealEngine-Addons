@@ -25,7 +25,7 @@ from ..bfu_check_types import bfu_checker
 from .. import bfu_check_utils
 from ... import bpl
 from ... import bfu_cached_assets
-from ...bfu_cached_assets.bfu_cached_assets_blender_class import AssetDataSearchMode
+from ...bfu_cached_assets.bfu_cached_assets_blender_class import AssetToSearch, AssetDataSearchMode
 
 # Dynamic import and reload for layers.
 def get_modules_from_directory(directory: str):
@@ -72,8 +72,7 @@ def run_all_check():
 
     bpl.advprint.print_simple_title("Run check potential issues.")
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
-    final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetDataSearchMode.FULL)
-
+    final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetToSearch.ALL_ASSETS, AssetDataSearchMode.FULL)
     print(checker_classes)
 
     for index, my_check_cls in enumerate(checker_classes, start=1):

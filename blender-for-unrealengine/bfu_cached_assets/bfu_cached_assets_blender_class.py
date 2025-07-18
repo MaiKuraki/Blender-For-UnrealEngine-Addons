@@ -22,7 +22,7 @@ import fnmatch
 from typing import List, Optional, Tuple
 
 from . import bfu_cached_assets_types
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode, AssetType
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetToSearch, AssetDataSearchMode, AssetType
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_assets_manager
@@ -122,7 +122,7 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
 
 class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
-    def get_final_asset_list(self, search_mode: AssetDataSearchMode = AssetDataSearchMode.ASSET_NUMBER) -> List[AssetToExport]:
+    def get_final_asset_list(self, asset_to_search: AssetToSearch = AssetToSearch.ALL_ASSETS, search_mode: AssetDataSearchMode = AssetDataSearchMode.ASSET_NUMBER) -> List[AssetToExport]:
         # Returns all assets that will be exported
         # WARNING: the assets not to be ordered. First asset are exported first.
 
@@ -143,81 +143,84 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
         target_asset_to_export: List[AssetToExport] = []
 
-        # Search for collections
-        collection_list: List[bpy.types.Collection] = []
-        if export_filter == "default":
-            collection_asset_cache = get_collectiona_asset_cache()
-            collection_export_asset_list = collection_asset_cache.get_collection_asset_list()
-            for col_asset in collection_export_asset_list:
-                if col_asset.name in bpy.data.collections:
-                    collection = bpy.data.collections[col_asset.name]
-                    collection_list.append(collection)
+        if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
+            # Search for collections
+            collection_list: List[bpy.types.Collection] = []
+            if export_filter == "default":
+                collection_asset_cache = get_collectiona_asset_cache()
+                collection_export_asset_list = collection_asset_cache.get_collection_asset_list()
+                for col_asset in collection_export_asset_list:
+                    if col_asset.name in bpy.data.collections:
+                        collection = bpy.data.collections[col_asset.name]
+                        collection_list.append(collection)
 
-        # Search for collections assets
-        for collection in collection_list:
-            asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(collection)
-            if asset_class_list:
+            # Search for collections assets
+            for collection in collection_list:
+                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(collection)
+                if asset_class_list:
+                    for asset_class in asset_class_list:
+                        target_asset_to_export.extend(asset_class.get_asset_export_data(collection, None, search_mode=search_mode))
+
+            # Search for objects
+            obj_list: List[bpy.types.Object] = []
+            if export_filter == "default":
+                obj_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+
+            elif export_filter in ["only_object", "only_object_and_active"]:
+                recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+
+                for obj in bpy.context.selected_objects:
+                    if obj in recursive_list:
+                        if obj not in obj_list:
+                            obj_list.append(obj)
+                    parent_target = get_have_parent_to_export(obj)
+                    if parent_target is not None:
+                        if parent_target not in obj_list:
+                            obj_list.append(parent_target)
+
+            # Search for objects assets
+            for obj in obj_list:
+                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(obj)
                 for asset_class in asset_class_list:
-                    target_asset_to_export.extend(asset_class.get_asset_export_data(collection, None, search_mode=search_mode))
+                    target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
 
-        # Search for objects
-        obj_list: List[bpy.types.Object] = []
-        if export_filter == "default":
-            obj_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+        if asset_to_search.value in [AssetToSearch.ALL_ASSETS.value, AssetToSearch.ANIMATION_ONLY.value]:
+            # Search for armatures and their actions
+            armature_list: List[bpy.types.Object] = []
+            if export_filter == "default":
+                armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures()
+            elif export_filter in ["only_object", "only_object_and_active"]:
+                armature_recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures()
 
-        elif export_filter in ["only_object", "only_object_and_active"]:
-            recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+                for obj in bpy.context.selected_objects:
+                    if obj in armature_recursive_list:
+                        if obj not in armature_list:
+                            armature_list.append(obj)
+                    armature_parent_target = get_have_parent_to_export(obj)
+                    if armature_parent_target is not None:
+                        if armature_parent_target not in armature_list:
+                            armature_list.append(armature_parent_target)
 
-            for obj in bpy.context.selected_objects:
-                if obj in recursive_list:
-                    if obj not in obj_list:
-                        obj_list.append(obj)
-                parent_target = get_have_parent_to_export(obj)
-                if parent_target is not None:
-                    if parent_target not in obj_list:
-                        obj_list.append(parent_target)
-
-        # Search for objects assets
-        for obj in obj_list:
-            asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(obj)
-            for asset_class in asset_class_list:
-                target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
-
-        # Search for armatures and their actions
-        armature_list: List[bpy.types.Object] = []
-        if export_filter == "default":
-            armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures()
-        elif export_filter in ["only_object", "only_object_and_active"]:
-            armature_recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures()
-
-            for obj in bpy.context.selected_objects:
-                if obj in armature_recursive_list:
-                    if obj not in armature_list:
-                        armature_list.append(obj)
-                armature_parent_target = get_have_parent_to_export(obj)
-                if armature_parent_target is not None:
-                    if armature_parent_target not in armature_list:
-                        armature_list.append(armature_parent_target)
-
-        armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
-        if export_filter == "only_object_and_active":
-            for armature in armature_list:
-                if armature.animation_data and armature.animation_data.action:
-                    armature_actions_map.append((armature, armature.animation_data.action))
-        else:
-            for armature in armature_list:
-                obj_bone_names: List[str] = [bone.name for bone in armature.data.bones]
-                for action in bpy.data.actions:
-                    if not action.library:
-                        if bfu_basics.get_if_action_can_associate_bone(action, obj_bone_names):
-                            armature_actions_map.append((armature, action))
+            armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
+            if export_filter == "only_object_and_active":
+                for armature in armature_list:
+                    if armature.animation_data and armature.animation_data.action:
+                        armature_actions_map.append((armature, armature.animation_data.action))
+            else:
+                for armature in armature_list:
+                    if isinstance(armature.data, bpy.types.Armature):
+                        obj_bone_names: List[str] = [bone.name for bone in armature.data.bones]
+                        for action in bpy.data.actions:
+                            if not action.library:
+                                if bfu_basics.get_if_action_can_associate_bone(action, obj_bone_names):
+                                    armature_actions_map.append((armature, action))
 
 
-        # Search for actions assets
-        for armature, action in armature_actions_map:
-            asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(armature, action)
-            for asset_class in asset_class_list:
-                target_asset_to_export.extend(asset_class.get_asset_export_data(armature, action, search_mode=search_mode))
+            # Search for actions assets
+            for armature, action in armature_actions_map:
+                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(armature, action)
+                for asset_class in asset_class_list:
+                    target_asset_to_export.extend(asset_class.get_asset_export_data(armature, action, search_mode=search_mode))
 
         # Reorder the asset list
         asset_type_order = [

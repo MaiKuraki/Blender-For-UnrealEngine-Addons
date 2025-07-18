@@ -18,31 +18,42 @@
 
 
 import bpy
+from typing import TYPE_CHECKING, Literal
 from .. import bfu_cached_assets
-from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetDataSearchMode, AssetType, AssetPackage
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch, AssetToExport, AssetDataSearchMode, AssetType, AssetPackage
 from .. import bpl
 
-def get_asset_title_text(asset_count: int) -> str:
-    if asset_count == 0:
-        return "No exportable assets were found."
-    elif asset_count == 1:
-        return "1 asset will be exported."
-    else:
-        return f"{asset_count} assets will be exported."
+def get_asset_title_text(asset_count: int, asset_to_search: AssetToSearch) -> str:
+    if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
+        if asset_count == 0:
+            return "No exportable assets were found."
+        elif asset_count == 1:
+            return "1 asset will be exported."
+        else:
+            return f"{asset_count} assets will be exported."
+    # ----
+    elif asset_to_search.value == AssetToSearch.ANIMATION_ONLY.value:
+        if asset_count == 0:
+            return "No exportable animations were found."
+        elif asset_count == 1:
+            return "1 animation will be exported."
+        else:
+            return f"{asset_count} animations will be exported."
 
 def draw_asset_preview_bar(
     layout: bpy.types.UILayout, 
     context: bpy.types.Context,
+    asset_to_search: AssetToSearch = AssetToSearch.ALL_ASSETS
 ) -> None:
     
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
-    final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetDataSearchMode.ASSET_NUMBER)
+    final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.ASSET_NUMBER)
 
     asset_count = len(final_asset_list_to_export)
     asset_info_ui = layout.row().box().split(factor=0.75)
-    asset_info_text = get_asset_title_text(asset_count)
-    asset_info_ui.label(text=asset_info_text)  # type: ignore
-    asset_info_ui.operator("object.showasset", text="Show Assets")  # type: ignore
+    asset_info_text = get_asset_title_text(asset_count, asset_to_search)
+    asset_info_ui.label(text=asset_info_text)
+    asset_info_ui.operator("object.showasset", text="Show Assets").asset_to_search_str = asset_to_search.value
 
 
 def draw_asset_content_line(
@@ -73,14 +84,14 @@ def draw_asset_package(
 
     # package Title
     package_title = f"{package.name}"
-    package_content_details_row.label(text=package_title)  # type: ignore
+    package_content_details_row.label(text=package_title)
 
     # Package details
     if package.details:
         package_details = f"({', '.join(package.details)})"
     else:
         package_details = ""
-    package_content_details_row.label(text=f"{package_details}")  # type: ignore
+    package_content_details_row.label(text=f"{package_details}")
 
     # Package resource count
     if asset.asset_type.can_contain_objects():
@@ -91,7 +102,7 @@ def draw_asset_package(
         else:
             object_names = ", ".join(obj.name for obj in package.objects)
             package_resource = f"[{len(package.objects)} objects: {object_names}]"
-        package_content_details_row.label(text=package_resource)  # type: ignore
+        package_content_details_row.label(text=package_resource)
 
     # Package animation details
     if asset.asset_type.can_use_frame_range():
@@ -99,7 +110,7 @@ def draw_asset_package(
         if frame_range is not None:
             if asset.asset_type == AssetType.ANIM_POSE:
                 pose_frame_text = f"Frame: {frame_range[0]}"
-                package_content_details_row.label(text=pose_frame_text)  # type: ignore
+                package_content_details_row.label(text=pose_frame_text)
             else:
                 frame_range_text = f"Frames: {frame_range[0]}-{frame_range[1]}"
                 frame_count = frame_range[1] - frame_range[0] + 1
@@ -108,16 +119,16 @@ def draw_asset_package(
                 animation_duration_text = bpl.utils.get_formatted_time_as_seconds(time_in_seconds=animation_duration, compact=True, min_decimals=2)
                 package_content_details_row.label(text=f"{frame_range_text} ({frame_count}, {animation_duration_text}) FPS: {fps}")  # type: ignore
         else:
-            package_content_details_row.label(text="No frame range set.")  # type: ignore
+            package_content_details_row.label(text="No frame range set.")
 
     # Package file path
     package_content_file_row = package_line.row()
     package_content_file_row.alignment = "EXPAND"
     if package.file is not None:
         str_path = str(package.file.get_full_path())
-        package_content_file_row.label(icon='FILE', text=str_path)  # type: ignore
+        package_content_file_row.label(icon='FILE', text=str_path)
     else:
-        package_content_file_row.label(icon='FILE', text="No file set for this package.")  # type: ignore
+        package_content_file_row.label(icon='FILE', text="No file set for this package.")
 
 def draw_additional_data(
     asset: AssetToExport,
@@ -131,9 +142,9 @@ def draw_additional_data(
         additional_data_row.alignment = "EXPAND"
         if asset.additional_data.file is not None:
             str_path = str(asset.additional_data.file.get_full_path())
-            additional_data_row.label(icon='FILE', text=str_path)  # type: ignore
+            additional_data_row.label(icon='FILE', text=str_path)
         else:
-            additional_data_row.label(icon='FILE', text="No file set for additional data.")  # type: ignore
+            additional_data_row.label(icon='FILE', text="No file set for additional data.")
 
 def draw_asset(
     asset: AssetToExport, 
@@ -151,7 +162,7 @@ def draw_asset(
     asset_info = asset_row.row()
     asset_info.alignment = 'LEFT'
     asset_name = f"- {asset.name} ({asset.asset_type.get_friendly_name()})"
-    asset_info.label(text=asset_name)  # type: ignore
+    asset_info.label(text=asset_name)
 
     # Asset Pakages
     asset_col = asset_row.column()
@@ -164,12 +175,13 @@ def draw_asset(
 def draw_assets_list(
     layout: bpy.types.UILayout, 
     context: bpy.types.Context, 
+    asset_to_count: AssetToSearch,
     final_asset_list_to_export: list[AssetToExport]
 ) -> None:
 
     # Popup title
-    popup_title = get_asset_title_text(len(final_asset_list_to_export))
-    layout.label(text=popup_title, icon='PACKAGE')  # type: ignore
+    popup_title = get_asset_title_text(len(final_asset_list_to_export), asset_to_count)
+    layout.label(text=popup_title, icon='PACKAGE')
 
     for asset in final_asset_list_to_export:
         draw_asset(asset, layout, context)

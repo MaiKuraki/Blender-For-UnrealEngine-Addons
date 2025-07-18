@@ -28,6 +28,18 @@ from .. import bfu_export_nomenclature
 from .. import bfu_addon_prefs
 
 
+class AssetToSearch(Enum):
+    ALL_ASSETS = "all_assets"  # Search for all assets.
+    ANIMATION_ONLY = "animation_only"  # Search only for animation assets.
+    
+    def get_friendly_name(self) -> str:
+        if self.value == AssetToSearch.ALL_ASSETS.value:
+            return "All Assets"
+        elif self.value == AssetToSearch.ANIMATION_ONLY.value:
+            return "Animation Only"
+        else:
+            return "Unknown"
+
 class AssetDataSearchMode(Enum):
     FULL = "Full" # Search for all assets data.
     PREVIEW = "Preview" # Search assets data for user interface preview.
@@ -276,7 +288,8 @@ class AssetToExport:
     def set_import_dirpath(self, new_import_dirpath: Path) -> None:
         self.import_dirpath = new_import_dirpath
 
-    
+# ###################################################################
+
 class BFU_BaseAssetClass(ABC):
     def __init__(self):
         self.use_lods = False
@@ -457,7 +470,6 @@ class BFU_ObjectAssetClass(BFU_BaseAssetClass):
         if obj_folder_path:
             return Path(obj_folder_path)
         return Path()
-
 
 class BFU_CollectionAssetClass(BFU_BaseAssetClass):
     
