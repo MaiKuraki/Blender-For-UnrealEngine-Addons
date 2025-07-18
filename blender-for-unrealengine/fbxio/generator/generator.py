@@ -2,6 +2,8 @@ import os
 import platform
 import shutil
 import re
+from typing import List, Tuple, Optional
+from pathlib import Path
 from . import edit_files
 from . import edit_fbx_utils
 from . import edit_export_fbx_bin
@@ -59,54 +61,71 @@ all_export_fbx_files_with_init = [
 
 
 # Get the directory of the current script
-current_script_directory = os.path.dirname(os.path.abspath(__file__))
+current_script_directory: Path = Path(__file__).resolve().parent
 # Define the parent directory (one level up from the current script directory)
-parent_directory = os.path.dirname(current_script_directory)
+parent_directory: Path = current_script_directory.parent
 
 class FBXExporterGenerate:
-    def __init__(self, version, folder, files, new_io_fbx = None):
-        self.version = version
-        self.folder = folder
-        self.files = files
-        self.fbx_addon_version = None
+    def __init__(self, version: Tuple[int, int, int], folder: str, files: List[str], new_io_fbx: Optional[str] = None):
+        self.version: Tuple[int, int, int] = version
+        self.folder: str = folder
+        self.files: List[str] = files
+        self.fbx_addon_version: Tuple[int, int, int] = (0, 0, 0)  # Default version
         if new_io_fbx:
-            self.io_fbx = new_io_fbx
+            self.io_fbx: str = new_io_fbx
         else:
-            self.io_fbx = r"scripts/addons/io_scene_fbx"
+            self.io_fbx: str = r"scripts/addons/io_scene_fbx"
+
+        self.run_init_check()
+
+    def run_init_check(self):
+        def print_red(message: str):
+            print(f"\033[91m{message}\033[0m")
+        if not self.get_addon_path().exists():
+            print_red(f"Addon path does not exist: {self.get_addon_path()}")
+            return False
+        if not self.get_addon_init_path().exists():
+            print_red(f"Addon init path does not exist: {self.get_addon_init_path()}")
+            return False
+        return True
 
     def get_str_version(self):
         return str(self.version[0])+"_"+str(self.version[1])
     
     def get_folder_str_version(self):
         return str(self.version[0])+"."+str(self.version[1])
+
+    def get_addon_path(self) -> Path:
+        addon_path = Path(blender_install_folder) / self.folder / self.io_fbx
+        return addon_path.resolve()
     
-    def get_addon_folder(self):
-        addon_path = os.path.join(blender_install_folder, self.folder, self.io_fbx)
-        return os.path.abspath(addon_path)
-        
-    def run_generate(self):
+    def get_addon_init_path(self) -> Path:
+        addon_path = Path(blender_install_folder) / self.folder / self.io_fbx / '__init__.py'
+        return addon_path.resolve()
+
+    def run_generate(self) -> Tuple[Tuple[int, int, int], str]:
         # Create the destination folder in the parent directory
         self.update_fbx_addon_version()
-        version_as_module = self.get_str_version()
+        version_as_module: str = self.get_str_version()
         print("Start Generate ", version_as_module)
-        dest_folder = os.path.join(parent_directory, io_scene_fbx_prefix+version_as_module)
-        if not os.path.exists(dest_folder):
-            os.makedirs(dest_folder)
+        dest_folder: Path = parent_directory / (io_scene_fbx_prefix + version_as_module)
+        if not dest_folder.exists():
+            dest_folder.mkdir(parents=True)
 
-        new_files = self.copy_export_files(dest_folder)
+        new_files: List[Path] = self.copy_export_files(dest_folder)
         new_files.append(self.create_init_file(dest_folder))
 
         for new_file in new_files:
             print("Process file:", new_file)
             edit_files.add_header_to_file(new_file)
-            if new_file.endswith('export_fbx_bin.py'):
+            if str(new_file).endswith('export_fbx_bin.py'):
                 edit_export_fbx_bin.update_export_fbx_bin(new_file, self.version, self.fbx_addon_version)
-            if new_file.endswith('fbx_utils.py'):
+            if str(new_file).endswith('fbx_utils.py'):
                 edit_fbx_utils.update_fbx_utils(new_file, self.version)
-        return [self.version, version_as_module]
+        return (self.version, version_as_module)
     
     def update_fbx_addon_version(self):
-        source_file = os.path.join(self.get_addon_folder(), "__init__.py")
+        source_file = Path(self.get_addon_init_path())
 
         with open(source_file, 'r') as file:
             file_content = file.read()
@@ -123,19 +142,19 @@ class FBXExporterGenerate:
                     self.fbx_addon_version = tuple(map(int, elements))
                     return
 
-    def copy_export_files(self, dest_folder):
-        addon_folder = self.get_addon_folder()
+    def copy_export_files(self, dest_folder: Path) -> List[Path]:
+        addon_folder = self.get_addon_path()
         new_files = []
         # Verify if the source folder exists
-        if not os.path.exists(addon_folder):
+        if not addon_folder.exists():
             print(f"Source folder does not exist: {addon_folder}")
             return
 
         # Copy only specified files from the source to the destination
         for file_name in self.files:
-            source_file = os.path.join(addon_folder, file_name)
-            destination_file = os.path.join(dest_folder, file_name)
-            if os.path.exists(source_file):
+            source_file = addon_folder / file_name
+            destination_file = dest_folder / file_name
+            if source_file.exists():
                 shutil.copy2(source_file, destination_file)
                 new_files.append(destination_file)
             else:
@@ -147,13 +166,13 @@ class FBXExporterGenerate:
         return new_files
 
 
-    def create_init_file(self, dest_folder):
+    def create_init_file(self, dest_folder: Path) -> Path:
         files = self.files
-        init_file_path = os.path.join(dest_folder, '__init__.py')
+        init_file_path = dest_folder / '__init__.py'
         with open(init_file_path, 'w') as init_file:
             # Write imports
             for file_name in files:
-                module_name, _ = os.path.splitext(file_name)
+                module_name = os.path.splitext(file_name)[0]
                 init_file.write(f"from . import {module_name}\n")
             
             
@@ -162,7 +181,7 @@ class FBXExporterGenerate:
             
             # Write reloads
             for file_name in files:
-                module_name, _ = os.path.splitext(file_name)
+                module_name = os.path.splitext(file_name)[0]
                 if module_name in ["import_fbx", "fbx_utils"]:
                     
                     init_file.write(f"# import_fbx and fbx_utils should not be reload or the export will produce StructRNA errors. \n")
@@ -180,60 +199,40 @@ def run_all_generate():
     clean_previous_exports()
 
     # generated var needs to be ordered from new to older.
-    generated = [] 
+    generator_list: List[FBXExporterGenerate] = []
+    generated_list: List[Tuple[Tuple[int, int, int], str]] = []
 
-    generate_4_4 = FBXExporterGenerate((4, 4, 0), r"Blender_v4.4", export_fbx_files_with_threading, r"scripts/addons_core/io_scene_fbx/")
-    generated.append(generate_4_4.run_generate())
+    generator_list.append(FBXExporterGenerate((4, 5, 0), r"Blender_v4.5", export_fbx_files_with_threading, r"scripts/addons_core/io_scene_fbx/"))
+    generator_list.append(FBXExporterGenerate((4, 4, 0), r"Blender_v4.4", export_fbx_files_with_threading, r"scripts/addons_core/io_scene_fbx/"))
+    generator_list.append(FBXExporterGenerate((4, 3, 0), r"Blender_v4.3", export_fbx_files_with_threading, r"scripts/addons_core/io_scene_fbx/"))
+    generator_list.append(FBXExporterGenerate((4, 2, 0), r"Blender_v4.2", export_fbx_files_with_threading, r"scripts/addons_core/io_scene_fbx/"))
+    generator_list.append(FBXExporterGenerate((4, 1, 0), r"Blender 4.1/4.1", export_fbx_files_with_threading))
+    generator_list.append(FBXExporterGenerate((4, 0, 0), r"Blender 4.0/4.0", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((3, 6, 0), r"Blender 3.6/3.6", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((3, 5, 0), r"Blender 3.5/3.5", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((3, 4, 0), r"Blender 3.4/3.4", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((3, 3, 0), r"Blender 3.3/3.3", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((3, 2, 0), r"Blender 3.2/3.2", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((3, 1, 0), r"Blender 3.1/3.1", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((2, 93, 0), r"Blender 2.93/2.93", export_fbx_files))
+    generator_list.append(FBXExporterGenerate((2, 83, 0), r"Blender 2.83/2.83", export_fbx_files))
 
-    generate_4_3 = FBXExporterGenerate((4, 3, 0), r"Blender_v4.3", export_fbx_files_with_threading, r"scripts/addons_core/io_scene_fbx/")
-    generated.append(generate_4_3.run_generate())
+    for generator in generator_list:
+        generated_list.append(generator.run_generate())
 
-    generate_4_2 = FBXExporterGenerate((4, 2, 0), r"Blender_v4.2", export_fbx_files_with_threading, r"scripts/addons_core/io_scene_fbx/")
-    generated.append(generate_4_2.run_generate())
-    
-    generate_4_1 = FBXExporterGenerate((4, 1, 0), r"Blender 4.1/4.1", export_fbx_files_with_threading)
-    generated.append(generate_4_1.run_generate())
-
-    generate_4_0 = FBXExporterGenerate((4, 0, 0), r"Blender 4.0/4.0", export_fbx_files)
-    generated.append(generate_4_0.run_generate())
-
-    generate_3_6 = FBXExporterGenerate((3, 6, 0), r"Blender 3.6/3.6", export_fbx_files)
-    generated.append(generate_3_6.run_generate())
-
-    generate_3_5 = FBXExporterGenerate((3, 5, 0), r"Blender 3.5/3.5", export_fbx_files)
-    generated.append(generate_3_5.run_generate())
-
-    generate_3_4 = FBXExporterGenerate((3, 4, 0), r"Blender 3.4/3.4", export_fbx_files)
-    generated.append(generate_3_4.run_generate())
-
-    generate_3_3 = FBXExporterGenerate((3, 3, 0), r"Blender 3.3/3.3", export_fbx_files)
-    generated.append(generate_3_3.run_generate())
-
-    generate_3_2 = FBXExporterGenerate((3, 2, 0), r"Blender 3.2/3.2", export_fbx_files)
-    generated.append(generate_3_2.run_generate())
-
-    generate_3_1 = FBXExporterGenerate((3, 1, 0), r"Blender 3.1/3.1", export_fbx_files)
-    generated.append(generate_3_1.run_generate())
-
-    generate_2_93 = FBXExporterGenerate((2, 93, 0), r"Blender 2.93/2.93", export_fbx_files)
-    generated.append(generate_2_93.run_generate())
-
-    generate_2_83 = FBXExporterGenerate((2, 83, 0), r"Blender 2.83/2.83", export_fbx_files)
-    generated.append(generate_2_83.run_generate())
-
-    root_init_file = create_root_init_file(generated)
+    root_init_file = create_root_init_file(generated_list)
     edit_files.add_header_to_file(root_init_file)
 
-    
-def create_root_init_file(generated):
-    init_file_path = os.path.join(parent_directory, '__init__.py')
+
+def create_root_init_file(generated_list: List[Tuple[Tuple[int, int, int], str]]) -> Path:
+    init_file_path: Path = Path(parent_directory) / '__init__.py'
     with open(init_file_path, 'w') as init_file:
         init_file.write("import bpy\n")
         init_file.write("import importlib\n")
         init_file.write("blender_version = bpy.app.version\n\n")
 
         # Write conditional imports
-        for x, generate in enumerate(generated):
+        for x, generate in enumerate(generated_list):
             version = generate[0]
             str_version = generate[1]
             if x == 0:
@@ -257,8 +256,8 @@ def create_root_init_file(generated):
 def clean_previous_exports():
     for item in os.listdir(parent_directory):
         if item.startswith(io_scene_fbx_prefix):
-            folder_path = os.path.join(parent_directory, item)
-            if os.path.isdir(folder_path):
+            folder_path: Path = Path(parent_directory) / item
+            if folder_path.is_dir():
                 shutil.rmtree(folder_path)
                 print(f"Deleted folder: {folder_path}")
 

@@ -1,6 +1,8 @@
 from . import edit_files
+from typing import Tuple
+from pathlib import Path
 
-def update_export_fbx_bin(file_path, version, fbx_addon_version):
+def update_export_fbx_bin(file_path: Path, version: Tuple[int, int, int], fbx_addon_version: Tuple[int, int, int]):
     add_new_import(file_path)
     edit_files.add_quaternion_import(file_path)
     set_app_name(file_path)
@@ -12,7 +14,7 @@ def update_export_fbx_bin(file_path, version, fbx_addon_version):
     add_bone_correction_matrix(file_path)
     add_animation_only(file_path)
 
-def add_new_import(file_path):
+def add_new_import(file_path: Path):
     # 4.1 and older
     search_lines1 = '''
 from itertools import zip_longest
@@ -35,7 +37,7 @@ from .. import __package__ as parent_package
     else:
         edit_files.print_edit_error(f"Neither set of search lines were found in {file_path}")
 
-def set_app_name(file_path):
+def set_app_name(file_path: Path):
     search_line = '''
     app_name = "Blender (stable FBX IO)"'''
     
@@ -47,7 +49,7 @@ def set_app_name(file_path):
     else:
         edit_files.print_edit_error(f"Neither set of search lines were found in {file_path}")
 
-def set_addon_version_name(file_path, fbx_addon_version):
+def set_addon_version_name(file_path: Path, fbx_addon_version: Tuple[int, int, int]):
 
     search_line = '''
     from . import bl_info
@@ -68,7 +70,7 @@ def set_addon_version_name(file_path, fbx_addon_version):
     else:
         edit_files.print_edit_error(f"Neither set of search lines were found in {file_path}")
 
-def add_animdata_custom_curves(file_path):
+def add_animdata_custom_curves(file_path: Path):
     # 4.1 and older
     search_lines_var = '''
     back_currframe = scene.frame_current
@@ -151,7 +153,7 @@ def add_animdata_custom_curves(file_path):
     else:
         edit_files.print_edit_error(f"Neither set of search lines were found in {file_path}")
 
-def add_num_custom_curve_values(file_path):
+def add_num_custom_curve_values(file_path: Path):
 
     search_lines_num_custom_curve_values = '''
     num_camera_values = len(animdata_cameras) * 2  # Focal length (`.lens`) and focus distance'''
@@ -200,7 +202,7 @@ def add_num_custom_curve_values(file_path):
     else:
         edit_files.print_edit_error(f"Neither set of search lines were found in {file_path}")
 
-def add_set_custom_curve_for_ue(file_path):
+def add_set_custom_curve_for_ue(file_path: Path):
 
     search_lines_animations_in_fbx_animations_do = '''    animations = {}'''
         
@@ -215,7 +217,7 @@ def add_set_custom_curve_for_ue(file_path):
 
     edit_files.add_before_lines(file_path, search_lines_animations_in_fbx_animations_do, num_custom_curve_values)
 
-def add_bone_correction_matrix(file_path):
+def add_bone_correction_matrix(file_path: Path):
 
     search_lines_FBXExportSettings_before = '''        add_leaf_bones, bone_correction_matrix, bone_correction_matrix_inv,'''
         
@@ -239,7 +241,7 @@ def add_bone_correction_matrix(file_path):
     search_lines_animations_in_fbx_animations_do = '''    media_settings = FBXExportSettingsMedia('''
         
 
-    num_custom_curve_values = '''
+    num_custom_curve_values = r'''
     # Calculate reverse direction bone correction matrix for UE Mannequin
     reverse_direction_bone_correction_matrix = None  # Default is None = no change
     reverse_direction_bone_correction_matrix_inv = None
@@ -274,7 +276,7 @@ def add_bone_correction_matrix(file_path):
 
     edit_files.add_before_lines(file_path, search_lines_animations_in_fbx_animations_do, num_custom_curve_values)
 
-def add_animation_only(file_path):
+def add_animation_only(file_path: Path):
 
     search_lines_use_batch_in_save = '''         use_batch_own_dir=False,'''
 

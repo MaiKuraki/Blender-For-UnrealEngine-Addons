@@ -1,10 +1,12 @@
-from . import edit_files
 import ast
+from pathlib import Path
+from typing import Optional, Tuple
+from . import edit_files
 
-def get_has_valid_parent_func(file_path):
+
+def get_has_valid_parent_func(file_path: Path) -> Optional[str]:
     content = edit_files.get_file_content(file_path)
     tree = ast.parse(content)
-    lines = None
     for node in tree.body:
         if isinstance(node, ast.ClassDef) and node.name == "ObjectWrapper":
             for class_node in node.body:
@@ -16,7 +18,7 @@ def get_has_valid_parent_func(file_path):
                     return "\n".join(function_lines)
     edit_files.print_edit_error(f"Function 'has_valid_parent' inside 'ObjectWrapper' not found in {file_path}")
 
-def update_fbx_utils(file_path, version):
+def update_fbx_utils(file_path: Path, version: Tuple[int, int, int]):
     add_re_import(file_path)
     edit_files.add_quaternion_import(file_path)
     add_support_for_custom_kind(file_path)
@@ -32,7 +34,7 @@ def update_fbx_utils(file_path, version):
         add_disable_free_scale_animation(file_path)
 
 
-def add_re_import(file_path):
+def add_re_import(file_path: Path):
     # 4.1 and older
     search_lines1 = '''
 import math
@@ -43,7 +45,7 @@ import time
 '''
     edit_files.add_after_lines(file_path, search_lines1, content_to_add)
 
-def add_support_for_custom_kind(file_path):
+def add_support_for_custom_kind(file_path: Path):
     # Add custom in kinds
     old_kinds = '''
         'CAMERA_FOCUS_DISTANCE': ("FocusDistance", "FocusDistance", ("FocusDistance",)),'''
@@ -81,7 +83,7 @@ def add_support_for_custom_kind(file_path):
 
     edit_files.replace_lines(file_path, old_kinds_init, new_kinds_init)
 
-def add_is_leg_bone_func(previous_func, file_path):
+def add_is_leg_bone_func(previous_func: str, file_path: Path):
     # Add aling matrix functions
 
     new_function = '''
@@ -95,10 +97,10 @@ def add_is_leg_bone_func(previous_func, file_path):
 
     return new_function
 
-def add_is_rightside_bone_func(previous_func, file_path):
+def add_is_rightside_bone_func(previous_func: str, file_path: Path):
     # Add aling matrix functions
 
-    new_function = '''
+    new_function = r'''
     SYMMETRY_RIGHTSIDE_NAME_PATTERN = re.compile(r'(.+[_\.])(r|R)(\.\d+)?$')
 
     def is_rightside_bone(self, objects):
@@ -118,7 +120,7 @@ def add_is_rightside_bone_func(previous_func, file_path):
 
     return new_function
 
-def add_is_reverse_direction_bone_func(previous_func, file_path):
+def add_is_reverse_direction_bone_func(previous_func: str, file_path: Path):
     # Add aling matrix functions
 
     new_function = '''
@@ -132,7 +134,7 @@ def add_is_reverse_direction_bone_func(previous_func, file_path):
 
     return new_function
 
-def add_aling_matrix_funcs(previous_func, file_path):
+def add_aling_matrix_funcs(previous_func: str, file_path: Path):
     # Add aling matrix functions
 
 
@@ -204,10 +206,10 @@ def add_aling_matrix_funcs(previous_func, file_path):
     edit_files.replace_lines(file_path, old_use2, new_use2)
     return new_function
 
-def add_is_basic_bone_func(previous_func, file_path):
+def add_is_basic_bone_func(previous_func: str, file_path: Path):
     # Add aling matrix functions
 
-    new_function = '''
+    new_function = r'''
     BASIC_NAME_PATTERN1 = re.compile(r'^(root|pelvis|spine[_\.]\d+|neck[_\.]\d+|head)$', re.IGNORECASE)
     BASIC_NAME_PATTERN2 = re.compile(r'^(clavicle|upperarm|lowerarm|hand|thigh|calf|foot|ball|thumb)[_\.][lr]$', re.IGNORECASE)
     BASIC_NAME_PATTERN3 = re.compile(r'^(index|middle|ring|pinky)[_\.](\d+|metacarpal)[_\.][lr]$', re.IGNORECASE)
@@ -228,7 +230,7 @@ def add_is_basic_bone_func(previous_func, file_path):
     edit_files.add_after_lines(file_path, previous_func, new_function)
     return new_function
 
-def add_disable_free_scale_animation(file_path):
+def add_disable_free_scale_animation(file_path: Path):
 
     old_FBXExportSettings = '''
     "reverse_direction_bone_correction_matrix", "reverse_direction_bone_correction_matrix_inv",
