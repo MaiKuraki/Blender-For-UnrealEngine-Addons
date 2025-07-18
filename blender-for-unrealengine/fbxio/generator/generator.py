@@ -144,16 +144,16 @@ class FBXExporterGenerate:
 
     def copy_export_files(self, dest_folder: Path) -> List[Path]:
         addon_folder = self.get_addon_path()
-        new_files = []
+        new_files: List[Path] = []
         # Verify if the source folder exists
         if not addon_folder.exists():
             print(f"Source folder does not exist: {addon_folder}")
-            return
+            return new_files
 
         # Copy only specified files from the source to the destination
         for file_name in self.files:
-            source_file = addon_folder / file_name
-            destination_file = dest_folder / file_name
+            source_file: Path = addon_folder / file_name
+            destination_file: Path = dest_folder / file_name
             if source_file.exists():
                 shutil.copy2(source_file, destination_file)
                 # Force LF line endings
@@ -166,7 +166,7 @@ class FBXExporterGenerate:
                 print(f"File does not exist: {source_file}")
 
         print(f"Copied specified FBX exporter files.")
-        print(f"Source: {source_file}")
+        print(f"Source: {addon_folder}")
         print(f"Target: {dest_folder}")
         return new_files
 
