@@ -18,15 +18,13 @@
 
 
 import bpy
-import fnmatch
 from typing import List, Optional, Tuple
-
-from . import bfu_cached_assets_types
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetToSearch, AssetDataSearchMode, AssetType
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_assets_manager
 from .. import bfu_export_control
+from . import bfu_cached_assets_types
 
 
 

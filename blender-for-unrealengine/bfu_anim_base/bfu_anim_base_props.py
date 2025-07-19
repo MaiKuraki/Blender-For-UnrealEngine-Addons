@@ -19,9 +19,7 @@
 
 from typing import List
 import bpy
-from .. import bfu_utils
 from .. import bbpl
-from .. import bfu_cached_assets
 
 
 def get_preset_values() -> List[str]:

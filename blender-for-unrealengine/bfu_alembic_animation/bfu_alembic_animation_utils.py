@@ -17,13 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-import fnmatch
-from . import bfu_alembic_animation_config
 from .. import bfu_assets_manager
-from .. import bbpl
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_unreal_utils
 
 
 def is_alembic_animation(obj: bpy.types.Object) -> bool:
