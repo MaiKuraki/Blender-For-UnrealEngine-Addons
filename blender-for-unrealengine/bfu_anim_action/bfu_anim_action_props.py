@@ -155,7 +155,7 @@ class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
         return {'FINISHED'}
 
 class BFU_OT_DeselectAllObjActionListButton(bpy.types.Operator):
-    bl_label = "Deselect"
+    bl_label = "Deselect All"
     bl_idname = "object.deselectallobjactionlist"
     bl_description = "Deselect all action list"
 
