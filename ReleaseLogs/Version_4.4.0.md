@@ -12,6 +12,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - New: Support action slots rescale for fbx when not using unit scale 0.01. (Action slots was added in Blender 4.4)
 - New: All assets now use the same export procedure system to manage export type and details.
 - New: Addon updated for Blender 4.5.
+- New: Select/deselect all buttons for action export specific list. (Thanks SAM-tak!)
 - Changed: "Check Potential Errors" renamed "Check Potential Issues".
 - Changed: Skeletal animation now don't add one frame at the end of the animation by default. (This was used for looping but it better to let the user decide with the option "bfu_anim_action_end_frame_offset")
 - Changed: New wiki button for open Lods page.
