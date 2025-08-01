@@ -21,6 +21,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Changed: "Export animation without mesh" moved in animations tab and it now False by default.
 - Changed: "Auto Rig Pro export removed"
 - Changed: Box collisions (UBX) now use perfect box shape instead of convex hull. (Better for collision detection at the import)
+- Changed: Better console logs.
 - Fixed: Check Potential shape keys issues identify the wrong modifiers.
 - Fixed: In Blender 4.4 the app crash with some constraint. (Removing constraints now also removes the driver's influence to avoid crashing.)
 - Fixed: Import script do not use the the correct name for search and apply pre import setting.
@@ -34,3 +35,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: bfu_do_not_import_curve_with_zero not updated with presets
 - Fixed: Skeleton is not renamed when import a new skeletal mesh.
 - Fixed: Export animation with bake options may produce script fail.
+- Fixed: Relative path properties shows warning in Blender 4.5
