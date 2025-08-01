@@ -2,37 +2,38 @@
 Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Release-Logs
 
 ### Version 4.4.0
-- Full refactorig about asset management and addon in general.
+- Full refactoring about asset management and addon in general.
 - New: Support materials and textures export using glTF 2.0 format.
-- New: Sub folder support for modular skeletal meshs.
+- New: Sub folder support for modular skeletal meshes.
 - New: Better and more checks for potential issue checker.
 - New: Experimental glTF 2.0 export procedure.
 - New: Interchange import now is supported on Unreal 5.1, (before it was only 5.5 and above).
 - New: Roll/Twist support on splines.
-- New: Support action slots rescale for fbx when not using unit scale 0.01. (Action slots was added in Blender 4.4)
+- New: Support action slots rescale for FBX when not using unit scale 0.01. (Action slots was added in Blender 4.4)
 - New: All assets now use the same export procedure system to manage export type and details.
 - New: Addon updated for Blender 4.5.
 - New: Select/deselect all buttons for action export specific list. (Thanks SAM-tak!)
 - Changed: "Check Potential Errors" renamed "Check Potential Issues".
-- Changed: Skeletal animation now don't add one frame at the end of the animation by default. (This was used for looping but it better to let the user decide with the option "bfu_anim_action_end_frame_offset")
-- Changed: New wiki button for open Lods page.
+- Changed: Skeletal animation now doesn't add one frame at the end of the animation by default. (This was used for looping but it's better to let the user decide with the option "bfu_anim_action_end_frame_offset")
+- Changed: New wiki button to open Lods page.
 - Changed: The default export folder "ExportedFbx" is now "ExportedAssets".
 - Changed: The default export folder "ImportedFbx" is now "ImportedBlenderAssets".
-- Changed: "Export animation without mesh" moved in animations tab and it now False by default.
-- Changed: "Auto Rig Pro export removed"
-- Changed: Box collisions (UBX) now use perfect box shape instead of convex hull. (Better for collision detection at the import)
+- Changed: "Export animation without mesh" moved in animations tab and it is now False by default.
+- Changed: "Auto Rig Pro export" removed.
+- Changed: Box collisions (UBX) now use perfect box shape instead of convex hull. (Better for collision detection at import)
 - Changed: Better console logs.
 - Fixed: Check Potential shape keys issues identify the wrong modifiers.
-- Fixed: In Blender 4.4 the app crash with some constraint. (Removing constraints now also removes the driver's influence to avoid crashing.)
-- Fixed: Import script do not use the the correct name for search and apply pre import setting.
-- Fixed: All panel under a accordion contain a small space over it.
+- Fixed: In Blender 4.4 the app crashes with some constraints. (Removing constraints now also removes the driver's influence to avoid crashing.)
+- Fixed: Import script does not use the correct name for search and apply pre import setting.
+- Fixed: All panels under an accordion contain a small space over it.
 - Fixed: Import counter is wrong when an import fails.
-- Fixed: Static Mesh Lod Groups is set at import but never apply.
-- Fixed: Script when try to replace a read only file. (Happens when Unreal use it at the same time)
+- Fixed: Static Mesh Lod Groups is set at import but never applied.
+- Fixed: Script when trying to replace a read-only file. (Happens when Unreal uses it at the same time)
 - Fixed: Asset number is None in the export logs.
-- Fixed: Animation export may stay idle (NLA export fail, fixed with BBPL update)
-- Fixed: Modifiers distances not updated wihe the rescale when the Unit Scale is not set to 0.01.
-- Fixed: bfu_do_not_import_curve_with_zero not updated with presets
-- Fixed: Skeleton is not renamed when import a new skeletal mesh.
-- Fixed: Export animation with bake options may produce script fail.
-- Fixed: Relative path properties shows warning in Blender 4.5
+- Fixed: Animation export may stay idle (NLA export fail, fixed with BBPL update).
+- Fixed: Modifiers distances not updated with the rescale when the Unit Scale is not set to 0.01.
+- Fixed: bfu_do_not_import_curve_with_zero not updated with presets.
+- Fixed: Skeleton is not renamed when importing a new skeletal mesh.
+- Fixed: Export animation with bake options may produce script failure.
+- Fixed: Relative path properties show warning in Blender 4.5.
+- Fixed: Compatibility issue with Blender 2.8.
