@@ -129,7 +129,7 @@ class BFU_OT_CopyImportAssetScriptCommand(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        bfu_basics.set_windows_clipboard(bfu_utils.GetImportAssetScriptCommand())
+        bfu_basics.set_windows_clipboard(bfu_utils.get_import_asset_script_command())
         self.report(
             {'INFO'},
             "command for "+scene.bfu_file_import_asset_script_name +
@@ -143,7 +143,7 @@ class BFU_OT_CopyImportSequencerScriptCommand(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        bfu_basics.set_windows_clipboard(bfu_utils.GetImportSequencerScriptCommand())
+        bfu_basics.set_windows_clipboard(bfu_utils.get_import_sequencer_script_command())
         self.report(
             {'INFO'},
             "command for "+scene.bfu_file_import_sequencer_script_name +

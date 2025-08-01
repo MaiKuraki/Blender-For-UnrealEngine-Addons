@@ -16,7 +16,7 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
+from pathlib import Path
 import bpy
 from typing import List
 from .. import bbpl
@@ -74,13 +74,13 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     prepare_scene_for_export()
 
     if addon_prefs.revertExportPath:
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_static_file_path))  # type: ignore
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_skeletal_file_path))  # type: ignore
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_alembic_file_path))  # type: ignore
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_groom_file_path))  # type: ignore
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_camera_file_path))  # type: ignore
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_spline_file_path))  # type: ignore
-        bfu_basics.RemoveFolderTree(bpy.path.abspath(scene.bfu_export_other_file_path))  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_static_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_skeletal_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_alembic_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_groom_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_camera_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_spline_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_other_file_path)).resolve())  # type: ignore
 
 
     prepare_all_export_time_log.end_time_log()

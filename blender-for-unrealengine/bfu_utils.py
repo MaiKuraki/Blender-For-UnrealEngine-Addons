@@ -17,14 +17,16 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-import bpy
-import bmesh
+
 import string
 import fnmatch
-import mathutils
 import math
 import os
 from typing import List, Tuple, Optional, Union, TYPE_CHECKING, Any
+from pathlib import Path
+import bpy
+import bmesh
+import mathutils
 from . import bbpl
 from . import bfu_basics
 from . import bfu_export_control
@@ -1116,25 +1118,6 @@ def clean_filename_for_unreal(filename):
     filename = ''.join(c for c in filename if c in valid_chars)
     return filename
 
-
-def GetCollectionExportDir(col, abspath=False):
-    # Generate assset folder path
-    scene = bpy.context.scene
-
-    dirpath = os.path.join(
-        scene.bfu_export_static_file_path,
-        col.bfu_export_folder_name)
-
-    if abspath:
-        return bpy.path.abspath(dirpath)
-    else:
-        return dirpath
-
-# @TODO: @Deprecated use the function in bfu_export_nomenclature_utils
-def get_export_folder_name(obj):
-    folder_name = bfu_basics.valid_folder_name(obj.bfu_export_folder_name)
-    return folder_name
-
 def get_unreal_import_location():
     scene = bpy.context.scene
 
@@ -1144,19 +1127,19 @@ def get_unreal_import_location():
     dirpath = os.path.normpath(dirpath)
     return dirpath
 
-def GetImportAssetScriptCommand():
+def get_import_asset_script_command() -> str:
     scene = bpy.context.scene
     fileName = scene.bfu_file_import_asset_script_name
-    absdirpath = bpy.path.abspath(scene.bfu_export_other_file_path)
-    fullpath = os.path.join(absdirpath, fileName)
+    absdirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path)).resolve()
+    fullpath = absdirpath / fileName
     return 'py "'+fullpath+'"'
 
 
-def GetImportSequencerScriptCommand():
+def get_import_sequencer_script_command() -> str:
     scene = bpy.context.scene
     fileName = scene.bfu_file_import_sequencer_script_name
-    absdirpath = bpy.path.abspath(scene.bfu_export_other_file_path)
-    fullpath = os.path.join(absdirpath, fileName)
+    absdirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path)).resolve()
+    fullpath = absdirpath / fileName
 
     return 'py "'+fullpath+'"'  # Vania
 

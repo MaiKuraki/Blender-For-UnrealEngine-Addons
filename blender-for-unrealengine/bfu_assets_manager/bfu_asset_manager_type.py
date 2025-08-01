@@ -367,7 +367,7 @@ class BFU_BaseAssetClass(ABC):
         # Asset root Path
         export_file_path = self.get_export_file_path(data, details)
         if absolute:
-            dirpath = Path(bpy.path.abspath(export_file_path))  # type: ignore
+            dirpath = Path(bpy.path.abspath(export_file_path)).resolve()  # type: ignore
         else:
             dirpath = Path(export_file_path)
         
