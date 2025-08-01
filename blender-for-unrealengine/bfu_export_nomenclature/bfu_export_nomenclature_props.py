@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import List
+from typing import List, Set
 import os
 from pathlib import Path
 import bpy
@@ -157,6 +157,12 @@ def register():
         # os.sep at end because it a folder path.
         return str(Path("//").joinpath(*parts)) + os.sep
 
+    def export_property_options() -> Set[str]:
+        if bpy.app.version >= (4, 5, 0): # Added in Blender 4.5
+            return {'PATH_SUPPORTS_BLEND_RELATIVE'}
+        else:
+            return set()
+
     # File path
     bpy.types.Scene.bfu_export_static_file_path = bpy.props.StringProperty(
         name="StaticMesh Export Path",
@@ -164,7 +170,7 @@ def register():
         maxlen=512,
         default=blender_relpath("ExportedAssets", "StaticMesh"),
         subtype='DIR_PATH',
-        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+        options=export_property_options()
     )
 
     bpy.types.Scene.bfu_export_skeletal_file_path = bpy.props.StringProperty(
@@ -173,7 +179,7 @@ def register():
         maxlen=512,
         default=blender_relpath("ExportedAssets", "SkeletalMesh"),
         subtype='DIR_PATH',
-        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+        options=export_property_options()
     )
 
     bpy.types.Scene.bfu_export_alembic_file_path = bpy.props.StringProperty(
@@ -182,7 +188,7 @@ def register():
         maxlen=512,
         default=blender_relpath("ExportedAssets", "Alembic"),
         subtype='DIR_PATH',
-        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+        options=export_property_options()
     )
 
     bpy.types.Scene.bfu_export_groom_file_path = bpy.props.StringProperty(
@@ -191,7 +197,7 @@ def register():
         maxlen=512,
         default=blender_relpath("ExportedAssets", "Groom"),
         subtype='DIR_PATH',
-        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+        options=export_property_options()
     )
 
     bpy.types.Scene.bfu_export_camera_file_path = bpy.props.StringProperty(
@@ -200,7 +206,7 @@ def register():
         maxlen=512,
         default=blender_relpath("ExportedAssets", "Sequencer"),
         subtype='DIR_PATH',
-        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+        options=export_property_options()
     )
 
     bpy.types.Scene.bfu_export_spline_file_path = bpy.props.StringProperty(
@@ -209,7 +215,7 @@ def register():
         maxlen=512,
         default=blender_relpath("ExportedAssets", "Spline"),
         subtype='DIR_PATH',
-        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+        options=export_property_options()
     )
 
     bpy.types.Scene.bfu_export_other_file_path = bpy.props.StringProperty(
@@ -218,7 +224,7 @@ def register():
         maxlen=512,
         default=blender_relpath("ExportedAssets"),
         subtype='DIR_PATH',
-        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+        options=export_property_options()
     )
 
     # File name
