@@ -20,6 +20,7 @@ import bpy
 from typing import List, Tuple, TYPE_CHECKING, Optional
 from pathlib import Path
 from .. import bbpl
+from ..bbpl.utils import SaveUserRenderSimplify
 from .. import bfu_utils
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from .. import bfu_skeletal_mesh
@@ -28,7 +29,6 @@ from .. import bfu_material
 from .. import bfu_addon_prefs
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
-from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 
 
 def process_nla_animation_export_from_package(
@@ -79,7 +79,7 @@ def process_nla_anim_export(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_name(armature)
     saved_selection_names.save_new_names(mesh_parts)

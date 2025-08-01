@@ -21,11 +21,11 @@ import bpy
 from pathlib import Path
 from typing import TYPE_CHECKING
 from .. import bbpl
+from ..bbpl.utils import SaveUserRenderSimplify
 from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from .. import bfu_export
-from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from . import bfu_export_procedure
 from .bfu_export_procedure import BFU_SplineExportProcedure
 
@@ -65,7 +65,7 @@ def export_single_fbx_spline(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_name(obj)
     saved_base_transforms = bfu_export.bfu_export_utils.SaveTransformObjects(obj)

@@ -19,16 +19,14 @@
 
 import bpy
 import math
-import os
 import mathutils
 from bpy_extras.io_utils import axis_conversion
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-from .. import bpl
 from .. import bfu_export_text_files
-from .. import bfu_basics
 from .. import bfu_utils
 from .. import bbpl
+from ..bbpl.utils import SaveUserRenderSimplify
 from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
 from .. import bfu_socket
@@ -40,78 +38,8 @@ from .. import bfu_skeletal_mesh
 dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
 Export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
 
-class SavedSceneSimplfy():
-    def __init__(self):
-        if bpy.context is None:
-            return
-        scene = bpy.context.scene
 
-        # General
-        self.use_simplify: bool = bpy.context.scene.render.use_simplify
-
-        # Viewport
-        self.simplify_subdivision: int = scene.render.simplify_subdivision
-        self.simplify_child_particles: int = scene.render.simplify_child_particles
-        self.simplify_volumes: int = scene.render.simplify_volumes
-        self.use_simplify_normals: bool = scene.render.use_simplify_normals
-
-        # Render
-        self.simplify_subdivision_render: int = scene.render.simplify_subdivision_render
-        self.simplify_child_particles_render: int = scene.render.simplify_child_particles_render
-
-    def simplify_scene(self):
-        if bpy.context is None:
-            return
-        scene = bpy.context.scene
-
-        simplify_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Simplify scene")
-        # General
-        scene.render.use_simplify = True
-
-        # Viewport
-        scene.render.simplify_subdivision = 0
-        scene.render.simplify_child_particles = 0
-        scene.render.simplify_volumes = 0
-        scene.render.use_simplify_normals = False
-
-        # Render
-        scene.render.simplify_subdivision_render = 0
-        scene.render.simplify_child_particles_render = 0
-        simplify_time_log.end_time_log()
-
-    def unsimplify_scene(self):
-        # Reset scene for without data loose.
-        if bpy.context is None:
-            return
-        scene = bpy.context.scene
-
-        unsimplify_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Unsimplify scene")
-        # General
-        scene.render.use_simplify = False
-        unsimplify_time_log.end_time_log()
-
-
-    def reset_scene(self):
-        # Reset scene to saved scene.
-        if bpy.context is None:
-            return
-        scene = bpy.context.scene
-
-        # General
-        scene.render.use_simplify = self.use_simplify
-
-        # Viewport
-        scene.render.simplify_subdivision = self.simplify_subdivision
-        scene.render.simplify_child_particles = self.simplify_child_particles
-        scene.render.simplify_volumes = self.simplify_volumes
-        scene.render.use_simplify_normals = self.use_simplify_normals
-
-        # Render
-        scene.render.simplify_subdivision_render = self.simplify_subdivision_render
-        scene.render.simplify_child_particles_render = self.simplify_child_particles_render
-
-
-def ApplyProxyData(obj):
+def ApplyProxyData(obj: bpy.types.Object) -> None:
 
     scene = bpy.context.scene
     # Apply proxy data if needed.
@@ -214,7 +142,7 @@ class DuplicateData():
         duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection")
 
         # Enable simplify for faster duplicate (Don't )
-        saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+        saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
         saved_simplify.simplify_scene()
 
         log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate")

@@ -22,7 +22,7 @@ from typing import List
 from pathlib import Path
 from typing import TYPE_CHECKING
 from .. import bfu_export
-from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
+from ..bbpl.utils import SaveUserRenderSimplify
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_vertex_color
@@ -59,19 +59,18 @@ def export_as_static_mesh(
             #STATIC MESH
     #####################################################
     '''
-    
-    if bpy.context is None:
-        return False
-    
+        
     # Export a single Mesh
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_names(objs)
 

@@ -21,10 +21,10 @@ import bpy
 from pathlib import Path
 from typing import TYPE_CHECKING, Tuple, Optional
 from .. import bbpl
+from ..bbpl.utils import SaveUserRenderSimplify
 from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
-from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from . import bfu_export_procedure
 from .bfu_export_procedure import BFU_CameraExportProcedure
@@ -70,7 +70,7 @@ def export_camera_animation(
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_name(obj)
     saved_frame_range: Tuple[int, int] = (scene.frame_start, scene.frame_end)

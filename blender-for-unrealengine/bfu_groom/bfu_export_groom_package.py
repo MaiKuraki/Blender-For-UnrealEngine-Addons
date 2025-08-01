@@ -21,10 +21,10 @@ import bpy
 from pathlib import Path
 from typing import List, TYPE_CHECKING
 from .. import bbpl
+from ..bbpl.utils import SaveUserRenderSimplify
 from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
-from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from . import bfu_export_procedure
 from .bfu_export_procedure import BFU_GroomExportProcedure
@@ -56,18 +56,17 @@ def export_single_groom_simulation(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     # Export a single groom simulation
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_names(objs)
     saved_base_transforms = bfu_export.bfu_export_utils.SaveTransformObjects(objs[0])
@@ -98,7 +97,7 @@ def export_single_groom_simulation(
             bfu_fbx_export_with_custom_props: bool
         active = FakeObject()  # type: ignore
 
-    frame = bpy.context.scene.frame_current = 1
+    frame = scene.frame_current = 1
     
     bfu_utils.apply_export_transform(active, "Object")
 

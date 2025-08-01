@@ -21,8 +21,8 @@ import bpy
 from pathlib import Path
 from typing import TYPE_CHECKING
 from .. import bfu_export
-from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
 from .. import bbpl
+from ..bbpl.utils import SaveUserRenderSimplify
 from .. import bfu_utils
 from .. import bfu_vertex_color
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
@@ -58,19 +58,19 @@ def export_collection_as_static_mesh(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     # Export a single collection
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+
     objs = bfu_utils.get_export_collection_objects(col)
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_names(objs)
 

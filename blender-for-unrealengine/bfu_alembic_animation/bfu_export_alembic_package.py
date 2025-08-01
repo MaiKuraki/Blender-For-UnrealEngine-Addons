@@ -24,7 +24,7 @@ from .. import bbpl
 from .. import bfu_utils
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetPackage
 from .. import bfu_export
-from ..bfu_export.bfu_export_utils import SavedSceneSimplfy
+from ..bbpl.utils import SaveUserRenderSimplify
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from . import bfu_export_procedure
 from .bfu_export_procedure import BFU_AlembicExportProcedure
@@ -59,18 +59,17 @@ def export_alembic_animation(
     #####################################################
     '''
 
-    if bpy.context is None:
-        return False
-
     # Export a single alembic animation
     my_timer_group = SafeTimeGroup()
     my_timer_group.start_timer(f"Prepare export")
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
     # So can be restored after export.
-    saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+    saved_simplify: SaveUserRenderSimplify = SaveUserRenderSimplify()
     saved_selection_names = bfu_export.bfu_export_utils.SavedObjectNames()
     saved_selection_names.save_new_names(objs)
     saved_base_transforms = bfu_export.bfu_export_utils.SaveTransformObjects(objs[0])
