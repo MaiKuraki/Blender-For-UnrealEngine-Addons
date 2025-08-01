@@ -96,10 +96,10 @@
             ],
             "blender_version_min": [4,2,0]
         },
-        "unrealengine_assets_exporter_2.8": {
+        "unrealengine_assets_exporter_2.9": {
             "generate_method": "SIMPLE_ZIP",
-            "auto_install_range": [[2,80,0], [4,1,0]],
-            "naming": "{Name}_{Version}-blender_2.8-4.1.zip",
+            "auto_install_range": [[2,90,0], [4,1,1]],
+            "naming": "{Name}_{Version}-blender_2.9-4.1.zip",
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
@@ -116,9 +116,33 @@
                 "fbxio/io_scene_fbx_3_3/", 
                 "fbxio/io_scene_fbx_3_2/", 
                 "fbxio/io_scene_fbx_3_1/", 
-                "fbxio/io_scene_fbx_2_93/", 
+                "fbxio/io_scene_fbx_2_93/"
+            ],
+            "blender_version_min": [2,90,0]
+        },
+        "unrealengine_assets_exporter_2.8": {
+            "generate_method": "SIMPLE_ZIP",
+            "auto_install_range": [[2,80,0], [2,83,20]],
+            "naming": "{Name}_{Version}-blender_2.8.zip",
+            "module": "blender-for-unrealengine", 
+            "pkg_id": "unrealengine_assets_exporter",
+            "exclude_paths": [
+                "fbxio/",
+                "addon_debug/"
+            ],
+            "include_paths": [
+                "fbxio/__init__.py/",
                 "fbxio/io_scene_fbx_2_83/"
             ],
+            "_comment": "Workaround: Remove 'override' argument for Blender 2.8 compatibility.",
+            "hard_modifications": {
+                "replace": [
+                    {"search": "override={'LIBRARY_OVERRIDABLE'},", "replace": ""},
+                    {"search": "override={'LIBRARY_OVERRIDABLE'}", "replace": ""},
+                    {"search": "override={'LIBRARY_OVERRIDABLE', 'USE_INSERTION'},", "replace": ""},
+                    {"search": "override={'LIBRARY_OVERRIDABLE', 'USE_INSERTION'}", "replace": ""}
+                ]
+            },
             "blender_version_min": [2,80,0]
         }
     }
