@@ -84,7 +84,6 @@ class VertexColorExportData:
                             return len(vertex_colors)-1
 
                         if bfu_vertex_color_to_use == "ActiveIndex":
-                            obj.data.color_attributes.render_color_index
                             return bbpl.utils.get_vertex_colors_render_color_index(obj)
 
                         if bfu_vertex_color_to_use == "CustomIndex":

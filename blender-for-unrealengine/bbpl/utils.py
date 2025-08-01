@@ -430,7 +430,8 @@ class SaveUserRenderSimplify():
         # Viewport
         self.simplify_subdivision: int = 6
         self.simplify_child_particles: float = 1.0
-        self.simplify_volumes: float = 1.0
+        if bpy.app.version >= (2, 90, 0): # simplify_volumes was added in Blender 2.90
+            self.simplify_volumes: float = 1.0
         if bpy.app.version >= (4, 1, 0): # use_simplify_normals was added in Blender 4.1
             self.use_simplify_normals: bool = False
 
@@ -452,7 +453,8 @@ class SaveUserRenderSimplify():
         # Viewport
         self.simplify_subdivision = scene.render.simplify_subdivision
         self.simplify_child_particles = scene.render.simplify_child_particles
-        self.simplify_volumes = scene.render.simplify_volumes
+        if bpy.app.version >= (2, 90, 0):  # simplify_volumes was added in Blender 2.90
+            self.simplify_volumes = scene.render.simplify_volumes
         if bpy.app.version >= (4, 1, 0):  # use_simplify_normals was added in Blender 4.1
             self.use_simplify_normals = scene.render.use_simplify_normals
 
@@ -474,7 +476,8 @@ class SaveUserRenderSimplify():
         # Viewport
         scene.render.simplify_subdivision = 0
         scene.render.simplify_child_particles = 0
-        scene.render.simplify_volumes = 0
+        if bpy.app.version >= (2, 90, 0):  # simplify_volumes was added in Blender 2.90
+            scene.render.simplify_volumes = 0
         if bpy.app.version >= (4, 1, 0):  # use_simplify_normals was added in Blender 4.1
             scene.render.use_simplify_normals = False
 
@@ -507,7 +510,8 @@ class SaveUserRenderSimplify():
         # Viewport
         scene.render.simplify_subdivision = self.simplify_subdivision
         scene.render.simplify_child_particles = self.simplify_child_particles
-        scene.render.simplify_volumes = self.simplify_volumes
+        if bpy.app.version >= (2, 90, 0):  # simplify_volumes was added in Blender 2.90
+            scene.render.simplify_volumes = self.simplify_volumes
         if bpy.app.version >= (4, 1, 0):  # use_simplify_normals was added in Blender 4.1
             scene.render.use_simplify_normals = self.use_simplify_normals
 
