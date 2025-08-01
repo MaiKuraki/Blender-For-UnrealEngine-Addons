@@ -1133,7 +1133,7 @@ def get_import_asset_script_command() -> str:
     fileName = scene.bfu_file_import_asset_script_name
     absdirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path)).resolve()
     fullpath = absdirpath / fileName
-    return 'py "'+fullpath+'"'
+    return 'py "'+str(fullpath)+'"'
 
 
 def get_import_sequencer_script_command() -> str:
@@ -1142,7 +1142,7 @@ def get_import_sequencer_script_command() -> str:
     absdirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path)).resolve()
     fullpath = absdirpath / fileName
 
-    return 'py "'+fullpath+'"'  # Vania
+    return 'py "'+str(fullpath)+'"'
 
 
 def get_anim_sample(obj: bpy.types.Object) -> float:
