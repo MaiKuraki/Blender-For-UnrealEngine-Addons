@@ -12,7 +12,9 @@ import bpy
 import importlib
 blender_version = bpy.app.version
 
-if blender_version >= (4, 4, 0):
+if blender_version >= (4, 5, 0):
+    from . import io_scene_fbx_4_5 as current_fbxio 
+elif blender_version >= (4, 4, 0):
     from . import io_scene_fbx_4_4 as current_fbxio 
 elif blender_version >= (4, 3, 0):
     from . import io_scene_fbx_4_3 as current_fbxio 

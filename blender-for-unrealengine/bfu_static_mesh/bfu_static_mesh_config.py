@@ -15,5 +15,3 @@
 #  All rights reserved.
 #
 # ======================= END GPL LICENSE BLOCK =============================
-
-asset_type_name = "StaticMesh"

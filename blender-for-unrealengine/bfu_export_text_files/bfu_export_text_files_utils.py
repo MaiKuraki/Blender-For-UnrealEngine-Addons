@@ -20,14 +20,14 @@ import os
 import bpy
 import datetime
 import json
-
-from .. import bpl
+from typing import Dict, Any
+from pathlib import Path
 from .. import bbpl
 from .. import languages
-from .. import bfu_basics
+from .. import bfu_utils
 
 
-def add_generated_json_header(json_data, text: str):
+def add_generated_json_header(json_data: Dict[str, Any], text: str):
 
     json_data['comment'] = {
         '1/3': languages.ti('write_text_additional_track_start'),
@@ -35,25 +35,31 @@ def add_generated_json_header(json_data, text: str):
         '3/3': languages.ti('write_text_additional_track_end'),
     }
 
-def add_generated_json_footer(json_data):
+def add_generated_json_footer(json_data: Dict[str, Any]):
     # Empty for the momment.
     pass
 
-def add_generated_json_meta_data(json_data):
-    
+def add_generated_json_meta_data(json_data: Dict[str, Any]):
+
     current_datetime = datetime.datetime.now()
     current_datetime_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     timestamp = int(current_datetime.timestamp())
 
     blender_file_path = bpy.data.filepath
 
+    import_module_path: Path = Path("unknown")
     if bpy.app.version >= (4, 2, 0):
         version_str = 'Version '+ str(bbpl.blender_extension.extension_utils.get_package_version())
         addon_path = bbpl.blender_extension.extension_utils.get_package_path()
+        if addon_path:
+            import_module_path = Path(addon_path) / "bfu_import_module"
     else:
         version_str = 'Version '+ bbpl.blender_addon.addon_utils.get_addon_version_str("Unreal Engine Assets Exporter")
         addon_path = bbpl.blender_addon.addon_utils.get_addon_path("Unreal Engine Assets Exporter")
-    import_modiule_path = os.path.join(addon_path, "bfu_import_module")
+        if addon_path:
+            import_module_path = Path(addon_path) / "bfu_import_module"
+    
+    
 
 
     json_data['info'] = {
@@ -62,37 +68,37 @@ def add_generated_json_meta_data(json_data):
         "blender_file": blender_file_path,
         'addon_version': version_str,
         'addon_path': addon_path,
-        'import_modiule_path': import_modiule_path,
+        'import_module_path': str(import_module_path),
     }
 
-def export_single_text_file(text, dirpath, filename):
-    # Export single text
+def is_read_only(filepath: Path) -> bool:
+    return filepath.exists() and not os.access(filepath, os.W_OK)
 
-    counter = bpl.utils.CounterTimer()
+def export_single_text_file(text: str, fullpath: Path):
 
-    absdirpath = bpy.path.abspath(dirpath)
-    bfu_basics.verifi_dirs(absdirpath)
-    fullpath = os.path.join(absdirpath, filename)
+    if not bfu_utils.check_and_make_export_path(fullpath):
+        print(f"Cannot write to '{fullpath}': Path is invalid.")
+        return
 
+    if is_read_only(fullpath):
+        print(f"Cannot write to '{fullpath}': File is read-only.")
+        return
+
+    print(f"Writing text file to: {fullpath}")
     with open(fullpath, "w") as file:
         file.write(text)
+        
 
-    exportTime = counter.get_time()
-    # This return [AssetName , AssetType , ExportPath, ExportTime]
-    return([filename, "TextFile", absdirpath, exportTime])
+def export_single_json_file(json_data: Dict[str, Any], fullpath: Path) -> bool:
 
-def export_single_json_file(json_data, dirpath, filename):
-    # Export single Json
+    if not bfu_utils.check_and_make_export_path(fullpath):
+        print(f"Cannot write to '{fullpath}': Path is invalid.")
+        return False
 
-    counter = bpl.utils.CounterTimer()
-
-    absdirpath = bpy.path.abspath(dirpath)
-    bfu_basics.verifi_dirs(absdirpath)
-    fullpath = os.path.join(absdirpath, filename)
+    if is_read_only(fullpath):
+        print(f"Cannot write to '{fullpath}': File is read-only.")
+        return False
 
     with open(fullpath, 'w') as json_file:
         json.dump(json_data, json_file, ensure_ascii=False, sort_keys=False, indent=4)
-
-    exportTime = counter.get_time()
-    # This return [AssetName , AssetType , ExportPath, ExportTime]
-    return([filename, "TextFile", absdirpath, exportTime])
+    return True

@@ -1,0 +1,5 @@
+print("-" * 50)
+print("Hello, welcome to the Blender For Unreal Engine Addons Builder!")
+print("This script will be used to build addons without have to do it manually from blender.")
+print("For the moment it do notting, So please wait for the next update.")
+print("-" * 50)

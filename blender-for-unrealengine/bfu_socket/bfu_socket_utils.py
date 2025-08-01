@@ -20,10 +20,16 @@ import bpy
 import fnmatch
 import math
 import mathutils
+from typing import List, Any, Dict
 from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_unreal_utils
+from .. import bfu_export_control
+from .. import bfu_addon_prefs
+from .. import bfu_skeletal_mesh
+from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_SkeletonExportProcedure
+
 
 
 
@@ -39,15 +45,15 @@ def IsASocket(obj):
 
     return False
 
-def get_socket_desired_child(targetObj):
-    sockets = []
-    for obj in bfu_utils.GetExportDesiredChilds(targetObj):
+def get_socket_desired_children(target_obj: bpy.types.Object) -> List[bpy.types.Object]:
+    sockets: List[bpy.types.Object] = []
+    for obj in bfu_utils.GetExportDesiredChilds(target_obj):
         if IsASocket(obj):
             sockets.append(obj)
 
     return sockets
 
-def GetSocketsExportName(socket):
+def GetSocketsExportName(socket: bpy.types.Object) -> str:
     '''
     Get the current socket custom name
     '''
@@ -55,17 +61,16 @@ def GetSocketsExportName(socket):
         return socket.bfu_socket_custom_Name
     return socket.name[7:]
 
-def get_skeletal_mesh_sockets(obj):
-    if obj is None:
-        return
-    if obj.type != "ARMATURE":
-        return
+def get_skeletal_mesh_sockets(obj: bpy.types.Object) -> List[bpy.types.Object]:
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
-    data = {}
-    sockets = []
+    if obj.type != "ARMATURE":  # type: ignore
+        return []
 
-    for socket in get_socket_desired_child(obj):
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    data: Dict[str, Any] = {}
+    sockets: List[bpy.types.Object] = []
+
+    for socket in get_socket_desired_children(obj):
         sockets.append(socket)
 
     data['Sockets'] = []
@@ -78,23 +83,23 @@ def get_skeletal_mesh_sockets(obj):
         if socket.parent is None:
             print("Socket ", socket.name, " parent is None!")
             break
-        if socket.parent.type != "ARMATURE":
+        if socket.parent.type != "ARMATURE":  # type: ignore
             print("Socket parent", socket.parent.name, " parent is not and Armature!")
             break
 
         if socket.parent.bfu_export_deform_only:
-            b = bfu_basics.getFirstDeformBoneParent(socket.parent.data.bones[socket.parent_bone])
+            b = bfu_basics.get_first_deform_bone_parent(socket.parent.data.bones[socket.parent_bone])
         else:
             b = socket.parent.data.bones[socket.parent_bone]
 
         bbpl.anim_utils.reset_armature_pose(socket.parent)
-        # GetRelativePostion
-        bml = b.matrix_local  # Bone
-        am = socket.parent.matrix_world  # Armature
-        em = socket.matrix_world  # Socket
+        # GetRelativePosition
+        bml: mathutils.Matrix = b.matrix_local  # Bone
+        am: mathutils.Matrix = socket.parent.matrix_world  # Armature
+        em: mathutils.Matrix = socket.matrix_world  # Socket
         RelativeMatrix = (bml.inverted() @ am.inverted() @ em)
         
-        if obj.bfu_skeleton_export_procedure == 'ue-standard':
+        if bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj).value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
             RelativeMatrix = mathutils.Matrix.Rotation(math.radians(90), 4, 'Y') @ RelativeMatrix
             RelativeMatrix = mathutils.Matrix.Rotation(math.radians(-90), 4, 'Z') @ RelativeMatrix
         t = RelativeMatrix.to_translation()
@@ -102,7 +107,7 @@ def get_skeletal_mesh_sockets(obj):
         s = socket.scale*addon_prefs.skeletalSocketsImportedSize
 
         # Convet to array for Json and convert value for Unreal
-        if obj.bfu_skeleton_export_procedure == 'ue-standard':
+        if bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj).value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
             array_location = [t[0], t[1]*-1, t[2]]
             array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]
             array_scale = [s[0], s[1], s[2]]
@@ -145,8 +150,8 @@ def fix_export_type_on_socket(list=None):
 
     fixed_sockets = 0
     for obj in objs:
-        if obj.bfu_export_type == "export_recursive":
-            obj.bfu_export_type = "auto"
+        if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
+            bfu_export_control.bfu_export_control_utils.set_auto(obj)
             fixed_sockets += 1
     return fixed_sockets
 

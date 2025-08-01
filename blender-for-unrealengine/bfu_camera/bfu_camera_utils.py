@@ -17,8 +17,8 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from . import bfu_camera_config
 from .. import bfu_assets_manager
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 def get_enum_cameras_list():
     camera_types = [
@@ -34,9 +34,9 @@ def get_enum_cameras_list():
 def get_enum_cameras_default():
     return "CINEMATIC"
 
-def is_camera(obj):
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
+def is_camera(obj: bpy.types.Object) -> bool:
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     if asset_class:
-        if asset_class.get_asset_type_name(obj) == bfu_camera_config.asset_type_name:
+        if asset_class.get_asset_type(obj) == AssetType.CAMERA:
             return True
     return False

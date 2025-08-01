@@ -16,46 +16,26 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
-import bpy
+from typing import Dict, Any
 from . import bfu_export_text_files_utils
-from .. import bfu_export_logs
 from .. import languages
-from .. import bfu_basics
-from .. import bfu_socket
-from .. import bfu_light_map
-from .. import bfu_nanite
-from .. import bfu_vertex_color
-from .. import bfu_material
-from .. import bfu_lod
 
-def write_single_asset_additional_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
-
-    scene = bpy.context.scene
-    addon_prefs = bfu_basics.GetAddonPrefs()
-    obj = unreal_exported_asset.object
-
-    asset_additional_data = {}
+def write_additional_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Writes the additional data for a preset to a JSON file.
+    :param data: The data to write.
+    :return: The additional data as a dictionary.
+    """
+    asset_additional_data: Dict[str, Any] = {}
 
     bfu_export_text_files_utils.add_generated_json_header(asset_additional_data, languages.ti('write_text_additional_track_all'))
     bfu_export_text_files_utils.add_generated_json_meta_data(asset_additional_data)
 
     # Defaultsettings
     asset_additional_data['DefaultSettings'] = {}
-    # config.set('Defaultsettings', 'SocketNumber', str(len(sockets)))
-
-    # Sockets
-    if obj:
-        asset_additional_data['Sockets'] = bfu_socket.bfu_socket_utils.get_skeletal_mesh_sockets(obj)
-
-
-    asset_additional_data.update(bfu_lod.bfu_lod_utils.get_lod_additional_data(unreal_exported_asset))
-    asset_additional_data.update(bfu_vertex_color.bfu_vertex_color_utils.get_vertex_color_additional_data(unreal_exported_asset))
-    asset_additional_data.update(bfu_material.bfu_material_utils.get_material_asset_additional_data(unreal_exported_asset))
-    asset_additional_data.update(bfu_light_map.bfu_light_map_utils.get_light_map_asset_data(unreal_exported_asset))
-    asset_additional_data.update(bfu_nanite.bfu_nanite_utils.get_nanite_asset_additional_data(unreal_exported_asset))
-
-    asset_additional_data["preview_import_path"] = unreal_exported_asset.GetFilenameWithExtension()
+    
+    # Add the preset data
+    asset_additional_data.update(data)
 
     bfu_export_text_files_utils.add_generated_json_footer(asset_additional_data)
     return asset_additional_data

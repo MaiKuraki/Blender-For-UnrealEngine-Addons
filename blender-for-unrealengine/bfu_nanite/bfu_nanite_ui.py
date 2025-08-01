@@ -18,18 +18,18 @@
 
 
 import bpy
-from . import bfu_nanite_utils
-from .. import bfu_basics
+from .. import bfu_addon_prefs
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
+from .. import bfu_export_control
 
-def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_obj_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # Hide filters
     if obj is None:
@@ -38,7 +38,7 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     if not bfu_utils.draw_proxy_propertys(obj):
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     
     is_static_mesh = bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(obj)
@@ -47,7 +47,8 @@ def draw_obj_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return # Check only static and skeletal meshs for the moment.
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
-        header, panel = scene.bfu_object_nanite_properties_expanded.draw(layout)
-        if scene.bfu_object_nanite_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_nanite_properties_expanded")
+        _, panel = accordion.draw(layout)
+        if accordion.is_expend():
             panel.prop(obj, 'bfu_build_nanite_mode')
 

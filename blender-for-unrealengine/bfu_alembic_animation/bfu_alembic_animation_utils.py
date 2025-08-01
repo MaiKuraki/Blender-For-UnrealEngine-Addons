@@ -17,21 +17,15 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-import fnmatch
-from . import bfu_alembic_animation_config
 from .. import bfu_assets_manager
-from .. import bbpl
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_unreal_utils
 
 
-def is_alembic_animation(obj):
-    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
+def is_alembic_animation(obj: bpy.types.Object) -> bool:
+    asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     if asset_class:
-        if asset_class.get_asset_type_name(obj) == bfu_alembic_animation_config.asset_type_name:
+        if asset_class.get_asset_type(obj) == bfu_assets_manager.bfu_asset_manager_type.AssetType.ANIM_ALEMBIC:
             return True
     return False
 
-def is_not_alembic_animation(obj):
+def is_not_alembic_animation(obj: bpy.types.Object) -> bool:
     return not is_alembic_animation(obj)

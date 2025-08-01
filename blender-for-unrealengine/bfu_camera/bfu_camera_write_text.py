@@ -1,15 +1,17 @@
 import bpy
-
+from typing import Any, Optional,Dict
 from . import bfu_camera_data
 from .. import languages
 from .. import bfu_export_text_files
 
-def WriteOneFrameCameraAnimationTracks(obj, target_frame=None, pre_bake_camera: bfu_camera_data.BFU_CameraTracks = None):
+def WriteOneFrameCameraAnimationTracks(obj: bpy.types.Object, target_frame: int, pre_bake_camera: Optional[bfu_camera_data.BFU_CameraTracks] = None):
     return WriteCameraAnimationTracks(obj, target_frame, target_frame+1, pre_bake_camera)
 
-def WriteCameraAnimationTracks(obj, target_frame_start=None, target_frame_end=None, pre_bake_camera: bfu_camera_data.BFU_CameraTracks = None):
+def WriteCameraAnimationTracks(obj: bpy.types.Object, target_frame_start: Optional[int] = None, target_frame_end: Optional[int] = None, pre_bake_camera: Optional[bfu_camera_data.BFU_CameraTracks] = None) -> Dict[str, Any]:
     # Write as data camera animation tracks
 
+    if bpy.context is None:
+        return {}
     scene = bpy.context.scene
     if target_frame_start is None:
         target_frame_start = scene.frame_start
@@ -18,7 +20,7 @@ def WriteCameraAnimationTracks(obj, target_frame_start=None, target_frame_end=No
 
 
     scene = bpy.context.scene
-    data = {}
+    data: Dict[str, Any] = {}
     bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_camera'))
     bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_meta_data(data)
 

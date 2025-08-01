@@ -17,17 +17,11 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 from typing import TYPE_CHECKING, Dict, Any
-
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
-
-from . import import_module_utils
+import unreal
 from . import import_module_unreal_utils
 
 # Since 5.1 MovieSceneBindingProxy replace SequencerBindingProxy.
-use_movie_scene = import_module_unreal_utils.is_unreal_version_greater_or_equal(5,1)
+use_movie_scene = import_module_unreal_utils.get_unreal_version() > (5,1,0)
 sequencer_scripting_active = import_module_unreal_utils.sequencer_scripting_active()
 
 
@@ -62,7 +56,7 @@ if sequencer_scripting_active:
         return myFFrameRate
 
     def get_section_all_channel(section: unreal.MovieSceneSection): 
-        if import_module_unreal_utils.is_unreal_version_greater_or_equal(5,0):
+        if import_module_unreal_utils.get_unreal_version() >= (5,0,0):
             return section.get_all_channels()
         else:
             return section.get_channels()
@@ -104,7 +98,7 @@ if sequencer_scripting_active:
 
             get_section_all_channel(section)[0].add_key(frame, value)
 
-    def create_new_sequence():
+    def create_new_sequence() -> unreal.LevelSequence:
         factory = unreal.LevelSequenceFactoryNew()
         asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
         seq = asset_tools.create_asset_with_dialog('MySequence', '/Game', None, factory)
@@ -154,7 +148,7 @@ if sequencer_scripting_active:
             camera_binding = seq.add_possessable(camera_actor)
             camera_component_binding = seq.add_possessable(camera_actor.get_cine_camera_component())
 
-        if import_module_unreal_utils.is_unreal_version_greater_or_equal(4,26):
+        if import_module_unreal_utils.get_unreal_version() >= (4,26,0):
             camera_binding.set_display_name(camera_name)
         else:
             pass
@@ -204,7 +198,7 @@ if sequencer_scripting_active:
 
         # Focus Distance
         TrackFocusDistance = camera_component_binding.add_track(unreal.MovieSceneFloatTrack)
-        if import_module_unreal_utils.is_unreal_version_greater_or_equal(4,24):
+        if import_module_unreal_utils.get_unreal_version() >= (4,24,0):
             TrackFocusDistance.set_property_name_and_path('Manual Focus Distance (Focus Settings)', 'FocusSettings.ManualFocusDistance')
         else:
             TrackFocusDistance.set_property_name_and_path('Current Focus Distance', 'ManualFocusDistance')
@@ -224,7 +218,7 @@ if sequencer_scripting_active:
         if camera_tracks['camera_type'] == "ARCHVIS":
 
             # MovieSceneDoubleVectorTrack not supported in Unreal Engine 5.0 and older
-            if import_module_unreal_utils.is_unreal_version_greater_or_equal(5,0):
+            if import_module_unreal_utils.get_unreal_version() >= (5,0,0):
                 # Camera Shift X/Y
                 TrackArchVisShift = camera_component_binding.add_track(unreal.MovieSceneDoubleVectorTrack)
                 TrackArchVisShift.set_property_name_and_path('Manual Correction (Shift)', 'ProjectionOffset')

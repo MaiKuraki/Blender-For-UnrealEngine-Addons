@@ -18,15 +18,15 @@
 
 import bpy
 import fnmatch
-from .. import bbpl
 from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_unreal_utils
+from .. import bfu_export_control
+from .. import bfu_addon_prefs
 
 
-def IsACollision(obj):
+def is_a_collision(obj: bpy.types.Object) -> bool:
     '''
-    Retrun True is object is an Collision.
+    Return True is object is an Collision.
     https://docs.unrealengine.com/en-US/WorkingWithContent/Importing/FBX/StaticMeshes/#collision
     '''
     if obj.type == "MESH":
@@ -68,8 +68,8 @@ def fix_export_type_on_collision(list=None):
 
     fixed_collisions = 0
     for obj in objs:
-        if obj.bfu_export_type == "export_recursive":
-            obj.bfu_export_type = "auto"
+        if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
+            bfu_export_control.bfu_export_control_utils.set_auto(obj)
             fixed_collisions += 1
     return fixed_collisions
 
@@ -128,7 +128,7 @@ def update_collision_names(SubType, objList):
                         update_length += 1
     return update_length
 
-def Ue4SubObj_set(SubType):
+def unreal_engine_sub_objs_set(SubType):
     # Convect obj to Unreal Engine sub objects Collisions Shapes
 
     def DeselectAllWithoutActive():
@@ -150,7 +150,10 @@ def Ue4SubObj_set(SubType):
 
             # SkeletalMesh Colider
             if obj.type == 'MESH':
-                bfu_basics.ConvertToConvexHull(obj)
+                if SubType == "Box":
+                    bfu_basics.convert_to_box_shape(obj)
+                else:
+                    bfu_basics.convert_to_convex_hull_shape(obj)
                 obj.modifiers.clear()
                 obj.data.materials.clear()
                 obj.active_material_index = 0
@@ -179,7 +182,7 @@ def Ue4SubObj_set(SubType):
     return ConvertedObjs
 
 def CreateCollisionMaterial():
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     mat = bpy.data.materials.get("UE4Collision")
     if mat is None:

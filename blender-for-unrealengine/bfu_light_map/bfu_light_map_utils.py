@@ -17,18 +17,18 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-import fnmatch
-from . import bfu_light_map_utils
+from typing import Dict, TYPE_CHECKING, Any
 from .. import bpl
 from .. import bbpl
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_static_mesh
-from .. import bfu_export_logs
+from .. import bfu_export_control
+from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
 
-def GetExportRealSurfaceArea(obj):
+def GetExportRealSurfaceArea(obj: bpy.types.Object) -> float:
 
     local_view_areas = bbpl.scene_utils.move_to_global_view()
     bbpl.utils.safe_mode_set('OBJECT')
@@ -43,17 +43,17 @@ def GetExportRealSurfaceArea(obj):
         use_hierarchy=True
         )
 
-    bfu_utils.ApplyNeededModifierToSelect()
+    bfu_export.bfu_export_utils.apply_select_needed_modifiers_for_export()
     bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
     for selectObj in bpy.context.selected_objects:
         # Remove unable to convert mesh
         if selectObj.type == "EMPTY" or selectObj.type == "CURVE":
-            bfu_utils.CleanDeleteObjects([selectObj])
+            bfu_utils.clean_delete_objects([selectObj])
 
     for selectObj in bpy.context.selected_objects:
         # Remove collision box
-        if bfu_utils.CheckIsCollision(selectObj):
-            bfu_utils.CleanDeleteObjects([selectObj])
+        if bfu_utils.check_is_collision(selectObj):
+            bfu_utils.clean_delete_objects([selectObj])
 
     if bpy.context.view_layer.objects.active is None:
         # When the active id a empty
@@ -64,10 +64,10 @@ def GetExportRealSurfaceArea(obj):
 
     bfu_utils.CleanJoinSelect()
     active = bpy.context.view_layer.objects.active
-    area = bfu_basics.GetSurfaceArea(active)
-    bfu_utils.CleanDeleteObjects(bpy.context.selected_objects)
+    area = bfu_basics.get_surface_area(active)
+    bfu_utils.clean_delete_objects(bpy.context.selected_objects)
     SavedSelect.reset_select()
-    bbpl.scene_utils.move_to_local_view(local_view_areas)
+    bbpl.scene_utils.move_to_local_view()
     return area
 
 def GetCompuntedLightMap(obj):
@@ -105,7 +105,7 @@ def UpdateAreaLightMapList(objects_to_update=None):
         objs = objects_to_update
     else:
         objs = []
-        export_recu_objs = bfu_utils.GetAllobjectsByExportType("export_recursive")
+        export_recu_objs = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
         for export_recu_obj in export_recu_objs:
 
             if bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(export_recu_obj):
@@ -117,7 +117,7 @@ def UpdateAreaLightMapList(objects_to_update=None):
     for obj in objs:
         obj.computedStaticMeshLightMapRes = GetExportRealSurfaceArea(obj)
         UpdatedRes += 1
-        bfu_utils.UpdateProgress("Update LightMap",(UpdatedRes/len(objs)),counter.get_time())
+        bfu_utils.update_progress("Update LightMap",(UpdatedRes/len(objs)),counter.get_time())
     return UpdatedRes
 
 def GetUseCustomLightMapResolution(obj):
@@ -125,17 +125,23 @@ def GetUseCustomLightMapResolution(obj):
         return False
     return True
 
-def get_light_map_asset_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
-    asset_data = {}
+def get_light_map_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
     return asset_data
 
-def get_light_map_additional_data(asset: bfu_export_logs.bfu_asset_export_logs.BFU_OT_UnrealExportedAssetLog):
-    asset_data = {}
-    if asset.asset_type in ["StaticMesh"]:
-        if asset.object:
-            asset_data["generate_lightmap_u_vs"] = asset.object.bfu_generate_light_map_uvs
-        
-            asset_data["use_custom_light_map_resolution"] = GetUseCustomLightMapResolution(asset.object)
-            asset_data["light_map_resolution"] = GetCompuntedLightMap(asset.object)
+def get_light_map_additional_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:
+    asset_data: Dict[str, Any] = {}
+    if asset_type in [AssetType.STATIC_MESH]:
+        if obj:
+
+            if TYPE_CHECKING:
+                class FakeObject(bpy.types.Object):
+                    bfu_generate_light_map_uvs: bool = False
+                obj = FakeObject()
+
+            asset_data["generate_light_map_uvs"] = obj.bfu_generate_light_map_uvs
+
+            asset_data["use_custom_light_map_resolution"] = GetUseCustomLightMapResolution(obj)
+            asset_data["light_map_resolution"] = GetCompuntedLightMap(obj)
 
     return asset_data

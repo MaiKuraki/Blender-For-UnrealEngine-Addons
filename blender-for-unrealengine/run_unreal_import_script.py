@@ -2,7 +2,7 @@
 # The assets are exported from the Unreal Engine Assets Exporter. More details can be found here: https://github.com/xavier150/Blender-For-UnrealEngine-Addons
 # Use the following command in Unreal cmd console and follow the instructions: 
 # py "[ScriptLocation]\run_unreal_import_script.py" -h 
-# py "M:\MMVS_ProjectFiles\content\Level\TalasCozyHouse\ExportedFbx\ImportAssetScript.py" -h
+# py "M:\MMVS_ProjectFiles\content\Level\TalasCozyHouse\ExportedAssets\ImportAssetScript.py" -h
 
 import os
 import sys

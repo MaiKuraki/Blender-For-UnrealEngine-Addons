@@ -17,89 +17,29 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
-from .. import bfu_cached_asset_list
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_disable_free_scale_animation',
+        'obj.bfu_export_animation_without_mesh',
+        'obj.bfu_export_animation_without_materials',
+        'obj.bfu_export_animation_without_textures',
         'obj.bfu_sample_anim_for_export',
         'obj.bfu_simplify_anim_for_export',
     ]
     return preset_values
 
-class BFU_OT_ShowActionToExport(bpy.types.Operator):
-    bl_label = "Show action(s)"
-    bl_idname = "object.showobjaction"
-    bl_description = (
-        "Click to show actions that are" +
-        " to be exported with this armature."
-        )
 
-    def execute(self, context):
-        obj = context.object
-        animation_asset_cache = bfu_cached_asset_list.GetAnimationAssetCache(obj)
-        animation_asset_cache.UpdateActionCache()
-        animation_to_export = animation_asset_cache.GetAnimationAssetList()
-
-        popup_title = "Action list"
-        if len(animation_to_export) > 0:
-            animationNumber = len(animation_to_export)
-            if obj.bfu_anim_nla_use:
-                animationNumber += 1
-            popup_title = (
-                str(animationNumber) +
-                ' action(s) found for obj named "'+obj.name+'".'
-                )
-        else:
-            popup_title = (
-                'No action found for obj named "' +
-                obj.name+'".')
-
-        def draw(self, context: bpy.types.Context):
-            col = self.layout.column()
-
-            def addAnimRow(
-                    action_name,
-                    action_type,
-                    frame_start,
-                    frame_end):
-                row = col.row()
-                row.label(
-                    text="- ["+action_name +
-                    "] Frame "+frame_start+" to "+frame_end +
-                    " ("+action_type+")"
-                    )
-
-            for action in animation_to_export:
-                Frames = bfu_utils.GetDesiredActionStartEndTime(obj, action)
-                frame_start = str(Frames[0])
-                frame_end = str(Frames[1])
-                addAnimRow(action.name, bfu_utils.GetActionType(action), frame_start, frame_end)
-            if obj.bfu_anim_nla_use:
-                scene = context.scene
-                addAnimRow(obj.bfu_anim_nla_export_name, "NlAnim", str(scene.frame_start), str(scene.frame_end))
-
-        bpy.context.window_manager.popup_menu(
-            draw,
-            title=popup_title,
-            icon='ACTION'
-            )
-        return {'FINISHED'}
 
 # -------------------------------------------------------------------
 #   Register & Unregister
 # -------------------------------------------------------------------
 
 classes = (
-    BFU_OT_ShowActionToExport,
 )
 
 
@@ -141,10 +81,35 @@ def register():
         default=False
     )
 
+    bpy.types.Object.bfu_export_animation_without_mesh = bpy.props.BoolProperty(
+        name="Export animation without mesh",
+        description="If checked, When exporting animation, do not include mesh data in the animation exported files. \n"
+        "(False by default because don't work with shape keys animation.)",
+        override={'LIBRARY_OVERRIDABLE'},
+        default=False
+        )
+    
+    bpy.types.Object.bfu_export_animation_without_materials = bpy.props.BoolProperty(
+        name="Export animation without materials",
+        description="If checked, When exporting animation, do not include materials in the animation exported files.",
+        override={'LIBRARY_OVERRIDABLE'},
+        default=True
+        )
+    
+    bpy.types.Object.bfu_export_animation_without_textures = bpy.props.BoolProperty(
+        name="Export animation without textures",
+        description="If checked, When exporting animation, do not include textures in the animation exported files.",
+        override={'LIBRARY_OVERRIDABLE'},
+        default=True
+        )
+
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
+    del bpy.types.Object.bfu_export_animation_without_textures
+    del bpy.types.Object.bfu_export_animation_without_materials
+    del bpy.types.Object.bfu_export_animation_without_mesh
     del bpy.types.Object.bfu_disable_free_scale_animation
     del bpy.types.Object.bfu_simplify_anim_for_export
     del bpy.types.Object.bfu_sample_anim_for_export

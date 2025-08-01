@@ -17,21 +17,56 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import string
-from typing import List, Tuple
-from . import import_module_unreal_utils
+import re
+from typing import List, Tuple, TYPE_CHECKING
+import unreal
+from . import config
+from . import constrcut_config
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
-def load_asset(name):
-    find_asset = unreal.find_asset(name, follow_redirectors=True)
-    if find_asset is None:
-        # Load asset if not find.
-        find_asset = unreal.load_asset(name, follow_redirectors=True)
-    return find_asset
-     
+def get_package_path_from_any_string(asset_string: str) -> str:
+    """
+    Convert any asset reference string (including full object references with /Script/...)
+    into a clean package path suitable for EditorAssetLibrary functions.
+    """
+    
+    # Match format like /Script/Engine.SkeletalMesh'/Game/Path/Asset.Asset'
+    match = re.match(r"^/Script/.+?'(/Game/.+?)'\s*$", asset_string)
+    if match:
+        asset_path = match.group(1)
+    else:
+        asset_path = asset_string
+
+    # Handle /Game/Path/Asset.Asset -> /Game/Path/Asset
+    if asset_path.count(".") == 1:
+        asset_path = asset_path.split(".")[0]
+
+    return asset_path
+
+
+def load_asset(name: str) -> None:
+    # Convert ObjectPath to PackageName
+    package_name = get_package_path_from_any_string(name)
+    asset_exist = unreal.EditorAssetLibrary.does_asset_exist(package_name)
+    if asset_exist:
+        find_asset = unreal.find_asset(name, follow_redirectors=True)
+        if find_asset is None:
+            # Load asset if not find.
+            # Sometimes assets exist but not found because unloaded.
+            find_asset = unreal.load_asset(name, follow_redirectors=True)
+        return find_asset
+    return None
+
+def renamed_asset_name(asset: unreal.Object, new_name: str) -> None:
+    # Rename only the asset name and keep the path.
+    if TYPE_CHECKING:
+        asset_path: str = "<asset_path>"
+    else:
+        asset_path: str = asset.get_path_name()
+    path, _ = asset_path.rsplit('/', 1)
+    new_path: str = path + "/" + new_name + "." + new_name
+    print(f"Renaming asset {asset_path} to {new_path}")
+    unreal.EditorAssetLibrary.rename_asset(asset_path, new_path)
 
 def get_selected_level_actors() -> List[unreal.Actor]:
     """Returns a list of selected actors in the level."""
@@ -41,20 +76,13 @@ def get_unreal_version() -> Tuple[int, int, int]:
     """Returns the Unreal Engine version as a tuple of (major, minor, patch)."""
     version_info = unreal.SystemLibrary.get_engine_version().split('-')[0]
     major, minor, patch = map(int, version_info.split('.'))
-    return major, minor, patch
+    return (major, minor, patch)
 
-def is_unreal_version_greater_or_equal(target_major: int, target_minor: int = 0, target_patch: int = 0) -> bool:
-    """Checks if the Unreal Engine version is greater than or equal to the target version."""
-    major, minor, patch = get_unreal_version()
-    return (
-        major > target_major or 
-        (major == target_major and minor > target_minor) or 
-        (major == target_major and minor == target_minor and patch >= target_patch)
-    )
-
-
-def valid_unreal_asset_name(filename):
-    """Returns a valid Unreal asset name by replacing invalid characters."""
+def clean_filename_for_unreal(filename: str) -> str:
+    """
+    Returns a valid Unreal asset name by replacing invalid characters.
+    Normalizes string, removes non-alpha characters
+    """
 
     filename = filename.replace('.', '_')
     filename = filename.replace('(', '_')
@@ -80,11 +108,8 @@ def show_warning_message(title: str, message: str) -> unreal.AppReturnType:
         print('--------------------------------------------------')
         print(message)
 
-def get_support_interchange() -> bool:
-    return import_module_unreal_utils.is_unreal_version_greater_or_equal(5, 1)
-
 def editor_scripting_utilities_active() -> bool:
-    if is_unreal_version_greater_or_equal(4,20):
+    if get_unreal_version() >= (4,20, 0):
         if hasattr(unreal, 'EditorAssetLibrary'):
             return True
     return False

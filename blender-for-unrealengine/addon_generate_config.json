@@ -1,14 +1,15 @@
 {
     "schema_version": [1,0,0],
     "blender_manifest": {
+        "version": [4,4,0],
         "id": "unrealengine_assets_exporter",
-        "version": [4,3,12],
         "name": "Unreal Engine Assets Exporter",
         "tagline": "Allows to batch export and import in Unreal Engine",
         "maintainer": "Loux Xavier (BleuRaven) xavierloux.loux@gmail.com",
 
         "website_url": "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/",
         "report_issue_url": "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/issues",
+        "documentation_url": "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki",
         "support": "COMMUNITY",
 
         "type": "add-on",
@@ -17,7 +18,7 @@
         "license": ["SPDX:GPL-3.0-or-later"],
         
         "copyright": [
-        "2024 Xavier Loux",
+        "2025 Xavier Loux",
         "2013 Blender Foundation",
         "2006-2012 assimp team",
         "2013 Campbell Barton",
@@ -31,14 +32,31 @@
     },
 
     "builds": {
+        "unrealengine_assets_exporter_4.5": {   
+            "generate_method": "EXTENTION_COMMAND",
+            "auto_install_range": [[4,5,0], "LATEST"],
+            "naming": "{Name}_{Version}-blender_4.5.zip",
+            "module": "blender-for-unrealengine", 
+            "pkg_id": "unrealengine_assets_exporter",
+            "exclude_paths": [
+                "fbxio/",
+                "addon_debug/"
+            ],
+            "include_paths": [
+                "fbxio/__init__.py/",
+                "fbxio/io_scene_fbx_4_5/"
+            ],
+            "blender_version_min": [4,5,0]
+        },
         "unrealengine_assets_exporter_4.4": {   
             "generate_method": "EXTENTION_COMMAND",
-            "auto_install_range": [[4,4,0], "LATEST"],
+            "auto_install_range": [[4,4,0], [4,4,3]],
             "naming": "{Name}_{Version}-blender_4.4.zip",
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",
@@ -53,7 +71,8 @@
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",
@@ -68,7 +87,8 @@
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",
@@ -83,7 +103,8 @@
             "module": "blender-for-unrealengine", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
-                "fbxio/"
+                "fbxio/",
+                "addon_debug/"
             ],
             "include_paths": [
                 "fbxio/__init__.py/",

@@ -1,15 +1,15 @@
-import ast
+from pathlib import Path
 
-def print_edit_error(text):
+def print_edit_error(text: str):
     print(f"\033[91m{text}\033[0m")
 
-def get_file_content(file_path):
+def get_file_content(file_path: Path) -> str:
     # Lire le contenu du fichier Python
-    with open(file_path, 'r+', encoding='utf-8') as f:
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
     return content
 
-def add_header_to_file(file_path):
+def add_header_to_file(file_path: Path):
     header = (
         "# --------------------------------------------- \n"
         "# This file is a modified copy of Blender io_scene_fbx from Blender for the addon Blender-For-UnrealEngine.\n"
@@ -24,16 +24,16 @@ def add_header_to_file(file_path):
     )
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8', newline='\n') as f:
             original_content = f.read()
     except FileNotFoundError:
         original_content = ""  # Si le fichier n'existe pas, le contenu sera vide
 
-    with open(file_path, 'w', encoding='utf-8') as f:
+    with open(file_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(header + original_content)
 
-def lines_exist(file_path, search_string):
-    with open(file_path, 'r+', encoding='utf-8') as f:
+def lines_exist(file_path: Path, search_string: str) -> bool:
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
@@ -42,8 +42,8 @@ def lines_exist(file_path, search_string):
 
     return False
 
-def replace_lines(file_path, search_string, content_to_add):
-    with open(file_path, 'r+', encoding='utf-8') as f:
+def replace_lines(file_path: Path, search_string: str, content_to_add: str):
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
@@ -57,8 +57,8 @@ def replace_lines(file_path, search_string, content_to_add):
         f.write(content)
         f.truncate()
 
-def add_after_lines(file_path, search_string, content_to_add):
-    with open(file_path, 'r+', encoding='utf-8') as f:
+def add_after_lines(file_path: Path, search_string: str, content_to_add: str):
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
@@ -72,8 +72,8 @@ def add_after_lines(file_path, search_string, content_to_add):
         f.write(content)
         f.truncate()
 
-def add_before_lines(file_path, search_string, content_to_add):
-    with open(file_path, 'r+', encoding='utf-8') as f:
+def add_before_lines(file_path: Path, search_string: str, content_to_add: str):
+    with open(file_path, 'r+', encoding='utf-8', newline='\n') as f:
         content = f.read()
 
         # Remplacer "time" par "TESTUE" dans le contenu
@@ -87,7 +87,7 @@ def add_before_lines(file_path, search_string, content_to_add):
         f.write(content)
         f.truncate()
 
-def add_quaternion_import(file_path):
+def add_quaternion_import(file_path: Path):
     mathutils_content = '''from mathutils import Vector, Matrix'''
     new_mathutils_content = ''', Quaternion'''
     add_after_lines(file_path, mathutils_content, new_mathutils_content)

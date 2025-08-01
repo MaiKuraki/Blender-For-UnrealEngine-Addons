@@ -16,53 +16,50 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-from typing import Optional
-from .. import import_module_unreal_utils
+import unreal
 from .. import import_module_tasks_class
-
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
-
-support_interchange = import_module_unreal_utils.get_support_interchange()
+from .. import import_module_utils
+from .. import constrcut_utils
+from ..asset_types import ExportAssetType
 
 
-def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
-    print("Set Nanite import settings.")
+support_interchange = constrcut_utils.include_interchange_functions()
 
-    asset_type = asset_data.get("asset_type")
-    if asset_type not in ["StaticMesh", "SkeletalMesh"]:
+def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
+    import_module_utils.print_debug_step("Set Nanite import settings.")
+
+    asset_type = ExportAssetType.get_asset_type_from_string(asset_data.get("asset_type"))
+    if asset_type not in [ExportAssetType.STATIC_MESH, ExportAssetType.SKELETAL_MESH]:
         # Only apply settings for StaticMesh and SkeletalMesh
         return
     
     if "build_nanite" in asset_additional_data:
         build_nanite = asset_additional_data["build_nanite"]
 
-        if itask.use_interchange:
-            if asset_type == "StaticMesh":
+        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+            if asset_type == ExportAssetType.STATIC_MESH:
                 if "build_nanite" in asset_additional_data:
                     itask.get_igap_mesh().set_editor_property('build_nanite', build_nanite)
-            if asset_type == "SkeletalMesh":
+            if asset_type == ExportAssetType.SKELETAL_MESH:
                 if "build_nanite" in asset_additional_data:
-                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh 
+                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh
                     # but that was not yet added in Python API.
                     pass
                     #itask.get_igap_mesh().set_editor_property('build_nanite', build_nanite)
         else:
-            if asset_type == "StaticMesh":
+            if asset_type == ExportAssetType.STATIC_MESH:
                 if "build_nanite" in asset_additional_data:
                     itask.get_static_mesh_import_data().set_editor_property('build_nanite', build_nanite)
-            if asset_type == "SkeletalMesh":
+            if asset_type == ExportAssetType.SKELETAL_MESH:
                 if "build_nanite" in asset_additional_data:
-                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh 
+                    # Unreal Engine 5.5 support Nanite with Skeletal Mesh
                     # but that was not yet added in Python API.
                     pass
                     #itask.get_static_mesh_import_data().set_editor_property('build_nanite', build_nanite)
 
 
-def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
-    print("Set Nanite post import settings.")
+def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_additional_data: dict) -> None:
+    import_module_utils.print_debug_step("Set Nanite post import settings.")
 
     # Check   
     static_mesh = itask.get_imported_static_mesh()
@@ -74,7 +71,7 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_addi
             apply_one_asset_settings(itask, asset, asset_additional_data)
 
 
-def apply_one_asset_settings(itask: import_module_tasks_class.ImportTaks, asset: unreal.Object, asset_additional_data: dict) -> None:
+def apply_one_asset_settings(itask: import_module_tasks_class.ImportTask, asset: unreal.Object, asset_additional_data: dict) -> None:
     """Applies vertex color settings to an already imported asset."""
 
     # Check   

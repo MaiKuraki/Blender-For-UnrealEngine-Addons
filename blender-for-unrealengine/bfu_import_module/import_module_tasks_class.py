@@ -16,45 +16,41 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
-from typing import List, Optional
+import os
+from typing import List, Optional, Union, TYPE_CHECKING
+import unreal
 from . import import_module_unreal_utils
-from . import config
+from . import constrcut_utils
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_support_interchange()
+should_use_interchange = constrcut_utils.include_interchange_functions()
 
-class ImportTaks():
+class ImportTask():
 
     def __init__(self) -> None:
-        self.task = unreal.AssetImportTask() 
-        self.task_option = None
+        self.task: unreal.AssetImportTask = unreal.AssetImportTask() 
+        self.task_option: Optional[Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]] = None  # Type hint for task_option, can be FbxImportUI or InterchangeGenericAssetsPipeline
 
-        if config.force_use_interchange == "Interchange":
-            self.use_interchange = True
-
-        elif config.force_use_interchange == "FBX":
-            self.use_interchange = False
-
+    def get_preview_import_refs(self) -> str:
+        if TYPE_CHECKING:
+            filename: str = ""
+            destination_path: str = ""
         else:
-            # Interchange is avaliable since 5.0,
-            #  but I preffer start to use at 5.5 to avoid issue with previous versions.
-            if support_interchange and import_module_unreal_utils.is_unreal_version_greater_or_equal(5,5):
-                # Set values inside unreal.InterchangeGenericAssetsPipeline (unreal.InterchangeGenericCommonMeshesProperties or ...)
-                self.use_interchange = True
-            else:
-                # Set values inside unreal.FbxStaticMeshImportData or ...
-                self.use_interchange = False
+            filename: str = self.task.get_editor_property('filename')
+            destination_path: str = self.task.get_editor_property('destination_path')
+
+        filename_without_ext: str = os.path.splitext(os.path.basename(filename))[0]
+        assetname = import_module_unreal_utils.clean_filename_for_unreal(filename_without_ext)
+        return destination_path+"/"+assetname+"."+assetname
 
     def set_task_option(self, new_task_option):
         self.task_option = new_task_option
 
     def get_task(self) -> unreal.AssetImportTask:
         return self.task
+    
+    def set_filename(self, filename: str):
+        self.task.set_editor_property('filename', filename)
     
     def get_fbx_import_ui(self) -> unreal.FbxImportUI:
         return self.task_option
@@ -78,7 +74,7 @@ class ImportTaks():
 
 
 
-    if support_interchange:
+    if should_use_interchange:
         def get_igap(self) -> unreal.InterchangeGenericAssetsPipeline:
             # unreal.InterchangeGenericAssetsPipeline
             return self.task_option
@@ -106,39 +102,71 @@ class ImportTaks():
         def get_igap_animation(self) -> unreal.InterchangeGenericAnimationPipeline:
             # unreal.InterchangeGenericAnimationPipeline
             return self.task_option.get_editor_property('animation_pipeline')
-    
+
     def get_imported_assets(self) -> List[unreal.Object]:
-        assets = []
+        assets: List[unreal.Object] = []
         for path in self.task.imported_object_paths:
             search_asset = import_module_unreal_utils.load_asset(path)
             if search_asset:
                 assets.append(search_asset)
         return assets
 
-    def get_imported_static_mesh(self) -> Optional[unreal.StaticMesh]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.StaticMesh)), None)
+    def get_imported_assets_of_class(self, search_class: type) -> List[unreal.Object]:
+        assets: List[unreal.Object] = []
+        for path in self.task.imported_object_paths:
+            search_asset = import_module_unreal_utils.load_asset(path)
+            if search_asset:
+                if isinstance(search_asset, search_class):
+                    assets.append(search_asset)
+        return assets
 
-    def get_imported_skeleton(self) -> Optional[unreal.Skeleton]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.Skeleton)), None)
+    def get_imported_asset_of_class(self, search_class: type) -> unreal.Object:
+        for path in self.task.imported_object_paths:
+            search_asset = import_module_unreal_utils.load_asset(path)
+            if search_asset:
+                if isinstance(search_asset, search_class):
+                    return search_asset
 
-    def get_imported_skeletal_mesh(self) -> Optional[unreal.SkeletalMesh]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.SkeletalMesh)), None)
+    def get_imported_static_mesh(self) -> unreal.StaticMesh:
+        return self.get_imported_asset_of_class(unreal.StaticMesh)
 
-    def get_imported_anim_sequence(self) -> Optional[unreal.AnimSequence]:
-        return next((asset for asset in self.get_imported_assets() if isinstance(asset, unreal.AnimSequence)), None)
-    
+    def get_imported_skeleton(self) -> unreal.Skeleton:
+        return self.get_imported_asset_of_class(unreal.Skeleton)
+
+    def get_imported_skeletal_mesh(self) -> unreal.SkeletalMesh:
+        return self.get_imported_asset_of_class(unreal.SkeletalMesh)
+
+    def get_imported_anim_sequence(self) -> unreal.AnimSequence:
+        return self.get_imported_asset_of_class(unreal.AnimSequence)
+
+    def get_imported_anim_sequences(self) -> List[unreal.AnimSequence]:
+        return self.get_imported_assets_of_class(unreal.AnimSequence)
+
     def import_asset_task(self):
-        if self.use_interchange:
+        # InterchangePipelineStackOverride was added in Unreal Engine 5.2
+        if hasattr(unreal, 'InterchangePipelineStackOverride') and isinstance(self.task_option, unreal.InterchangeGenericAssetsPipeline):
             self.task.set_editor_property('options', unreal.InterchangePipelineStackOverride())
-            self.task.get_editor_property('options').add_pipeline(self.task_option)
+
+            # unreal.InterchangePipelineStackOverride.add_pipeline was added in Unreal Engine 5.3
+            if hasattr(unreal.InterchangePipelineStackOverride, 'add_pipeline'):
+                self.task.get_editor_property('options').add_pipeline(self.task_option)
+            else:
+                # For older versions of Unreal Engine where add_pipeline is not available
+                self.task.get_editor_property('options').get_editor_property('override_pipelines').append(self.task_option)
         else:
             self.task.set_editor_property('options', self.task_option)
         unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([self.task])
     
     def get_task_options(self):
-        if self.use_interchange:
+        # InterchangePipelineStackOverride was added in Unreal Engine 5.2
+        if hasattr(unreal, 'InterchangePipelineStackOverride') and isinstance(self.task_option, unreal.InterchangeGenericAssetsPipeline):
             new_option = unreal.InterchangePipelineStackOverride()
-            new_option.add_pipeline(self.task_option)
+
+            # unreal.InterchangePipelineStackOverride.add_pipeline was added in Unreal Engine 5.3
+            if hasattr(unreal.InterchangePipelineStackOverride, 'add_pipeline'):
+                new_option.add_pipeline(self.task_option)
+            else:
+                new_option.get_editor_property('override_pipelines').append(self.task_option)
             return new_option
         else:
             return self.task_option

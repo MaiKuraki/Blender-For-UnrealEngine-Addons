@@ -17,17 +17,13 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 from .. import languages
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_convert_geometry_node_attribute_to_uv',
         'obj.bfu_convert_geometry_node_attribute_to_uv_name',

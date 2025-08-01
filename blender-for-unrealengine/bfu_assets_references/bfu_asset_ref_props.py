@@ -17,16 +17,12 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_engine_ref_skeleton_search_mode',
         'obj.bfu_engine_ref_skeleton_custom_path',
@@ -83,7 +79,7 @@ def register():
         name="",
         description="The path of the Skeleton in Unreal. Skeleton not the skeletal mesh.",
         override={'LIBRARY_OVERRIDABLE'},
-        default="ImportedFbx"
+        default="ImportedBlenderAssets"
         )
 
     bpy.types.Object.bfu_engine_ref_skeleton_custom_name = bpy.props.StringProperty(
@@ -100,7 +96,7 @@ def register():
             "(Use right clic on asset and copy reference.)"
             ),
         override={'LIBRARY_OVERRIDABLE'},
-        default="SkeletalMesh'/Game/ImportedFbx/SK_MySketon_Skeleton.SK_MySketon_Skeleton'"
+        default="SkeletalMesh'/Game/ImportedBlenderAssets/SK_MySketon_Skeleton.SK_MySketon_Skeleton'"
         )
 
 
@@ -132,7 +128,7 @@ def register():
         name="",
         description="The path of the Skeletal Mesh in Unreal. Skeletal Mesh not the skeletal mesh.",
         override={'LIBRARY_OVERRIDABLE'},
-        default="ImportedFbx"
+        default="ImportedBlenderAssets"
         )
 
     bpy.types.Object.bfu_engine_ref_skeletal_mesh_custom_name = bpy.props.StringProperty(
@@ -149,7 +145,7 @@ def register():
             "(Use right clic on asset and copy reference.)"
             ),
         override={'LIBRARY_OVERRIDABLE'},
-        default="SkeletalMesh'/Game/ImportedFbx/SKM_MySkeletalMesh.SKM_MySkeletalMesh'"
+        default="SkeletalMesh'/Game/ImportedBlenderAssets/SKM_MySkeletalMesh.SKM_MySkeletalMesh'"
         )
 
 def unregister():

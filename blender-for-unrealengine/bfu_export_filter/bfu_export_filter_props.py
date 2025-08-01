@@ -17,22 +17,18 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         # Filter Categories
         'scene.bfu_use_static_export',
         'scene.bfu_use_static_collection_export',
         'scene.bfu_use_skeletal_export',
-        'scene.bfu_use_anin_export',
+        'scene.bfu_use_animation_export',
         'scene.bfu_use_alembic_export',
         'scene.bfu_use_groom_simulation_export',
         'scene.bfu_use_camera_export',
@@ -82,7 +78,7 @@ def register():
         default=True
         )
 
-    bpy.types.Scene.bfu_use_anin_export = bpy.props.BoolProperty(
+    bpy.types.Scene.bfu_use_animation_export = bpy.props.BoolProperty(
         name="Animation(s)",
         description="Check mark to export Animation(s)",
         default=True
@@ -145,8 +141,8 @@ def register():
         items=[
             ('default', "No Filter", "Export as normal all objects with the recursive export option.", 0),
             ('only_object', "Only selected", "Export only the selected and visible object(s)", 1),
-            ('only_object_action', "Only selected and active action",
-                "Export only the selected and visible object(s) and active action on this object", 2),
+            ('only_object_and_active', "Only selected, active action / part",
+                "Export only the selected and visible object(s) and active action on this object or part for modular skeletal mesh", 2),
             ],
         description=(
             "Choose what need be export from asset list."),
@@ -168,7 +164,7 @@ def unregister():
     del bpy.types.Scene.bfu_use_camera_export
     del bpy.types.Scene.bfu_use_groom_simulation_export
     del bpy.types.Scene.bfu_use_alembic_export
-    del bpy.types.Scene.bfu_use_anin_export
+    del bpy.types.Scene.bfu_use_animation_export
     del bpy.types.Scene.bfu_use_skeletal_export
     del bpy.types.Scene.bfu_use_static_collection_export
     del bpy.types.Scene.bfu_use_static_export

@@ -1,27 +1,43 @@
+# ====================== BEGIN GPL LICENSE BLOCK ============================
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.	 If not, see <http://www.gnu.org/licenses/>.
+#  All rights reserved.
+#
+# ======================= END GPL LICENSE BLOCK =============================
+
+
+from typing import Optional, List, Dict, Any
 import bpy
 from . import bfu_spline_data
 from . import bfu_spline_unreal_utils
 from . import bfu_spline_write_text
 from .. import bbpl
 
-def AddSplineToCommand(spline: bpy.types.Object, pre_bake_spline: bfu_spline_data.BFU_SplinesList = None):
+def add_spline_to_command(spline: bpy.types.Object, pre_bake_spline: bfu_spline_data.BFU_SplinesList) -> Optional[str]:
     if spline.type == "CURVE":
-        spline_type = spline.bfu_desired_spline_type
 
         t = ""
-        # Get Spline Data
-        scene = bpy.context.scene
 
         # First I get the spline data.
         # This is a very bad way to do this. I need do a new python file specific to spline with class to get data.
-        data = bfu_spline_write_text.WriteSplinePointsData(spline, pre_bake_spline)
+        data: Dict[str, Any] = bfu_spline_write_text.write_spline_points_data(spline, pre_bake_spline)
 
-        # Engin ref:
+        # Engine ref:
         target_spline_component = bfu_spline_unreal_utils.get_spline_unreal_component(spline)
-        ue_format_spline_list = pre_bake_spline.get_ue_format_spline_list()
+        ue_format_spline_list: List[str] = pre_bake_spline.get_ue_format_spline_list()
 
         for x, spline_key in enumerate(data["simple_splines"]):
-            simple_spline: bfu_spline_data.BFU_SimpleSpline
             simple_spline = data["simple_splines"][spline_key]
             if x == 0:
                 spline_name = spline.name
@@ -29,23 +45,23 @@ def AddSplineToCommand(spline: bpy.types.Object, pre_bake_spline: bfu_spline_dat
                 spline_name = spline.name+str(x)
                 
 
-    
-            # Component 
+            # Component
             t += "" + f"Begin Object Class={target_spline_component} Name=\"{spline_name}_GEN_VARIABLE\" ExportPath=\"{target_spline_component}'/Engine/Transient.{spline_name}_GEN_VARIABLE'\"" + "\n"
 
             # Init SplineCurves
             t += "   " + ue_format_spline_list[x] + "\n"
             t += "   " + f"bClosedLoop={simple_spline['closed_loop']}" + "\n"
             t += "   " + f"CreationMethod=Instance" + "\n"
+            t += "   " + f"bShouldVisualizeScale=True" + "\n"
+            t += "   " + f"RelativeLocation=(X=0.000000,Y=0.000000,Z=0.000000)" + "\n"
 
             # Close
             t += "" + "End Object" + "\n"
         return t
     return None
 
-def GetImportSplineScriptCommand(objs):
+def get_spline_unreal_clipboard(objs: list[bpy.types.Object]) -> tuple[bool, str, str]:
     # Return (success, command)
-    scene = bpy.context.scene
     save_select = bbpl.save_data.select_save.UserSelectSave()
     save_select.save_current_select()
 
@@ -54,7 +70,7 @@ def GetImportSplineScriptCommand(objs):
     report = ""
     add_spline_num = 0
 
-    splines = []
+    splines: list[bpy.types.Object] = []
     for obj in objs:
         if obj.type == "CURVE":
             splines.append(obj)
@@ -71,7 +87,7 @@ def GetImportSplineScriptCommand(objs):
     # And I apply the camrta data to the copy paste text.
     t = ""
     for spline in splines:
-        add_command = AddSplineToCommand(spline, pre_bake_spline.get_evaluate_spline_data(obj))
+        add_command = add_spline_to_command(spline, pre_bake_spline.get_evaluate_spline_data(spline))
         if add_command:
             t += add_command
             add_spline_num += 1

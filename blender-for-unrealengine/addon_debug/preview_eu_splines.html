@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Unreal Text to JSON Viewer</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #111; color: #eee; }
+    textarea { width: 100%; height: 200px; background: #222; color: #0f0; border: 1px solid #555; padding: 10px; }
+    pre { background: #1a1a1a; padding: 10px; margin-top: 10px; white-space: pre-wrap; border: 1px solid #333; }
+    button { margin-top: 10px; padding: 10px 20px; font-weight: bold; }
+    h2, h3 { margin-top: 30px; }
+    details summary {
+      cursor: pointer;
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+
+    details summary:hover {
+      color: #0f0;
+    }
+    .summary-title {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Text Area (Raw Unreal Export)</h2>
+  <textarea id="inputText" placeholder="Paste your Unreal text here..."></textarea><br>
+  <button onclick="convert()">Convert</button>
+
+  <details closed>
+    <summary><span class="summary-title">Pre-formatted JSON-like Text</span></summary>
+    <pre id="outputRaw"></pre>
+  </details>
+
+  <details closed>
+    <summary><span class="summary-title">Result of JSON.parse()</span></summary>
+    <pre id="outputParsed"></pre>
+  </details>
+
+  <details open>
+    <summary><span class="summary-title">Interpretation (manual summary)</span></summary>
+    <pre id="outputSummary"></pre>
+  </details>
+
+  <script>
+
+    // Step 1: Pre-format Unreal to JSON-like string
+    function convertTextToJsonString(line) {
+      function tryConvertValue(str) {
+        const lowered = str.toLowerCase();
+        if (lowered === "true") return true;
+        if (lowered === "false") return false;
+        if (lowered === "none" || lowered === "null") return null;
+        if (/^-?\d+(\.\d+)?$/.test(str)) return Number(str);
+        return str; // Already quoted later
+      }
+
+      function parse(text) {
+        const result = {};
+        let i = 0;
+
+        while (i < text.length) {
+          // Read the key
+          const keyMatch = /^[A-Za-z0-9_]+/.exec(text.slice(i));
+          if (!keyMatch) break;
+          const key = keyMatch[0];
+          i += key.length;
+
+          // Skip '='
+          while (text[i] === ' ') i++;
+          if (text[i] !== '=') break;
+          i++;
+
+          // Skip whitespace
+          while (text[i] === ' ') i++;
+
+          // Read the value
+          let value = '';
+          if (text[i] === '(') {
+            // Handle dictionaries or list of dictionaries
+            let depth = 0;
+            let start = i;
+            do {
+              if (text[i] === '(') depth++;
+              else if (text[i] === ')') depth--;
+              i++;
+            } while (depth > 0 && i < text.length);
+            value = text.slice(start, i);
+
+            // Recursive processing
+            if (value.startsWith('((')) {
+              const list = [];
+              let inner = '';
+              let depth = 0;
+              for (let j = 1; j < value.length - 1; j++) {
+                const c = value[j];
+                if (c === '(') depth++;
+                if (c === ')') depth--;
+                inner += c;
+
+                if (depth === 0 && inner.trim()) {
+                  const clean = inner.slice(1, -1); // remove surrounding ()
+                  list.push(parse(clean));
+                  inner = '';
+                  if (value[j + 1] === ',') j++;
+                }
+              }
+              result[key] = list;
+            } else {
+              const inner = value.slice(1, -1);
+              result[key] = parse(inner);
+            }
+          } else if (text[i] === '"') {
+            // Read full quoted string
+            i++;
+            const start = i;
+            while (i < text.length && text[i] !== '"') i++;
+            value = text.slice(start, i);
+            i++; // skip ending quote
+            result[key] = tryConvertValue(value);
+          } else {
+            // Simple unquoted value
+            const valMatch = /^[^,\s)]+/.exec(text.slice(i));
+            if (valMatch) {
+              value = valMatch[0];
+              i += value.length;
+              result[key] = tryConvertValue(value);
+            }
+          }
+
+          // Skip comma and spaces
+          while (text[i] === ',' || text[i] === ' ') i++;
+        }
+
+        return result;
+      }
+
+      function stringify(obj, indent = 0) {
+        const ts = '  '.repeat(indent);
+        if (Array.isArray(obj)) {
+          const elements = obj.map(e => stringify(e, indent + 1));
+          return `[\n${ts}  ${elements.join(`,\n${ts}  `)}\n${ts}]`;
+        } else if (typeof obj === 'object' && obj !== null) {
+          const entries = Object.entries(obj).map(
+            ([k, v]) => `${ts}  "${k}": ${stringify(v, indent + 1)}`
+          );
+          return `{\n${entries.join(',\n')}\n${ts}}`;
+        } else if (typeof obj === 'string') {
+          return `"${obj}"`;
+        } else {
+          return `${obj}`;
+        }
+      }
+
+      const parsed = parse(line);
+      return stringify(parsed, 2);
+    }
+
+    function preformatTextToJsonString(rawText) {
+      const lines = rawText.trim().split('\n');
+      const objects = [];
+      let currentBlock = [];
+      const ts = '  ';
+
+      for (let line of lines) {
+        const trimmed = line.trim();
+
+        if (trimmed.startsWith("Begin Object")) {
+          const rest = line.replace("Begin Object", "").trim();
+          currentBlock = [rest];
+        } else if (trimmed.startsWith("End Object")) {
+          const fullText = currentBlock.join(' ').trim();
+          const converted = convertTextToJsonString(fullText);
+          const wrapped = `${ts}${ts}${ts}${converted}\n${ts}${ts}`;
+          objects.push(wrapped);
+          currentBlock = [];
+        } else {
+          currentBlock.push(trimmed);
+        }
+      }
+
+      const start = `{\n${ts}"objects": [\n`;
+      const end = `\n${ts}]\n}`;
+      const formattedObjects = objects.join(',\n');
+      return `${start}${formattedObjects}${end}`;
+    }
+
+    // Step 2: Parse JSON safely
+    function parseJsonSafely(jsonString) {
+      try {
+        return {
+          ok: true,
+          data: JSON.parse(jsonString),
+          error: null
+        };
+      } catch (e) {
+        return {
+          ok: false,
+          data: null,
+          error: e.message
+        };
+      }
+    }
+
+    // Step 3: Interpret JSON data
+    /**
+     * Converts a quaternion to a rotator (Pitch, Yaw, Roll) following Unreal Engine 5.6's implementation.
+     *
+     * This is a faithful translation of FQuat::Rotator() from Unreal Engine source code.
+     * Reference: Engine\Source\Runtime\Core\Public\Math\Quat.h (FQuat4f::Rotator)
+     *
+     * Unreal applies rotations in ZYX order (Yaw → Pitch → Roll), in a left-handed, Z-up coordinate system.
+     * Unreal stores rotators as:
+     * - Pitch: rotation around Y axis
+     * - Yaw:   rotation around Z axis
+     * - Roll:  rotation around X axis
+     *
+     * @param {Object} q - Quaternion object with properties X, Y, Z, W.
+     * @param {boolean} normalize - Whether to normalize the quaternion before conversion.
+     * @returns {Object} Rotator with Pitch, Yaw, Roll in degrees.
+     */
+    function quaternionToUnrealRotator(q, normalize = true) {
+      let { X, Y, Z, W } = q;
+
+      if (normalize) {
+        const mag = Math.sqrt(X*X + Y*Y + Z*Z + W*W);
+        if (mag > 0) {
+          X /= mag;
+          Y /= mag;
+          Z /= mag;
+          W /= mag;
+        }
+      }
+
+      const SINGULARITY_THRESHOLD = 0.4999995;
+      const RAD_TO_DEG = 180 / Math.PI;
+
+      // Same formula as Unreal source
+      const SingularityTest = Z * X - W * Y;
+      const YawY = 2 * (W * Z + X * Y);
+      const YawX = 1 - 2 * (Y * Y + Z * Z);
+
+      let Pitch, Yaw, Roll;
+
+      if (SingularityTest < -SINGULARITY_THRESHOLD) {
+        Pitch = -90;
+        Yaw = -2 * Math.atan2(X, W) * RAD_TO_DEG;
+        Roll = 0;
+      } else if (SingularityTest > SINGULARITY_THRESHOLD) {
+        Pitch = 90;
+        Yaw = 2 * Math.atan2(X, W) * RAD_TO_DEG;
+        Roll = 0;
+      } else {
+        Pitch = Math.asin(2 * SingularityTest) * RAD_TO_DEG;
+        Yaw = Math.atan2(YawY, YawX) * RAD_TO_DEG;
+        Roll = Math.atan2(-2 * (W * X + Y * Z), 1 - 2 * (X * X + Y * Y)) * RAD_TO_DEG;
+      }
+
+      return {
+        Pitch,
+        Yaw,
+        Roll
+      };
+    }
+
+
+    function detectValueType(val) {
+      if (typeof val !== 'object' || val === null) return 'unknown';
+
+      const keys = Object.keys(val).sort();
+
+      if (keys.join() === 'X,Y,Z') return 'vector3';
+      if (keys.join() === 'W,X,Y,Z') return 'quat';
+      if (keys.join() === 'X,Y,Z,W') return 'quat';
+      if (keys.join() === 'R,G,B') return 'color_rgb';
+      if (keys.join() === 'A,B,G,R') return 'color_rgba';
+      if (keys.join() === 'R,G,B,A') return 'color_rgba';
+
+      return 'object';
+    }
+
+    function formatScalar(val) {
+      return Number(val.toFixed(6)).toString(); // Keep up to 6 decimals, strip trailing zeros
+    }
+
+    function formatValueAsHtml(val) {
+      const type = detectValueType(val);
+
+      if (type === 'vector3') {
+        return `<span style="color:#f55">X=${formatScalar(val.X)}</span>, ` +  // Red
+              `<span style="color:#5f5">Y=${formatScalar(val.Y)}</span>, ` +  // Green
+              `<span style="color:#55f">Z=${formatScalar(val.Z)}</span>`;     // Blue
+      }
+
+    if (type === 'quat') {
+      const rotator = quaternionToUnrealRotator(val, true);
+      const rotatorRaw = quaternionToUnrealRotator(val, false);
+
+      return (
+        `<span style="color:#ff5">W=${formatScalar(val.W)}</span>, ` +
+        `<span style="color:#f55">X=${formatScalar(val.X)}</span>, ` +
+        `<span style="color:#5f5">Y=${formatScalar(val.Y)}</span>, ` +
+        `<span style="color:#55f">Z=${formatScalar(val.Z)}</span>` +
+        ` <span style="color:#888">→ raw:</span>(` +
+        `<span style="color:#f55">Roll=${formatScalar(rotatorRaw.Roll)}°</span>, ` +
+        `<span style="color:#5f5">Pitch=${formatScalar(rotatorRaw.Pitch)}°</span>, ` +
+        `<span style="color:#55f">Yaw=${formatScalar(rotatorRaw.Yaw)}°</span>)` +
+        ` <span style="color:#888">→ norm:</span>(` +
+        `<span style="color:#f55">Roll=${formatScalar(rotator.Roll)}°</span>, ` +
+        `<span style="color:#5f5">Pitch=${formatScalar(rotator.Pitch)}°</span>, ` +
+        `<span style="color:#55f">Yaw=${formatScalar(rotator.Yaw)}°</span>)`
+      );
+    }
+
+      if (type === 'color_rgb' || type === 'color_rgba') {
+        return `<span style="color:#ff0">R=${formatScalar(val.R)}</span>, ` +  // Red
+              `<span style="color:#0f0">G=${formatScalar(val.G)}</span>, ` +  // Green
+              `<span style="color:#00f">B=${formatScalar(val.B)}</span>` +     // Blue
+              (val.A !== undefined ? `, <span style="color:#aaa">A=${formatScalar(val.A)}</span>` : ''); // Yellow
+      }
+
+      if (typeof val === 'object') {
+        return Object.entries(val).map(([k, v]) => `${k}=${v}`).join(', ');
+      }
+
+      return String(val);
+    }
+
+function interpretJsonData(parsedJson) {
+  const out = [];
+  const objects = parsedJson?.objects ?? [];
+
+  objects.forEach((obj, i) => {
+    const keys = Object.keys(obj);
+    const boxTitle = keys.includes("Class") ? `${obj.Class} (${i})` : `Object ${i}`;
+    let content = '';
+
+    if (obj.Class === "/Script/Engine.SplineComponent") {
+      const curves = obj.SplineCurves ?? {};
+      const posPoints = curves.Position?.Points ?? [];
+      const rotPoints = curves.Rotation?.Points ?? [];
+      const scalePoints = curves.Scale?.Points ?? [];
+
+      const maxPoints = Math.max(posPoints.length, rotPoints.length, scalePoints.length);
+      content += `Spline Component:\nPoints:\n`;
+
+      for (let idx = 0; idx < maxPoints; idx++) {
+        content += `[${idx}]\n`;
+
+        const loc = posPoints[idx] ?? {};
+        const rot = rotPoints[idx] ?? {};
+        const scl = scalePoints[idx] ?? {};
+
+        // --- Loc
+        content += `  Loc:    InVal: ${loc.InVal ?? '-'}\n`;
+        if (loc.OutVal) content += `          OutVal: ${formatValueAsHtml(loc.OutVal)}\n`;
+        if (loc.ArriveTangent) content += `          ArriveTangent: ${formatValueAsHtml(loc.ArriveTangent)}\n`;
+        if (loc.LeaveTangent) content += `          LeaveTangent: ${formatValueAsHtml(loc.LeaveTangent)}\n`;
+        if (loc.InterpMode) content += `          InterpMode: ${loc.InterpMode}\n`;
+
+        // --- Rot
+        content += `  Rot:    InVal: ${rot.InVal ?? '-'}\n`;
+        if (rot.OutVal) content += `          OutVal: ${formatValueAsHtml(rot.OutVal)}\n`;
+        if (rot.ArriveTangent) content += `          ArriveTangent: ${formatValueAsHtml(rot.ArriveTangent)}\n`;
+        if (rot.LeaveTangent) content += `          LeaveTangent: ${formatValueAsHtml(rot.LeaveTangent)}\n`;
+        if (rot.InterpMode) content += `          InterpMode: ${rot.InterpMode}\n`;
+
+        // --- Scale
+        content += `  Scale:  InVal: ${scl.InVal ?? '-'}\n`;
+        if (scl.OutVal) content += `          OutVal: ${formatValueAsHtml(scl.OutVal)}\n`;
+        if (scl.ArriveTangent) content += `          ArriveTangent: ${formatValueAsHtml(scl.ArriveTangent)}\n`;
+        if (scl.LeaveTangent) content += `          LeaveTangent: ${formatValueAsHtml(scl.LeaveTangent)}\n`;
+        if (scl.InterpMode) content += `          InterpMode: ${scl.InterpMode}\n`;
+
+        content += `\n`;
+      }
+    } else {
+      content += Object.entries(obj)
+        .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+        .join('\n');
+    }
+
+    out.push(`
+<details>
+  <summary><strong>${boxTitle}</strong></summary>
+  <pre>${content}</pre>
+</details>`);
+  });
+
+  return out.join('\n') || "(no objects found)";
+}
+
+
+    // Main function triggered by the button
+    function convert() {
+      const input = document.getElementById("inputText").value;
+
+      const jsonLike = preformatTextToJsonString(input);
+      document.getElementById("outputRaw").textContent = jsonLike;
+
+      const result = parseJsonSafely(jsonLike);
+      if (!result.ok) {
+        document.getElementById("outputParsed").textContent = "❌ JSON Error: " + result.error;
+        document.getElementById("outputSummary").textContent = "";
+        return;
+      }
+
+      document.getElementById("outputParsed").textContent = JSON.stringify(result.data, null, 2);
+      document.getElementById("outputSummary").innerHTML = interpretJsonData(result.data);
+    }
+  </script>
+</body>
+</html>

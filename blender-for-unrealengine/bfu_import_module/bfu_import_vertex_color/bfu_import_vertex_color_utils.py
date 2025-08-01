@@ -16,20 +16,20 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-from typing import Optional
-from .. import import_module_unreal_utils
+
+from typing import Optional, Union
+import unreal
 from .. import import_module_tasks_class
+from .. import import_module_utils
+from .. import constrcut_utils
+from ..asset_types import ExportAssetType
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_support_interchange()
+support_interchange = constrcut_utils.include_interchange_functions()
 
 def get_vertex_override_color(asset_additional_data: dict) -> Optional[unreal.LinearColor]:
     """Retrieves the vertex override color from the asset data, if available."""
-    print("Set Vertex Color import settings.")
+    import_module_utils.print_debug_step("Set Vertex Color import settings.")
 
     if asset_additional_data is None:
         return None
@@ -81,38 +81,38 @@ def get_vertex_color_import_option(asset_additional_data: dict) -> Optional[unre
     
 
 
-def apply_import_settings(itask: import_module_tasks_class.ImportTaks, asset_data: dict, asset_additional_data: dict) -> None:
+def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
     """Applies vertex color settings during the import process."""
-    print("Set Vertex Color post import settings.")
+    import_module_utils.print_debug_step("Set Vertex Color post import settings.")
 
-    asset_type = asset_data.get("asset_type")
-    if asset_type not in ["StaticMesh", "SkeletalMesh"]:
+    asset_type = ExportAssetType.get_asset_type_from_string(asset_data.get("asset_type"))
+    if asset_type not in [ExportAssetType.STATIC_MESH, ExportAssetType.SKELETAL_MESH]:
         # Only apply settings for StaticMesh and SkeletalMesh
         return
 
     vertex_override_color = get_vertex_override_color(asset_additional_data)
-    if itask.use_interchange:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         vertex_color_import_option = get_interchange_vertex_color_import_option(asset_additional_data)
     else:
         vertex_color_import_option = get_vertex_color_import_option(asset_additional_data)
 
-    if itask.use_interchange:
+    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         itask.get_igap_common_mesh().set_editor_property('vertex_color_import_option', vertex_color_import_option)
         if vertex_override_color:
             itask.get_igap_common_mesh().set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
     else:
-        if asset_type == "StaticMesh":
+        if asset_type == ExportAssetType.STATIC_MESH:
             itask.get_static_mesh_import_data().set_editor_property('vertex_color_import_option', vertex_color_import_option)
             if vertex_override_color:
                 itask.get_static_mesh_import_data().set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
 
-        elif asset_type == "SkeletalMesh":
+        elif asset_type == ExportAssetType.SKELETAL_MESH:
             itask.get_skeletal_mesh_import_data().set_editor_property('vertex_color_import_option', vertex_color_import_option)
             if vertex_override_color:
                 itask.get_skeletal_mesh_import_data().set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
 
 
-def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_additional_data: dict) -> None:
+def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_additional_data: dict) -> None:
     """Applies vertex color settings to an already imported asset."""
 
     # Check   
@@ -125,28 +125,27 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTaks, asset_addi
             apply_one_asset_settings(itask, asset, asset_additional_data)
 
 
-def apply_one_asset_settings(itask: import_module_tasks_class.ImportTaks, asset: unreal.Object, asset_additional_data: dict) -> None:
+def apply_one_asset_settings(itask: import_module_tasks_class.ImportTask, asset: unreal.Object, asset_additional_data: dict) -> None:
     """Applies vertex color settings to an already imported asset."""
 
-    # Check   
-    if asset is None:
-        return
-
     vertex_override_color = get_vertex_override_color(asset_additional_data)
-    if itask.use_interchange:
-        vertex_color_import_option = get_interchange_vertex_color_import_option(asset_additional_data)
-    else:
-        vertex_color_import_option = get_vertex_color_import_option(asset_additional_data)
-
-    if itask.use_interchange:
-        common_meshes_properties = asset.get_editor_property('asset_import_data').get_pipelines()[0].get_editor_property('common_meshes_properties')
+        
+    asset_import_data = asset.get_editor_property('asset_import_data')
+    asset_import_data: Union[unreal.FbxStaticMeshImportData, unreal.FbxSkeletalMeshImportData, unreal.InterchangeAssetImportData]
+    
+    if isinstance(asset_import_data, unreal.InterchangeAssetImportData):
+        common_meshes_properties = asset_import_data.get_pipelines()[0].get_editor_property('common_meshes_properties')
         if vertex_override_color:
             common_meshes_properties.set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
+
+        vertex_color_import_option = get_interchange_vertex_color_import_option(asset_additional_data)
         if vertex_color_import_option:
             common_meshes_properties.set_editor_property('vertex_color_import_option', vertex_color_import_option)
     else:
         asset_import_data = asset.get_editor_property('asset_import_data')
         if vertex_override_color:
             asset_import_data.set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
+            
+        vertex_color_import_option = get_vertex_color_import_option(asset_additional_data)
         if vertex_color_import_option:
             asset_import_data.set_editor_property('vertex_color_import_option', vertex_color_import_option)

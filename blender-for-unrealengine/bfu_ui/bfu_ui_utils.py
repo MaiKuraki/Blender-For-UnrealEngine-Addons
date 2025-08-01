@@ -20,7 +20,7 @@
 import bpy
 
 
-def DisplayPropertyFilter(active_tab, active_sub_tab):
+def DisplayPropertyFilter(active_tab:str, active_sub_tab:str) -> bool:
     # Define more easily the options which must be displayed or not
 
     scene = bpy.context.scene

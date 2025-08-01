@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Blender For Unreal Engine Builder",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/launch_bfu_builder.py",
+      "console": "integratedTerminal"
+    }
+  ]
+}

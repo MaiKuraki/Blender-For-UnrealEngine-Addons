@@ -17,17 +17,14 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import os
+from pathlib import Path
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         # Prefix
         'scene.bfu_static_mesh_prefix_export_name',
@@ -152,58 +149,78 @@ def register():
         name="Unreal import location",
         description="Unreal assets import location inside the module",
         maxlen=512,
-        default='ImportedFbx')
+        default='ImportedBlenderAssets')
+
+    def blender_relpath(*parts: str) -> str:
+        # Relative blender path. 
+        # Need use pathlib join to support different OS.
+        # os.sep at end because it a folder path.
+        return str(Path("//").joinpath(*parts)) + os.sep
 
     # File path
     bpy.types.Scene.bfu_export_static_file_path = bpy.props.StringProperty(
         name="StaticMesh Export Path",
         description="Choose a directory to export StaticMesh(s)",
         maxlen=512,
-        default="//" + os.path.join("ExportedFbx", "StaticMesh"),
-        subtype='DIR_PATH')
+        default=blender_relpath("ExportedAssets", "StaticMesh"),
+        subtype='DIR_PATH',
+        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+    )
 
     bpy.types.Scene.bfu_export_skeletal_file_path = bpy.props.StringProperty(
         name="SkeletalMesh Export Path",
         description="Choose a directory to export SkeletalMesh(s)",
         maxlen=512,
-        default="//" + os.path.join("ExportedFbx", "SkeletalMesh"),
-        subtype='DIR_PATH')
+        default=blender_relpath("ExportedAssets", "SkeletalMesh"),
+        subtype='DIR_PATH',
+        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+    )
 
     bpy.types.Scene.bfu_export_alembic_file_path = bpy.props.StringProperty(
         name="Alembic Export Path",
         description="Choose a directory to export Alembic animation(s)",
         maxlen=512,
-        default="//" + os.path.join("ExportedFbx", "Alembic"),
-        subtype='DIR_PATH')
-    
+        default=blender_relpath("ExportedAssets", "Alembic"),
+        subtype='DIR_PATH',
+        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+    )
+
     bpy.types.Scene.bfu_export_groom_file_path = bpy.props.StringProperty(
         name="Groom Export Path",
         description="Choose a directory to export Groom simulation(s)",
         maxlen=512,
-        default="//" + os.path.join("ExportedFbx", "Groom"),
-        subtype='DIR_PATH')
+        default=blender_relpath("ExportedAssets", "Groom"),
+        subtype='DIR_PATH',
+        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+    )
 
     bpy.types.Scene.bfu_export_camera_file_path = bpy.props.StringProperty(
         name="Camera Export Path",
         description="Choose a directory to export Camera(s)",
         maxlen=512,
-        default="//" + os.path.join("ExportedFbx", "Sequencer"),
-        subtype='DIR_PATH')
-    
+        default=blender_relpath("ExportedAssets", "Sequencer"),
+        subtype='DIR_PATH',
+        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+    )
+
     bpy.types.Scene.bfu_export_spline_file_path = bpy.props.StringProperty(
         name="Spline Export Path",
         description="Choose a directory to export Spline(s)",
         maxlen=512,
-        default="//" + os.path.join("ExportedFbx", "Spline"),
-        subtype='DIR_PATH')
+        default=blender_relpath("ExportedAssets", "Spline"),
+        subtype='DIR_PATH',
+        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+    )
 
     bpy.types.Scene.bfu_export_other_file_path = bpy.props.StringProperty(
         name="Other Export Path",
         description="Choose a directory to export text file and other",
         maxlen=512,
-        default="//" + os.path.join("ExportedFbx"),
-        subtype='DIR_PATH')
-    
+        default=blender_relpath("ExportedAssets"),
+        subtype='DIR_PATH',
+        options={'PATH_SUPPORTS_BLEND_RELATIVE'}
+    )
+
     # File name
     bpy.types.Scene.bfu_file_export_log_name = bpy.props.StringProperty(
         name="Export log name",

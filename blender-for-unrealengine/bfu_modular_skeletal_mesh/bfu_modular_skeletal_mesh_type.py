@@ -20,6 +20,7 @@ import os
 import bpy
 import fnmatch
 from .. import bbpl
+from typing import TYPE_CHECKING, List
 
 
 BBPL_UI_TemplateItem = bbpl.blender_layout.layout_template_list.types.create_template_item_class()
@@ -54,6 +55,12 @@ class BFU_UI_ModularSkeletalSpecifiedPartsTargetItem(BBPL_UI_TemplateItem): # It
         type=bpy.types.Collection,
     )
 
+    if TYPE_CHECKING:
+        enabled: bool
+        target_type: str
+        obj: bpy.types.Object
+        collection: bpy.types.Collection
+
 class BFU_UL_ModularSkeletalSpecifiedPartsTargetItemDraw(BBPL_UL_TemplateItemDraw): # Draw Item class (bpy.types.UIList)
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
 
@@ -86,6 +93,11 @@ class BFU_UI_ModularSkeletalSpecifiedPartsTargetList(BBPL_UI_TemplateList): # Dr
     rows: bpy.props.IntProperty(default = 3)
     maxrows: bpy.props.IntProperty(default = 3)
 
+    if TYPE_CHECKING:
+        template_collection: List[BFU_UI_ModularSkeletalSpecifiedPartsTargetItem]
+        def get_template_collection(self) -> List[BFU_UI_ModularSkeletalSpecifiedPartsTargetItem]:
+            return self.template_collection
+
 class BFU_UI_ModularSkeletalSpecifiedPartsMeshItem(BBPL_UI_TemplateItem): # Item class (bpy.types.PropertyGroup)
     enabled: bpy.props.BoolProperty(
         name="Use",
@@ -93,14 +105,26 @@ class BFU_UI_ModularSkeletalSpecifiedPartsMeshItem(BBPL_UI_TemplateItem): # Item
         )
 
     name: bpy.props.StringProperty(
-        name="Bone groups name",
-        description="Your bone group",
-        default="MyGroup",
+        name="Name",
+        description="Bone group name.",
+        default="MyGroupName",
+        )
+    
+    sub_folder: bpy.props.StringProperty(
+        name="Sub Folder",
+        description="sub_folder_to export the mesh",
+        default="",
         )
     
     skeletal_parts: bpy.props.PointerProperty(
        type=BFU_UI_ModularSkeletalSpecifiedPartsTargetList
        )
+    
+    if TYPE_CHECKING:
+        enabled: bool
+        name: str
+        sub_folder: str
+        skeletal_parts: BFU_UI_ModularSkeletalSpecifiedPartsTargetList
 
 class BFU_UL_ModularSkeletalSpecifiedPartsMeshItemDraw(BBPL_UL_TemplateItemDraw): # Draw Item class (bpy.types.UIList)
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -118,7 +142,9 @@ class BFU_UL_ModularSkeletalSpecifiedPartsMeshItemDraw(BBPL_UL_TemplateItemDraw)
 
         prop_data = prop_line.row()
         prop_data.alignment = 'EXPAND'
+        prop_data.enabled = item.enabled
         prop_data.prop(item, "name", text="")
+
         if item.enabled:
             obj_len = 0
             col_len = 0
@@ -132,11 +158,16 @@ class BFU_UL_ModularSkeletalSpecifiedPartsMeshItemDraw(BBPL_UL_TemplateItemDraw)
 
             if obj_len+col_len == 0:
                 prop_data.label(text="", icon="ERROR")
-        prop_data.enabled = item.enabled
-    
+ 
 class BFU_UI_ModularSkeletalSpecifiedPartsMeshs(BBPL_UI_TemplateList): # Draw Item class (bpy.types.UIList)
     template_collection: bpy.props.CollectionProperty(type=BFU_UI_ModularSkeletalSpecifiedPartsMeshItem)
     template_collection_uilist_class_name = "BFU_UL_ModularSkeletalSpecifiedPartsMeshItemDraw"
+    
+    if TYPE_CHECKING:
+        template_collection: List[BFU_UI_ModularSkeletalSpecifiedPartsMeshItem]
+        def get_template_collection(self) -> List[BFU_UI_ModularSkeletalSpecifiedPartsMeshItem]:
+            return self.template_collection
+
     def draw(self, layout: bpy.types.UILayout):
         super().draw(layout)
 
@@ -144,15 +175,10 @@ class BFU_UI_ModularSkeletalSpecifiedPartsMeshs(BBPL_UI_TemplateList): # Draw It
         item = self.get_active_item()
         box
         if item:
-            prop_line = box.row()
-            prop_use = prop_line.row()
-            prop_use.alignment = 'LEFT'
-            prop_use.prop(item, "enabled", text="enabled")
-
-            prop_data = prop_line.row()
-            prop_data.alignment = 'EXPAND'
-            prop_data.prop(item, "name", text="")
+            prop_data = box.column()
             prop_data.enabled = item.enabled
+            prop_data.prop(item, "name", text="")
+            prop_data.prop(item, "sub_folder", text="")
 
             item.skeletal_parts.draw(box).enabled = item.enabled
 

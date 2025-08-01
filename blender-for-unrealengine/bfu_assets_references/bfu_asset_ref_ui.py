@@ -23,12 +23,14 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bfu_skeletal_mesh
+from .. import bfu_export_control
+from .. import bfu_addon_prefs
 
 
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
     
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # Hide filters
     if obj is None:
@@ -37,7 +39,7 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     if addon_prefs.useGeneratedScripts is False:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     is_skeletal_mesh = bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
     if is_skeletal_mesh is False:
@@ -45,13 +47,13 @@ def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
     
     # Draw UI
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):   
-        scene.bfu_engine_ref_properties_expanded.draw(layout)
-        if scene.bfu_engine_ref_properties_expanded.is_expend():
-
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_engine_ref_properties_expanded")
+        _, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # SkeletalMesh prop
             if is_skeletal_mesh:
                 if not obj.bfu_export_as_lod_mesh:
-                    unreal_engine_refs = layout.column()
+                    unreal_engine_refs = panel.column()
                     draw_skeleton_prop(unreal_engine_refs, obj)
                     draw_skeletal_mesh_prop(unreal_engine_refs, obj)
 

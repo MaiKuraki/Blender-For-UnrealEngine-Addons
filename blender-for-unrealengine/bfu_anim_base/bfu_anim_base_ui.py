@@ -18,70 +18,45 @@
 
 
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
-from .. import bfu_skeletal_mesh
 from .. import bfu_alembic_animation
-from .. import bfu_cached_asset_list
+from .. import bfu_export_control
+from .. import bfu_asset_preview
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch
 
-
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
     
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
 
     # Hide filters
-    if obj is None:
-        return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
-        scene.bfu_animation_advanced_properties_expanded.draw(layout)
-        if scene.bfu_animation_advanced_properties_expanded.is_expend():
-            # Animation fbx properties
-            if bfu_alembic_animation.bfu_alembic_animation_utils.is_not_alembic_animation(obj):
-                propsFbx = layout.row()
-                if obj.bfu_skeleton_export_procedure != "auto-rig-pro":
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_advanced_properties_expanded")
+        if accordion:
+            _, panel = accordion.draw(layout)
+            if panel:
+                # Animation fbx properties
+                if bfu_alembic_animation.bfu_alembic_animation_utils.is_not_alembic_animation(obj):
+                    propsFbx = panel.row()
                     propsFbx.prop(obj, 'bfu_sample_anim_for_export')
-                propsFbx.prop(obj, 'bfu_simplify_anim_for_export')
-            propsScaleAnimation = layout.row()
-            propsScaleAnimation.prop(obj, "bfu_disable_free_scale_animation")
+                    propsFbx.prop(obj, 'bfu_simplify_anim_for_export')
 
-def draw_animation_tab_foot_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+                props_scale_animation = panel.column()
+                props_scale_animation.prop(obj, "bfu_disable_free_scale_animation")
 
-    scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+                props_animation_mesh = panel.column()
+                props_animation_mesh.prop(obj, "bfu_export_animation_without_mesh")
 
-    # Hide filters
-    if obj is None:
-        return
-    if not bfu_utils.draw_proxy_propertys(obj):
-        return
-    if obj.bfu_export_type != "export_recursive":
-        return
-    if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_not_skeletal_mesh(obj):
-        return
-    
-    if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
-        # Armature export action list feedback
-        layout.label(
-            text='Note: The Action with only one' +
-            ' frame are exported like Pose.')
-        ArmaturePropertyInfo = (
-            layout.row().box().split(factor=0.75)
-            )
-        animation_asset_cache = bfu_cached_asset_list.GetAnimationAssetCache(obj)
-        animation_to_export = animation_asset_cache.GetAnimationAssetList()
-        ActionNum = len(animation_to_export)
-        if obj.bfu_anim_nla_use:
-            ActionNum += 1
-        actionFeedback = (
-            str(ActionNum) +
-            " Animation(s) will be exported with this object.")
-        ArmaturePropertyInfo.label(
-            text=actionFeedback,
-            icon='INFO')
-        ArmaturePropertyInfo.operator("object.showobjaction")
+                props_animation_materials = panel.column()
+                props_animation_materials.prop(obj, "bfu_export_animation_without_materials")
+                props_animation_materials.enabled = not obj.bfu_export_animation_without_mesh
+
+                props_animation_textures = panel.column()
+                props_animation_textures.prop(obj, "bfu_export_animation_without_textures")
+                props_animation_textures.enabled = not obj.bfu_export_animation_without_materials and not obj.bfu_export_animation_without_mesh
+
+    layout.label(text='Note: The Action with only one frame is exported like Pose.')
+    bfu_asset_preview.bfu_asset_preview_ui.draw_asset_preview_bar(layout, context, asset_to_search=AssetToSearch.ANIMATION_ONLY)

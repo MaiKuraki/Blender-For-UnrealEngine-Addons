@@ -1,16 +1,17 @@
 import bpy
 import json
 import os
+from typing import Dict
 from os import listdir
 from os.path import isfile, join
 
-tooltips_dictionary = {}
-interface_dictionary = {}
-new_data_dictionary = {}
+tooltips_dictionary: Dict[str, str] = {}
+interface_dictionary: Dict[str, str] = {}
+new_data_dictionary: Dict[str, str] = {}
 current_language = ""
 
 
-def UpdateDict(local, tooltips=True, interface=True, new_data=True):
+def UpdateDict(local: str, tooltips: bool = True, interface: bool = True, new_data: bool = True):
     # Try to found lang file
     dir_path = os.path.dirname(os.path.realpath(__file__))
     lang_path = os.path.join(dir_path, "local_list")
@@ -34,18 +35,18 @@ def UpdateDict(local, tooltips=True, interface=True, new_data=True):
                         new_data_dictionary[key] = value
 
 
-def InitLanguages(locale):
-    prefs = bpy.context.preferences
-    view = prefs.view
+def InitLanguages(locale: str):
+    if bpy.context:
+        prefs = bpy.context.preferences
+        view = prefs.view
 
-    tooltips_dictionary.clear()
-    interface_dictionary.clear()
-    new_data_dictionary.clear()
+        tooltips_dictionary.clear()
+        interface_dictionary.clear()
+        new_data_dictionary.clear()
 
-    UpdateDict("en_US")  # Get base lang
-    # Update base lang with local lang if file exist
-    UpdateDict(locale, view.use_translate_tooltips, view.use_translate_interface, view.use_translate_new_dataname)
-    current_language = locale
+        UpdateDict("en_US")  # Get base lang
+        # Update base lang with local lang if file exist
+        UpdateDict(locale, view.use_translate_tooltips, view.use_translate_interface, view.use_translate_new_dataname)
 
 
 def CheckCurrentLanguage():
@@ -56,7 +57,7 @@ def CheckCurrentLanguage():
 # Translate function
 
 
-def Translate_Tooltips(phrase: str):
+def Translate_Tooltips(phrase: str) -> str:
     """
     Translate the give phrase into Blender’s current language.
     """
@@ -69,7 +70,7 @@ def Translate_Tooltips(phrase: str):
         return phrase
 
 
-def Translate_Interface(phrase: str):
+def Translate_Interface(phrase: str) -> str:
     """
     Translate the give phrase into Blender’s current language.
     """
@@ -82,7 +83,7 @@ def Translate_Interface(phrase: str):
         return phrase
 
 
-def Translate_NewData(phrase: str):
+def Translate_NewData(phrase: str) -> str:
     """
     Translate the give phrase into Blender’s current language.
     """
@@ -95,13 +96,13 @@ def Translate_NewData(phrase: str):
         return phrase
 
 
-def tt(phrase: str):
+def tt(phrase: str) -> str:
     return Translate_Tooltips(phrase)
 
 
-def ti(phrase: str):
+def ti(phrase: str) -> str:
     return Translate_Interface(phrase)
 
 
-def td(phrase: str):
+def td(phrase: str) -> str:
     return Translate_NewData(phrase)

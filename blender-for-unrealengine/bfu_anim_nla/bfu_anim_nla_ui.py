@@ -23,39 +23,38 @@ from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_skeletal_mesh
+from .. import bfu_export_control
+from .. import bfu_addon_prefs
 
 
-
-def draw_ui(layout: bpy.types.UILayout, obj: bpy.types.Object):
+def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
 
     # Hide filters
     if obj is None:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     is_skeletal_mesh = bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "ANIM"):
-        scene.bfu_animation_nla_properties_expanded.draw(layout)
-        if scene.bfu_animation_nla_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_animation_nla_properties_expanded")
+        _, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # NLA
             if is_skeletal_mesh:
-                NLAAnim = layout.row()
+                NLAAnim = panel.row()
                 NLAAnim.prop(obj, 'bfu_anim_nla_use')
                 NLAAnimChild = NLAAnim.column()
                 NLAAnimChild.enabled = obj.bfu_anim_nla_use
                 NLAAnimChild.prop(obj, 'bfu_anim_nla_export_name')
-                if obj.bfu_skeleton_export_procedure == "auto-rig-pro":
-                    NLAAnim.enabled = False
-                    NLAAnimChild.enabled = False
 
             # NLA Time
-            if obj.type != "CAMERA" and obj.bfu_skeleton_export_procedure != "auto-rig-pro":
-                NLATimeProperty = layout.column()
+            if obj.type != "CAMERA":
+                NLATimeProperty = panel.column()
                 NLATimeProperty.enabled = obj.bfu_anim_nla_use
                 NLATimeProperty.prop(obj, 'bfu_anim_nla_start_end_time_enum')
                 if obj.bfu_anim_nla_start_end_time_enum == "with_customframes":

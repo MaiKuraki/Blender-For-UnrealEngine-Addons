@@ -17,15 +17,22 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from . import bfu_export_text_files_utils
+from typing import Dict, List, Any, Union, Optional
 from .. import languages
 from .. import bfu_export_logs
+from .. import bfu_utils
+from .. import bfu_export_control
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
+from . import bfu_export_text_files_utils
 
 
-def write_sequencer_tracks_data():
+
+def write_sequencer_tracks_data(exported_asset_log: List[bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog]) -> Dict[str, Any]:    
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
 
-    data = {}
+    data: Dict[str, Any] = {}
     bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_all'))
     bfu_export_text_files_utils.add_generated_json_meta_data(data)
 
@@ -34,23 +41,23 @@ def write_sequencer_tracks_data():
     data['sequencer_frame_end'] = scene.frame_end
     data['sequencer_frame_rate_denominator'] = scene.render.fps_base
     data['sequencer_frame_rate_numerator'] = scene.render.fps
-    data['pixel_aspect_x'] = bpy.context.scene.render.pixel_aspect_x
-    data['pixel_aspect_y'] = bpy.context.scene.render.pixel_aspect_y
-    data['render_resolution_x'] = bpy.context.scene.render.resolution_x
-    data['render_resolution_y'] = bpy.context.scene.render.resolution_y
-    data['secureCrop'] = 0.0001  # add end crop for avoid section overlay
-    data['bfu_unreal_import_location'] = "/" + scene.bfu_unreal_import_module + "/" + scene.bfu_unreal_import_location
+    
+    render = scene.render
+    if render: 
+        data['pixel_aspect_x'] = render.pixel_aspect_x
+        data['pixel_aspect_y'] = render.pixel_aspect_y
+        data['render_resolution_x'] = render.resolution_x
+        data['render_resolution_y'] = render.resolution_y
+    data['secure_crop'] = 0.0001  # add end crop for avoid section overlay
+    data['unreal_import_location'] = bfu_utils.get_unreal_import_location()
 
     # Import camera
-    data['cameras'] = []
-    for asset in bfu_export_logs.bfu_asset_export_logs_utils.get_exported_assets_logs():
-        if (asset.asset_type == "Camera"):
-            camera = asset.object
-
-            camera_data = {}
-            camera_data["name"] = camera.name
-            camera_data["additional_tracks_path"] = asset.GetFileByType("AdditionalTrack").GetAbsolutePath()
-            data['cameras'].append(camera_data)
+    cameras: List[Dict[str, Any]] = []
+    for unreal_exported_asset in exported_asset_log:
+        asset_type = unreal_exported_asset.exported_asset.asset_type
+        if asset_type == AssetType.CAMERA:
+            cameras.append(write_single_asset_camera_data(unreal_exported_asset))
+    data['cameras'] = cameras
 
     def get_marker_scene_sections():
         scene = bpy.context.scene
@@ -90,7 +97,8 @@ def write_sequencer_tracks_data():
         marker_sections["start_time"] = section[0]
         marker_sections["end_time"] = section[1]
         if section[2]:
-            if section[2].bfu_export_type == "export_recursive" or section[2].bfu_export_type == "auto":
+
+            if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(section[2]):
                 marker_sections["has_camera"] = True
                 marker_sections["camera_name"] = section[2].name
             else:
@@ -104,3 +112,10 @@ def write_sequencer_tracks_data():
 
     bfu_export_text_files_utils.add_generated_json_footer(data)
     return data
+
+def write_single_asset_camera_data(unreal_exported_asset: bfu_export_logs.bfu_asset_export_logs_types.ExportedAssetLog) -> Dict[str, Union[str, bool, float, List[Any]]]:
+    camera_data: Dict[str, Any] = {}
+    camera_data["asset_name"] = unreal_exported_asset.exported_asset.name
+    camera_data["files"] = unreal_exported_asset.exported_asset.get_asset_files_as_data()
+
+    return camera_data

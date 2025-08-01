@@ -16,6 +16,28 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+import fnmatch
+from typing import List
 import bpy
-from .. import bbpl
+from . import bfu_anim_action_props
+from .bfu_anim_action_props import BFU_OT_ObjExportAction
 
+def get_action_is_in_action_asset_list(obj: bpy.types.Object, action: bpy.types.Action) -> bool:
+    action_asset_list = bfu_anim_action_props.get_object_action_asset_list(obj)  # CollectionProperty
+    action_asset_list: List[BFU_OT_ObjExportAction]
+    for target_action in action_asset_list:
+        if target_action.use:
+            if target_action.name == action.name:
+                return True
+    return False
+
+def get_action_use_prefix(obj: bpy.types.Object, action: bpy.types.Action) -> bool:
+    if fnmatch.fnmatchcase(action.name, bfu_anim_action_props.get_object_prefix_name_to_export(obj) + "*"):
+        return True
+    return False
+
+def get_action_is_current(obj: bpy.types.Object, action: bpy.types.Action) -> bool:
+    if obj.animation_data and obj.animation_data.action:
+        if obj.animation_data.action == action:
+            return True
+    return False

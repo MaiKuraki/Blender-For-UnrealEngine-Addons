@@ -16,6 +16,11 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
+select_assets_after_import: bool = True
+save_assets_after_import: bool = True
 
-automated_import_tasks = True #False when debug only, used to show import dialog.
-force_use_interchange = "Auto" #Auto by default, you can use Interchange or FBX
+# DEBUG
+automated_import_tasks: bool = True # "True" by default. You can use "False" for debug.
+# automated_import_tasks when False will show up the import task option popup.
+# This will in the most of cases override the optionss set in the import script. So use that for debug is a bad idea.
+print_debug_steps: bool = False # "False" by default. You can use "True" for debug.

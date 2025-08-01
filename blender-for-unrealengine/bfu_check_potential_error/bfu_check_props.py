@@ -17,36 +17,47 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import TYPE_CHECKING, List
 import bpy
-from typing import TYPE_CHECKING
-from . import bfu_check_operators
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
         ]
     return preset_values
 
 class BFU_OT_UnrealPotentialError(bpy.types.PropertyGroup):
-    type: bpy.props.IntProperty(default=0)  # 0:Info, 1:Warning, 2:Error
-    object: bpy.props.PointerProperty(type=bpy.types.Object)
+    type: bpy.props.IntProperty(default=0)  # 0:Info, 1:Warning, 2:Error  # type: ignore
+    object: bpy.props.PointerProperty(type=bpy.types.Object)  # type: ignore
     ###
-    selectObjectButton: bpy.props.BoolProperty(default=True)
-    selectVertexButton: bpy.props.BoolProperty(default=False)
-    selectPoseBoneButton: bpy.props.BoolProperty(default=False)
+    select_object_button: bpy.props.BoolProperty(default=True)  # type: ignore
+    select_vertex_button: bpy.props.BoolProperty(default=False)  # type: ignore
+    select_pose_bone_button: bpy.props.BoolProperty(default=False)  # type: ignore
     ###
-    selectOption: bpy.props.StringProperty(default="None")  # 0:VertexWithZeroWeight
-    itemName: bpy.props.StringProperty(default="None")
-    text: bpy.props.StringProperty(default="Unknown")
-    correctRef: bpy.props.StringProperty(default="None")
-    correctlabel: bpy.props.StringProperty(default="Fix it !")
-    correctDesc: bpy.props.StringProperty(default="Correct target error")
-    docsOcticon: bpy.props.StringProperty(default="None")
+    select_option: bpy.props.StringProperty(default="None")  # 0:VertexWithZeroWeight  # type: ignore
+    item_name: bpy.props.StringProperty(default="None")  # type: ignore
+    text: bpy.props.StringProperty(default="Unknown")  # type: ignore
+    correct_ref: bpy.props.StringProperty(default="None")  # type: ignore
+    correct_label: bpy.props.StringProperty(default="Fix it !")  # type: ignore
+    correct_desc: bpy.props.StringProperty(default="Correct target error")  # type: ignore
+    docs_octicon: bpy.props.StringProperty(default="None")  # type: ignore
 
     if TYPE_CHECKING:
+        type: int
         object: bpy.types.Object
+
+        select_object_button: bool
+        select_vertex_button: bool
+        select_pose_bone_button: bool
+
+        select_option: str
+        item_name: str
+        text: str
+        correct_ref: str
+        correct_label: str
+        correct_desc: str
+        docs_octicon: str
+
 
 # -------------------------------------------------------------------
 #   Register & Unregister

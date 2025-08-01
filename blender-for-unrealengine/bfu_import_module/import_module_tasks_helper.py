@@ -18,15 +18,13 @@
 
 
 from typing import Union
+import unreal
 from . import import_module_unreal_utils
-from . import import_module_tasks_class
+from . import constrcut_utils
+from .asset_types import ExportAssetType, AssetFileTypeEnum
 
-try:
-    import unreal
-except ImportError:
-    import unreal_engine as unreal
 
-support_interchange = import_module_unreal_utils.get_support_interchange()
+support_interchange: bool = constrcut_utils.include_interchange_functions()
 
 if support_interchange:
     def task_options_default_preset(use_interchange: bool = True) -> Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]:
@@ -85,20 +83,27 @@ if import_module_unreal_utils.alembic_importer_active():
         return options
 
 if support_interchange:
-    def init_options_data(asset_type: str, use_interchange: bool = True):
+    def init_options_data(asset_type: ExportAssetType, filetype: AssetFileTypeEnum):
         """Initializes task options based on asset type and interchange usage."""
         
+        # For FBX file it better to not use interchange before UE 5.5.
+        if filetype.value == AssetFileTypeEnum.FBX.value and import_module_unreal_utils.get_unreal_version() < (5,5,0):
+            use_interchange = False
+        else:
+            use_interchange = True
+
+
         # Add the function only if alembic importer is active
-        if asset_type == "Alembic" and import_module_unreal_utils.alembic_importer_active():
+        if asset_type.value == ExportAssetType.ANIM_ALEMBIC.value and import_module_unreal_utils.alembic_importer_active():
             options = task_options_alembic_preset(use_interchange)
-        
-        elif asset_type == "StaticMesh":
+
+        elif asset_type.value == ExportAssetType.STATIC_MESH.value:
             options = task_options_static_mesh_preset(use_interchange)
 
-        elif asset_type == "SkeletalMesh":
+        elif asset_type.value == ExportAssetType.SKELETAL_MESH.value:
             options = task_options_skeletal_mesh_preset(use_interchange)
 
-        elif asset_type == "Animation":
+        elif asset_type.is_skeletal_animation():
             options = task_options_animation_preset(use_interchange)
             
         else:
@@ -106,23 +111,23 @@ if support_interchange:
         
         return options
 else:
-    def init_options_data(asset_type: str, use_interchange: bool = True):
+    def init_options_data(asset_type: ExportAssetType, filetype: AssetFileTypeEnum):
         """Initializes task options based on asset type and interchange usage."""
         
         # Add the function only if alembic importer is active
-        if asset_type == "Alembic" and import_module_unreal_utils.alembic_importer_active():
-            options = task_options_alembic_preset(use_interchange)
-        
-        elif asset_type == "StaticMesh":
-            options = task_options_static_mesh_preset(use_interchange)
+        if asset_type.value == ExportAssetType.ANIM_ALEMBIC.value and import_module_unreal_utils.alembic_importer_active():
+            options = task_options_alembic_preset(False)
 
-        elif asset_type == "SkeletalMesh":
-            options = task_options_skeletal_mesh_preset(use_interchange)
+        elif asset_type.value == ExportAssetType.STATIC_MESH.value:
+            options = task_options_static_mesh_preset(False)
 
-        elif asset_type == "Animation":
-            options = task_options_animation_preset(use_interchange)
+        elif asset_type.value == ExportAssetType.SKELETAL_MESH.value:
+            options = task_options_skeletal_mesh_preset(False)
+
+        elif asset_type.is_skeletal_animation():
+            options = task_options_animation_preset(False)
             
         else:
-            options = task_options_default_preset(use_interchange)
+            options = task_options_default_preset(False)
         
         return options

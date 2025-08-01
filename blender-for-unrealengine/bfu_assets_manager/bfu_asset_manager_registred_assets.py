@@ -16,9 +16,12 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-registred_asset_class = []
+from typing import List
+from .bfu_asset_manager_type import BFU_BaseAssetClass
 
-def register_asset_class(asset):
+registred_asset_class: List[BFU_BaseAssetClass] = []
+
+def register_asset_class(asset: BFU_BaseAssetClass):
     registred_asset_class.append(asset)
 
 def get_registred_asset_class():

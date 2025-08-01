@@ -18,32 +18,31 @@
 
 
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
+from .. import bfu_addon_prefs
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     
-    scene.bfu_export_filter_properties_expanded.draw(layout)
-    if scene.bfu_export_filter_properties_expanded.is_expend():
+    accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_export_filter_properties_expanded")
+    _, panel = accordion.draw(layout)
+    if accordion.is_expend():
 
         # Assets
-        row = layout.row()
+        row = panel.row()
         AssetsCol = row.column()
         AssetsCol.label(text="Asset types to export", icon='PACKAGE')
         AssetsCol.prop(scene, 'bfu_use_static_export')
         AssetsCol.prop(scene, 'bfu_use_static_collection_export')
         AssetsCol.prop(scene, 'bfu_use_skeletal_export')
-        AssetsCol.prop(scene, 'bfu_use_anin_export')
+        AssetsCol.prop(scene, 'bfu_use_animation_export')
         AssetsCol.prop(scene, 'bfu_use_alembic_export')
         AssetsCol.prop(scene, 'bfu_use_groom_simulation_export')
         AssetsCol.prop(scene, 'bfu_use_camera_export')
         AssetsCol.prop(scene, 'bfu_use_spline_export')
-        layout.separator()
+        panel.separator()
 
         # Additional file
         FileCol = row.column()
@@ -55,5 +54,5 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
             FileCol.prop(scene, 'bfu_use_text_additional_data')
 
         # exportProperty
-        export_by_select = layout.row()
+        export_by_select = panel.row()
         export_by_select.prop(scene, 'bfu_export_selection_filter')

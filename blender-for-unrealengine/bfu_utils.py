@@ -17,16 +17,21 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-import bpy
-import bmesh
+
 import string
 import fnmatch
-import mathutils
 import math
 import os
-from typing import List
+from typing import List, Tuple, Optional, Union, TYPE_CHECKING, Any
+from pathlib import Path
+import bpy
+import bmesh
+import mathutils
 from . import bbpl
 from . import bfu_basics
+from . import bfu_export_control
+from . import bfu_addon_prefs
+from . import bpl
 
 
 class SavedBones():
@@ -53,11 +58,14 @@ class SavedViewLayerChildren():
 
 
 class MarkerSequence():
-    def __init__(self, marker):
+    def __init__(self, marker: Optional[bpy.types.TimelineMarker] = None):
         scene = bpy.context.scene
-        self.marker = marker
-        self.start = 0
-        self.end = scene.frame_end
+        if scene is None:
+            return
+
+        self.marker: Optional[bpy.types.TimelineMarker] = marker
+        self.start: int = 0
+        self.end: int = scene.frame_end
 
         if marker is not None:
             self.start = marker.frame
@@ -67,19 +75,19 @@ class TimelineMarkerSequence():
 
     def __init__(self):
         scene = bpy.context.scene
-        timeline = scene.timeline_markers
-        self.marker_sequences: List[MarkerSequence] = self.GetMarkerSequences(timeline)
+        if scene is None:
+            return
+        
+        timeline: bpy.types.TimelineMarkers = scene.timeline_markers
+        self.marker_sequences: List[MarkerSequence] = self.get_marker_sequences(timeline)
 
-    def GetMarkerSequences(self, timeline_markers):
+    def get_marker_sequences(self, timeline_markers: bpy.types.TimelineMarkers) -> List[MarkerSequence]:
         if len(timeline_markers) == 0:
             print("Scene has no timeline_markers.")
             return []
 
-        def GetFisrtMarket(marker_list):
-            if len(marker_list) == 0:
-                return None
-
-            best_marker = ""
+        def get_first_marker(marker_list: List[bpy.types.TimelineMarker]) -> bpy.types.TimelineMarker:
+            best_marker: bpy.types.TimelineMarker
             best_marker_frame = 0
             init = False
 
@@ -96,17 +104,17 @@ class TimelineMarkerSequence():
 
             return best_marker
 
-        marker_list = []
+        marker_list: List[bpy.types.TimelineMarker] = []
         for marker in timeline_markers:
             marker_list.append(marker)
 
-        order_marker_list = []
+        order_marker_list: List[bpy.types.TimelineMarker] = []
         while len(marker_list) != 0:
-            first_marker = GetFisrtMarket(marker_list)
+            first_marker = get_first_marker(marker_list)
             order_marker_list.append(first_marker)
             marker_list.remove(first_marker)
 
-        marker_sequences = []
+        marker_sequences: List[MarkerSequence] = []
 
         for marker in order_marker_list:
             marker_sequence = MarkerSequence(marker)
@@ -119,7 +127,7 @@ class TimelineMarkerSequence():
 
         return marker_sequences
 
-    def GetMarkerSequenceAtFrame(self, frame):
+    def get_marker_sequence_at_frame(self, frame: int) -> Optional[MarkerSequence]:
         if self.marker_sequences:
             for marker_sequence in self.marker_sequences:
                 # print(marker_sequence.start, marker_sequence.end, frame)
@@ -127,7 +135,7 @@ class TimelineMarkerSequence():
                     return marker_sequence
         return None
 
-def UpdateProgress(job_title, progress, time=None):
+def update_progress(job_title: str, progress: float, time: Optional[float] = None):
 
     length = 20  # modify this to change the length
     block = int(round(length*progress))
@@ -143,18 +151,18 @@ def UpdateProgress(job_title, progress, time=None):
             msg += " DONE\r\n"
 
 
-def RemoveUselessSpecificData(name, data_type):
+def remove_useless_specific_data(name: str, data_type: str):
     if data_type == "MESH":
         if name in bpy.data.meshes:
             oldData = bpy.data.meshes[name]
             if oldData.users == 0:
-                bpy.data.meshes.remove(oldData)
+                bpy.data.meshes.remove(oldData)  # type: ignore
 
     if data_type == "ARMATURE":
         if name in bpy.data.armatures:
             oldData = bpy.data.armatures[name]
             if oldData.users == 0:
-                bpy.data.armatures.remove(oldData)
+                bpy.data.armatures.remove(oldData)  # type: ignore
 
 
 def CleanJoinSelect():
@@ -179,12 +187,12 @@ def CleanDeleteSelect():
     bpy.ops.object.delete()
 
     for data in oldDataToRemove:
-        RemoveUselessSpecificData(data[0], data[1])
+        remove_useless_specific_data(data[0], data[1])
 
     return removed_objects
 
 
-def CleanDeleteObjects(objs):
+def clean_delete_objects(objs: List[bpy.types.Object]) -> List[str]:
 
     objs = list(dict.fromkeys(objs))
 
@@ -201,22 +209,12 @@ def CleanDeleteObjects(objs):
         bpy.data.objects.remove(obj)
 
         if souldRemoveData:
-            RemoveUselessSpecificData(oldDataToRemove, oldDataTypeToRemove)
+            remove_useless_specific_data(oldDataToRemove, oldDataTypeToRemove)
 
     return removed_objects
 
 
-def GetAllobjectsByExportType(exportType):
-    # Find all objects with a specific bfu_export_type property
-    targetObj = []
-    for obj in bpy.context.scene.objects:
-        prop = obj.bfu_export_type
-        if prop == exportType:
-            targetObj.append(obj)
-    return (targetObj)
-
-
-def GetAllCollisionAndSocketsObj(objs_list=None):
+def get_all_collision_and_sockets_obj(objs_list=None):
     # Get any object that can be understood
     # as a collision or a socket by unreal
 
@@ -235,110 +233,136 @@ def GetAllCollisionAndSocketsObj(objs_list=None):
     return colObjs
 
 
-def GetExportDesiredChilds(obj):
+def GetExportDesiredChilds(obj: bpy.types.Object) -> List[bpy.types.Object]:
     # Get only all child objects that must be exported with parent object
 
     DesiredObj = []
     for child in bbpl.basics.get_recursive_obj_childs(obj):
-        if child.bfu_export_type != "dont_export":
+        if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(child):
             if child.name in bpy.context.window.view_layer.objects:
                 DesiredObj.append(child)
 
     return DesiredObj
 
 
-
-
-
-def RemoveAllConsraints(obj):
+def disable_all_bones_consraints(obj: bpy.types.Object):
     for b in obj.pose.bones:
         for c in b.constraints:
+            c.enabled = False
+
+
+def remove_all_bones_consraints(obj: bpy.types.Object):
+    for b in obj.pose.bones:
+        for c in b.constraints:
+
+            # In Blender 4.4 for some constraint when I remove a constraint from python code it crash.
+            # Disable it and clear drivers before remove fix the crash. I don't know why...
+            fcurve_path = f'pose.bones["{b.name}"].constraints["{c.name}"].influence'
+            if obj.animation_data and obj.animation_data.drivers:
+                for fcurve in obj.animation_data.drivers:
+                    if fcurve.data_path == fcurve_path:
+                        obj.animation_data.drivers.remove(fcurve)
+                        break
+
+            c.enabled = False
             b.constraints.remove(c)
+
+class ProxyRigConsraint():
+    def __init__(self, constraint: bpy.types.Constraint):
+        self.constraint = constraint
+        # STRETCH_TO
+        if constraint.type == "STRETCH_TO":
+            if isinstance(constraint, bpy.types.StretchToConstraint):
+                self.rest_length = constraint.rest_length  # Can be bigger than 10?... wtf
+
+        # LIMIT_LOCATION
+        if constraint.type == "LIMIT_LOCATION":
+            if isinstance(constraint, bpy.types.LimitLocationConstraint):
+                self.min_x = constraint.min_x
+                self.min_y = constraint.min_y
+                self.min_z = constraint.min_z
+                self.max_x = constraint.max_x
+                self.max_y = constraint.max_y
+                self.max_z = constraint.max_z
+
+        # LIMIT_DISTANCE
+        if constraint.type == "LIMIT_DISTANCE":
+            if isinstance(constraint, bpy.types.LimitDistanceConstraint):
+                self.distance = constraint.distance
 
 
 class RigConsraintScale():
 
-    def __init__(self, armature, rescale_rig_factor):
+    def __init__(self, armature: bpy.types.Object, rescale_rig_factor: float):
         self.armature = armature
-        self.rescale_rig_factor = rescale_rig_factor  # rigRescaleFactor
-        self.consraint_proxys = []
+        if not isinstance(armature.data, bpy.types.Armature):
+            raise TypeError(f"Object {armature.name} is not an armature")
+        self.rescale_rig_factor: float = rescale_rig_factor  # rigRescaleFactor
+        self.consraint_proxys: List[ProxyRigConsraint] = []
 
-        class ProxyRigConsraint():
-            def __init__(self, constraint):
-                self.constraint = constraint
-                # STRETCH_TO
-                if constraint.type == "STRETCH_TO":
-                    self.rest_length = constraint.rest_length  # Can be bigger than 10?... wtf
+        if armature.pose:
+            for bone in armature.pose.bones:
+                for constraint in bone.constraints:
+                    self.consraint_proxys.append(ProxyRigConsraint(constraint))
 
-                # LIMIT_LOCATION
-                if constraint.type == "LIMIT_LOCATION":
-                    self.min_x = constraint.min_x
-                    self.min_y = constraint.min_y
-                    self.min_z = constraint.min_z
-                    self.max_x = constraint.max_x
-                    self.max_y = constraint.max_y
-                    self.max_z = constraint.max_z
-
-                # LIMIT_DISTANCE
-                if constraint.type == "LIMIT_DISTANCE":
-                    self.distance = constraint.distance
-
-        for bone in armature.pose.bones:
-            for constraint in bone.constraints:
-                self.consraint_proxys.append(ProxyRigConsraint(constraint))
-
-    def RescaleRigConsraintForUnrealEngine(self):
+    def rescale_rig_consraint_for_unreal_engine(self):
         scale = self.rescale_rig_factor
         for consraint_proxy in self.consraint_proxys:
-            c = consraint_proxy.constraint
+            constraint = consraint_proxy.constraint
             # STRETCH_TO
-            if c.type == "STRETCH_TO":
-                c.rest_length *= scale  # Can be bigger than 10?... wtf
+            if constraint.type == "STRETCH_TO":
+                if isinstance(constraint, bpy.types.StretchToConstraint):
+                    constraint.rest_length *= scale  # Can be bigger than 10?... wtf
 
             # LIMIT_LOCATION
-            if c.type == "LIMIT_LOCATION":
-                c.min_x *= scale
-                c.min_y *= scale
-                c.min_z *= scale
-                c.max_x *= scale
-                c.max_y *= scale
-                c.max_z *= scale
+            if constraint.type == "LIMIT_LOCATION":
+                if isinstance(constraint, bpy.types.LimitLocationConstraint):
+                    constraint.min_x *= scale
+                    constraint.min_y *= scale
+                    constraint.min_z *= scale
+                    constraint.max_x *= scale
+                    constraint.max_y *= scale
+                    constraint.max_z *= scale
 
             # LIMIT_DISTANCE
-            if c.type == "LIMIT_DISTANCE":
-                c.distance *= scale
+            if constraint.type == "LIMIT_DISTANCE":
+                if isinstance(constraint, bpy.types.LimitDistanceConstraint):
+                    constraint.distance *= scale
 
-    def ResetScaleAfterExport(self):
+    def reset_scale_after_export(self):
         for consraint_proxy in self.consraint_proxys:
-            c = consraint_proxy.constraint
+            constraint = consraint_proxy.constraint
             # STRETCH_TO
-            if c.type == "STRETCH_TO":
-                c.rest_length = consraint_proxy.rest_length  # Can be bigger than 10?... wtf
+            if constraint.type == "STRETCH_TO":
+                if isinstance(constraint, bpy.types.StretchToConstraint):
+                    constraint.rest_length = consraint_proxy.rest_length  # Can be bigger than 10?... wtf
 
             # LIMIT_LOCATION
-            if c.type == "LIMIT_LOCATION":
-                c.min_x = consraint_proxy.min_x
-                c.min_y = consraint_proxy.min_y
-                c.min_z = consraint_proxy.min_z
-                c.max_x = consraint_proxy.max_x
-                c.max_y = consraint_proxy.max_y
-                c.max_z = consraint_proxy.max_z
+            if constraint.type == "LIMIT_LOCATION":
+                if isinstance(constraint, bpy.types.LimitLocationConstraint):
+                    constraint.min_x = consraint_proxy.min_x
+                    constraint.min_y = consraint_proxy.min_y
+                    constraint.min_z = consraint_proxy.min_z
+                    constraint.max_x = consraint_proxy.max_x
+                    constraint.max_y = consraint_proxy.max_y
+                    constraint.max_z = consraint_proxy.max_z
 
             # LIMIT_DISTANCE
-            if c.type == "LIMIT_DISTANCE":
-                c.distance = consraint_proxy.distance
+            if constraint.type == "LIMIT_DISTANCE":
+                if isinstance(constraint, bpy.types.LimitDistanceConstraint):
+                    constraint.distance = consraint_proxy.distance
 
 
 class ShapeKeysCurveScale():
 
-    def __init__(self, rescale_rig_factor, is_a_proxy=False):
+    def __init__(self, rescale_rig_factor: float, is_a_proxy: bool = False):
         self.export_as_proxy = is_a_proxy
         self.rescale_rig_factor = rescale_rig_factor  # rigRescaleFactor
         self.default_unit_length = get_scene_unit_scale()
-        self.proxy_drivers = self.ShapeKeysDriverRefs()  # Save driver data as proxy
+        self.proxy_drivers = self.shape_keys_driver_refs()  # Save driver data as proxy
 
     class DriverProxyData():
-        def __init__(self, obj, driver):
+        def __init__(self, obj: bpy.types.Object, driver: bpy.types.FCurve):
             self.obj = obj
             self.driver = driver
             self.keyframe_points = []
@@ -359,7 +383,7 @@ class ShapeKeysCurveScale():
             def __init__(self, modifier):
                 self.coefficients = modifier.coefficients
 
-    def ResacleForUnrealEngine(self):
+    def rescale_for_unreal_engine(self):
         scale = 1/self.rescale_rig_factor
         for proxy_driver in self.proxy_drivers:
             for key in proxy_driver.driver.keyframe_points:
@@ -372,7 +396,7 @@ class ShapeKeysCurveScale():
                     mod.coefficients[0] *= scale  # coef: +
                     mod.coefficients[1] *= scale  # coef: x
 
-    def ResetScaleAfterExport(self):
+    def reset_scale_after_export(self):
         for proxy_driver in self.proxy_drivers:
             for x, key in enumerate(proxy_driver.driver.keyframe_points):
                 key.co[1] = proxy_driver.keyframe_points[x].co
@@ -392,19 +416,20 @@ class ShapeKeysCurveScale():
         #    if driver_name in 
         #    bpy.context.selected_objects[0].data.shape_keys.key_blocks[1]
 
-    def ShapeKeysDriverRefs(self):
-        drivers = []
+    def shape_keys_driver_refs(self):
+        drivers: List[Any] = []
         obj_list = bpy.context.selected_objects
+
         if self.export_as_proxy is False:
             for obj in obj_list:
-                if obj.type == "MESH":
+                if isinstance(obj.data, bpy.types.Mesh):
                     if obj.data.shape_keys is not None:
                         if obj.data.shape_keys.animation_data is not None:
-                            if obj.data.shape_keys.animation_data.drivers is not None:
-                                for driver_curve in obj.data.shape_keys.animation_data.drivers:
-                                    # Check if has location context.
-                                    need_rescale_curve = False
-                                    driver = driver_curve.driver
+                            for driver_curve in obj.data.shape_keys.animation_data.drivers:
+                                # Check if has location context.
+                                need_rescale_curve = False
+                                driver = driver_curve.driver
+                                if driver:
                                     for variable in driver.variables:
                                         if variable.type == "TRANSFORMS":
                                             for target in variable.targets:
@@ -418,9 +443,44 @@ class ShapeKeysCurveScale():
         return drivers
 
 
-def GetAllCollisionObj():
+class ModifiersDataScale():
+
+    def __init__(self, rescale_rig_factor, is_a_proxy=False):
+        self.export_as_proxy = is_a_proxy
+        self.rescale_rig_factor = rescale_rig_factor  # rigRescaleFactor
+        self.modifiers = self.ModifiersRefs()  # Save driver data as proxy
+        self.saved_data = {}
+
+
+    def RescaleForUnrealEngine(self):
+        for x, mod in enumerate(self.modifiers):
+            if mod.type == "MIRROR":
+                self.saved_data[x] = mod.merge_threshold
+                mod.merge_threshold *= self.rescale_rig_factor
+
+
+    def ResetScaleAfterExport(self):
+        for x, mod in enumerate(self.modifiers):
+            if mod.type == "MIRROR":
+                mod.merge_threshold = self.saved_data[x]
+
+    def ModifiersRefs(self):
+        modifiers = []
+        obj_list = bpy.context.selected_objects
+        if self.export_as_proxy is False:
+            for obj in obj_list:
+                if obj.type == "MESH":
+                    for mod in obj.modifiers:
+                        modifiers.append(mod)
+        return modifiers
+
+
+def get_all_collision_obj() -> List[bpy.types.Object]:
     # Get any object that can be understood
     # as a collision or a socket by unreal
+
+    if bpy.context is None:
+        return []
 
     colObjs = [obj for obj in bpy.context.scene.objects if (
         fnmatch.fnmatchcase(obj.name, "UBX*") or
@@ -429,56 +489,67 @@ def GetAllCollisionObj():
         fnmatch.fnmatchcase(obj.name, "UCX*"))]
     return colObjs
 
-def EvaluateCameraPosition(camera):
-    # Get Transfrom
-    loc = camera.matrix_world.to_translation()
-    r = camera.matrix_world.to_euler("XYZ")
-    s = camera.matrix_world.to_scale()
-    array_transform = [loc, r, s]
-    return array_transform
+def check_is_collision(target: bpy.types.Object) -> bool:
+    # Return true if obj is a collision
 
-def EvaluateCameraPositionForUnreal(camera, previous_euler=mathutils.Euler()):
-    # Get Transfrom
+    if bpy.context is None:
+        return False
+
+    for obj in bpy.context.scene.objects:
+        if (fnmatch.fnmatchcase(obj.name, "UBX*") or
+            fnmatch.fnmatchcase(obj.name, "UCP*") or
+            fnmatch.fnmatchcase(obj.name, "USP*") or
+            fnmatch.fnmatchcase(obj.name, "UCX*")):
+            return True
+    return False
+
+def lerp_quaternion(q1: mathutils.Quaternion, q2: mathutils.Quaternion, alpha: float) -> mathutils.Quaternion:
+    # Manual LERP because Blender lacks direct Quaternion.lerp()
+    result = mathutils.Quaternion((
+        (1 - alpha) * q1.w + alpha * q2.w,
+        (1 - alpha) * q1.x + alpha * q2.x,
+        (1 - alpha) * q1.y + alpha * q2.y,
+        (1 - alpha) * q1.z + alpha * q2.z,
+    ))
+    result.normalize()
+    return result
+
+def evaluate_camera_position(camera: bpy.types.Object, previous_euler: mathutils.Euler = mathutils.Euler()) -> Tuple[mathutils.Vector, List[float], mathutils.Vector]:
+    pass
+    # TODO
+
+def evaluate_camera_position_for_unreal(camera: bpy.types.Object, previous_euler: mathutils.Euler = mathutils.Euler()) -> Tuple[mathutils.Vector, List[float], mathutils.Vector]:
+    # Get Transform
+    if not isinstance(camera.data, bpy.types.Camera):
+        raise TypeError(f"Object {camera.name} is not a camera")
+
     unit_scale = get_scene_unit_scale()
     display_size = camera.data.display_size
 
     matrix_y = mathutils.Matrix.Rotation(math.radians(90.0), 4, 'Y')
     matrix_x = mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X')
-    matrix = camera.matrix_world @ matrix_y @ matrix_x
-    loc = matrix.to_translation() * 100 * unit_scale
-    loc += camera.bfu_additional_location_for_export
-    r = matrix.to_euler("XYZ", previous_euler)
-    s = matrix.to_scale() * unit_scale * display_size
+    matrix: mathutils.Matrix = camera.matrix_world @ matrix_y @ matrix_x
+    loc: mathutils.Vector = matrix.to_translation() * 100 * unit_scale
+    if TYPE_CHECKING:
+        additional_location_for_export: mathutils.Vector = mathutils.Vector((0, 0, 0))
+    else:
+        additional_location_for_export = camera.bfu_additional_location_for_export
+    loc += additional_location_for_export
+    rot: mathutils.Euler = matrix.to_euler("XYZ", previous_euler)
+    scale: mathutils.Vector = matrix.to_scale() * unit_scale * display_size
 
     loc *= mathutils.Vector([1, -1, 1])
-    array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]  # Roll Pith Yaw XYZ
-    array_transform = [loc, array_rotation, s]
+    array_rotation: List[float] = [math.degrees(rot[0]), math.degrees(rot[1])*-1, math.degrees(rot[2])*-1]  # Roll, Pitch, Yaw: XYZ
+    array_transform: Tuple[mathutils.Vector, List[float], mathutils.Vector] = (loc, array_rotation, scale)
 
     return array_transform
 
 
-def EvaluateCameraRotationForBlender(transform):
-    x = transform["rotation_x"]
-    y = transform["rotation_y"]*-1
-    z = transform["rotation_z"]*-1
-    euler = mathutils.Euler([x, y, z], "XYZ")
-    return euler
-
-
-def GetDesiredActionStartEndTime(obj, action):
+def get_desired_action_start_end_range(obj: bpy.types.Object, action: bpy.types.Action)-> Tuple[float, float]:
     # Returns desired action or camera anim start/end time
-    # Return start with index 0 and end with index 1
-    # EndTime should be a less one frame bigger than StartTime
-
     scene = bpy.context.scene
-    if obj.type == "CAMERA":
-        startTime = scene.frame_start
-        endTime = scene.frame_end
-        if endTime <= startTime:
-            endTime = startTime+1
-        return (startTime, endTime)
 
-    elif obj.bfu_anim_action_start_end_time_enum == "with_keyframes":
+    if obj.bfu_anim_action_start_end_time_enum == "with_keyframes":
         # GetFirstActionFrame + Offset
         startTime = int(action.frame_range.x) + obj.bfu_anim_action_start_frame_offset
         # GetLastActionFrame + Offset
@@ -502,18 +573,17 @@ def GetDesiredActionStartEndTime(obj, action):
         return (startTime, endTime)
 
 
-def GetDesiredNLAStartEndTime(obj):
+def get_desired_nla_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
     # Returns desired nla anim start/end time
-    # Return start with index 0 and end with index 1
-    # EndTime should be a less one frame bigger than StartTime
-
+    if bpy.context is None:
+        return (0.0, 1.0)
     scene = bpy.context.scene
 
     if obj.bfu_anim_nla_start_end_time_enum == "with_sceneframes":
         startTime = scene.frame_start + obj.bfu_anim_nla_start_frame_offset
         endTime = scene.frame_end + obj.bfu_anim_nla_end_frame_offset
         if endTime <= startTime:
-            endTime = startTime+1
+            endTime = startTime
 
         return (startTime, endTime)
 
@@ -521,19 +591,50 @@ def GetDesiredNLAStartEndTime(obj):
         startTime = obj.bfu_anim_nla_custom_start_frame
         endTime = obj.bfu_anim_nla_custom_end_frame
         if endTime <= startTime:
-            endTime = startTime+1
+            endTime = startTime
 
         return (startTime, endTime)
 
+def get_desired_alembic_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
+    # Returns desired alembic anim start/end time
+    if bpy.context is None:
+        return (0.0, 1.0)
+    scene = bpy.context.scene
+    return (scene.frame_start, scene.frame_end)
 
-def GetActionType(action):
+def get_desired_camera_start_end_range(obj: bpy.types.Object)-> Tuple[float, float]:
+    # Returns desired action or camera anim start/end time
+    
+    if obj.type != "CAMERA":  # type: ignore
+        return (0.0, 1.0)
+    
+    if bpy.context is None:
+        return (0.0, 1.0)
+    scene = bpy.context.scene
+    startTime = scene.frame_start
+    endTime = scene.frame_end
+    if endTime <= startTime:
+        endTime = startTime+1
+    return (startTime, endTime)
+
+
+
+# @TODO: @Deprecated use action_is_one_frame instead
+def GetActionType(action: bpy.types.Action):
     # return action type
 
     if action.frame_range.y - action.frame_range.x == 1:
         return "Pose"
     return "Action"
 
+def action_is_one_frame(action: bpy.types.Action) -> bool:
+    # return True if action is one frame
 
+    if action.frame_range.y - action.frame_range.x == 0:
+        return True
+    return False
+
+# @TODO: @Deprecated use BFU_BaseAssetClass.get_asset_type() 
 def GetCollectionType(collection):
     # return collection type
     if(collection):
@@ -546,33 +647,15 @@ def GetIsAnimation(animation_type):
         return True
     return False
 
+def get_export_collection_objects(collection: bpy.types.Collection) -> List[bpy.types.Object]:
+    # Found all objects that must be exported in a collection
+    found_objs = []
+    for select_obj in collection.all_objects:
+        if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(select_obj):
+            if select_obj.name in bpy.context.view_layer.objects:
+                found_objs.append(select_obj)
 
-
-
-
-def CheckIsCollision(target):
-    # Return true if obj is a collision
-    for obj in GetAllCollisionObj():
-        if obj == target:
-            return True
-    return False
-
-
-def SelectCollectionObjects(collection):
-    # Selects only all objects that must be exported in a collection
-    selectedObjs = []
-    bpy.ops.object.select_all(action='DESELECT')
-    for selectObj in collection.all_objects:
-        if selectObj.bfu_export_type != "dont_export":
-            if selectObj.name in bpy.context.view_layer.objects:
-                selectObj.select_set(True)
-                selectedObjs.append(selectObj)
-
-    if len(selectedObjs) > 0:
-        if selectedObjs[0].name in bpy.context.view_layer.objects:
-            bpy.context.view_layer.objects.active = selectedObjs[0]
-
-    return selectedObjs
+    return found_objs
 
 def draw_proxy_propertys(obj):
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
@@ -585,8 +668,9 @@ def draw_proxy_propertys(obj):
         return False
     return True
 
+# @TODO: @Deprecated
 def GetExportAsProxy(obj):
-    if GetObjProxyChild(obj):
+    if get_obj_proxy_child(obj):
         return True
 
     if obj.data:
@@ -594,11 +678,11 @@ def GetExportAsProxy(obj):
             return True
     return False
 
+# @TODO: @Deprecated
+def GetExportProxyChild(obj: bpy.types.Object) -> bpy.types.Object:
 
-def GetExportProxyChild(obj):
-
-    if GetObjProxyChild(obj):
-        return GetObjProxyChild(obj)
+    if get_obj_proxy_child(obj):
+        return get_obj_proxy_child(obj)
 
     scene = bpy.context.scene
     if obj.data:
@@ -611,51 +695,51 @@ def GetExportProxyChild(obj):
                                 return child_obj
     return None
 
-
-def SelectParentAndDesiredChilds(obj):
+def SelectParentAndDesiredChilds(active: bpy.types.Object):
     # Selects only auto desired child objects that must be exported with parent object
-    selectedObjs = []
+    if active.name not in bpy.context.view_layer.objects:
+        print(f"The active object {active.name} not found in bpy.context.view_layer.objects!")
+        return
+
+    new_select_list = []
     bpy.ops.object.select_all(action='DESELECT')
-    for selectObj in GetExportDesiredChilds(obj):
-        if selectObj.name in bpy.context.view_layer.objects:
-            selectObj.select_set(True)
-            selectedObjs.append(selectObj)
+    for obj in GetExportDesiredChilds(active):
+        if obj.name in bpy.context.view_layer.objects:
+            new_select_list.append(obj)
 
-    if obj.name in bpy.context.view_layer.objects:
-        obj.select_set(True)
+    # Select active at end to move a list end
+    new_select_list.append(active)
 
-    if GetExportAsProxy(obj):
-        proxy_child = GetExportProxyChild(obj)
+    # Select proxy at end to move a list end
+    if GetExportAsProxy(active):
+        proxy_child = GetExportProxyChild(active)
         if proxy_child is not None:
-            proxy_child.select_set(True)
+            new_select_list.append(proxy_child)
 
-    selectedObjs.append(obj)
-    if obj.name in bpy.context.view_layer.objects:
-        bpy.context.view_layer.objects.active = obj
-    return selectedObjs
+    return bbpl.utils.select_specific_object_list(active, new_select_list)
 
 
-def SelectParentAndSpecificChilds(active, objects):
+def SelectParentAndSpecificChilds(active: bpy.types.Object, objects: List[bpy.types.Object]):
     # Selects specific child objects that must be exported with parent object
-    selectedObjs = []
+    if active.name not in bpy.context.view_layer.objects:
+        print(f"The active object {active.name} not found in bpy.context.view_layer.objects!")
+        return
+
+    new_select_list = []
     bpy.ops.object.select_all(action='DESELECT')
     for obj in objects:
         if obj.name in bpy.context.view_layer.objects:
-            obj.select_set(True)
-            selectedObjs.append(obj)
+            new_select_list.append(obj)
 
-    if active.name in bpy.context.view_layer.objects:
-        active.select_set(True)
+    # Select active at end to move a list end
+    new_select_list.append(active)
 
     if GetExportAsProxy(active):
         proxy_child = GetExportProxyChild(active)
         if proxy_child is not None:
-            proxy_child.select_set(True)
+            new_select_list.append(proxy_child)
 
-    selectedObjs.append(active)
-    if active.name in bpy.context.view_layer.objects:
-        bpy.context.view_layer.objects.active = active
-    return selectedObjs
+    return bbpl.utils.select_specific_object_list(active, new_select_list)
 
 
 def RemoveSocketFromSelectForProxyArmature():
@@ -667,7 +751,7 @@ def RemoveSocketFromSelectForProxyArmature():
     for obj in bpy.context.selected_objects:
         if fnmatch.fnmatchcase(obj.name, "SOCKET*"):
             sockets.append(obj)
-    CleanDeleteObjects(sockets)
+    clean_delete_objects(sockets)
     select.reset_select(use_names = True)
 
 
@@ -679,49 +763,6 @@ def GoToMeshEditMode():
 
             return True
     return False
-
-
-def ApplyNeededModifierToSelect():
-    SavedSelect = bbpl.save_data.select_save.UserSelectSave()
-    SavedSelect.save_current_select()
-
-    # Get selected objects with modifiers.
-    for obj in bpy.context.selected_objects:
-        ApplyObjectModifiers(obj, ['ARMATURE'])
-
-    SavedSelect.reset_select()
-
-def ApplyObjectModifiers(obj: bpy.types.Object, blacklist_type = []):
-
-    if(obj is None):
-        return
-    if(obj.type == "MESH" and obj.data.shape_keys is not None):
-        # Can't apply modifiers with shape key
-        return
-
-
-    # Get Modifier to Apply
-    mod_to_apply = []
-    for mod in obj.modifiers:
-        if mod.type not in blacklist_type:
-            if mod.show_viewport == True:
-                mod_to_apply.append(mod)
-
-    if len(mod_to_apply) > 0:
-        bbpl.utils.select_specific_object(obj)
-        
-        if obj.data.users > 1:
-            # Make single user.
-            obj.data = obj.data.copy()
-
-        for mod in mod_to_apply:
-            if bpy.ops.object.modifier_apply.poll():
-                try:
-                    bpy.ops.object.modifier_apply(modifier=mod.name)
-                except RuntimeError as ex:
-                    # print the error incase its important... but continue
-                    print(ex)
-    
 
 
 def CorrectExtremeUV(step_scale=2, move_to_absolute=False):
@@ -817,7 +858,9 @@ def CorrectExtremeUV(step_scale=2, move_to_absolute=False):
 
             obj.data.update()
 
-def ApplyExportTransform(obj, use_type="Object"):
+
+
+def apply_export_transform(obj: bpy.types.Object, use_type: str = "Object"):
 
     newMatrix = obj.matrix_world @ mathutils.Matrix.Translation((0, 0, 0))
     saveScale = obj.scale * 1
@@ -861,7 +904,7 @@ def ApplyExportTransform(obj, use_type="Object"):
     obj.matrix_world = newMatrix @ AddMat
     obj.scale = saveScale
 
-
+# @TODO @Deprecated
 class SceneUnitSettings():
     def __init__(self, scene):
         self.scene = scene
@@ -900,7 +943,7 @@ class SkeletalExportScale():
         for child in self.childs:
             child.ResetObjTransform()
 
-    def ApplySkeletalExportScale(self, rescale, target_animation_data=None, is_a_proxy=False):
+    def apply_skeletal_export_scale(self, rescale: float, target_animation_data: bbpl.anim_utils.AnimationManagment=None):
         # This function will rescale the armature and applys the new scale
 
         armature = self.armature
@@ -917,12 +960,6 @@ class SkeletalExportScale():
             armature_animation_data = bbpl.anim_utils.AnimationManagment()
             armature_animation_data.clear_animation_data(armature)
 
-        if is_a_proxy:
-            SavedSelect = bbpl.save_data.select_save.UserSelectSave()
-            SavedSelect.save_current_select()
-            bpy.ops.object.select_all(action='DESELECT')
-            armature.select_set(True)
-
         # Need break multi users for apply scale.
 
         # armature.make_local()
@@ -936,8 +973,6 @@ class SkeletalExportScale():
             rotation=True,
             properties=True
             )
-        if is_a_proxy:
-            SavedSelect.reset_select()
 
         # Apply armature location
         armature.location = old_location*rescale
@@ -953,9 +988,9 @@ class SkeletalExportScale():
         self.ResetArmatureChildsTransform()
 
 
-def RescaleSelectCurveHook(scale):
+def rescale_select_curve_hooks(scale: float):
 
-    def GetRescaledMatrix(matrix, scale):
+    def get_rescaled_matrix(matrix: mathutils.Matrix, scale: float) -> mathutils.Matrix:
         newMatrix = matrix.copy()
 
         newMatrix[0][0] *= 1  # Fix
@@ -985,7 +1020,7 @@ def RescaleSelectCurveHook(scale):
             for mod in obj.modifiers:
                 if mod.type == "HOOK":
                     scale_factor = 100
-                    mod.matrix_inverse = GetRescaledMatrix(
+                    mod.matrix_inverse = get_rescaled_matrix(
                         mod.matrix_inverse,
                         scale_factor
                         )
@@ -996,61 +1031,83 @@ def RescaleSelectCurveHook(scale):
 
 class ActionCurveScale():
 
-    def __init__(self, rescale_factor):
+    def __init__(self, rescale_factor: float):
         self.rescale_factor = rescale_factor  # rigRescaleFactor
         self.default_unit_length = get_scene_unit_scale()
+        self.print_debug = False  # Debug print
 
-    def ResacleForUnrealEngine(self):
+    def rescale_for_export(self):
+        rf = self.rescale_factor
+        length = self.default_unit_length
+        self.rescale_all_action_curves(rf, length/0.01)
+
+    def restore_scale_after_export(self):
         rf = self.rescale_factor
         length = self.default_unit_length
 
-        self.RescaleAllActionCurve(rf, length/0.01)
+        self.rescale_all_action_curves(1/(rf), 0.01/length)
 
-    def ResetScaleAfterExport(self):
-        rf = self.rescale_factor
-        length = self.default_unit_length
-
-        self.RescaleAllActionCurve(1/(rf), 0.01/length)
-
-    def RescaleAllActionCurve(self, bone_scale, scene_scale=1):
+    def rescale_all_action_curves(self, bone_scale: float, scene_scale: float):
         for action in bpy.data.actions:
-            # print(action.name)
-            for fcurve in action.fcurves:
-                if fcurve.data_path == "location":
-                    # Curve
-                    for key in fcurve.keyframe_points:
-                        key.co[1] *= scene_scale
-                        key.handle_left[1] *= scene_scale
-                        key.handle_right[1] *= scene_scale
+            if self.print_debug:
+                print(f"Rescale: {action.name} bone_scale: {bone_scale} scene_scale: {scene_scale}")
 
-                    # Modifier
-                    for mod in fcurve.modifiers:
-                        if mod.type == "NOISE":
-                            mod.strength *= scene_scale
+            def rescale_fcurve(fcurve: bpy.types.FCurve, scale: float):
+                # Rescale fcurve keyframe points
+                for key in fcurve.keyframe_points:
+                    key.co[1] *= scale
+                    key.handle_left[1] *= scale
+                    key.handle_right[1] *= scale
 
-                elif fcurve.data_path.split(".")[-1] == "location":
+                # Rescale fcurve modifiers
+                for mod in fcurve.modifiers:
+                    if mod.type == "NOISE":
+                        mod.strength *= scale
 
-                    # Curve
-                    for key in fcurve.keyframe_points:
-                        key.co[1] *= bone_scale
-                        key.handle_left[1] *= bone_scale
-                        key.handle_right[1] *= bone_scale
+            def rescale_location_fcurves(fcurves: List[bpy.types.FCurve]):
+                for fcurve in fcurves:
+                    # Rescale scene location curves
+                    if fcurve.data_path == "location":
+                        if self.print_debug:
+                                print(f"Rescale scene location: {fcurve.data_path}, scene_scale: {scene_scale}")
+                        rescale_fcurve(fcurve, scene_scale)
 
-                    # Modifier
-                    for mod in fcurve.modifiers:
-                        if mod.type == "NOISE":
-                            mod.strength *= bone_scale
+                    # Rescale bone location curves
+                    elif fcurve.data_path.split(".")[-1] == "location":
+                        if self.print_debug:
+                            print(f"Rescale bone location: {fcurve.data_path}, bone_scale: {bone_scale}")
+                        rescale_fcurve(fcurve, bone_scale)
+
+            def rescale_first_valid_channelbag(action: bpy.types.Action, slot: bpy.types.ActionSlot):
+                # Rescale the first valid channelbag in the slot
+                if not action.layers:
+                    return False
+                
+                for layer in action.layers:
+                    for strip in layer.strips:
+                        channelbag = strip.channelbag(slot)
+                        if channelbag:
+                            rescale_location_fcurves(channelbag.fcurves)
+                            return True
+
+            # Use the new Action slot system in Blender 4.4+
+            if bpy.app.version >= (4, 4, 0):
+                for slot in action.slots:
+                    rescale_first_valid_channelbag(action, slot)
+
+            else:
+                rescale_location_fcurves(action.fcurves)
 
 
 
 def ValidFilenameForUnreal(filename):
     # valid file name for unreal assets
     extension = os.path.splitext(filename)[1]
-    newfilename = bfu_basics.ValidFilename(os.path.splitext(filename)[0])
+    newfilename = bfu_basics.valid_file_name(os.path.splitext(filename)[0])
     return (''.join(c for c in newfilename if c != ".")+extension)
 
 
-def ValidUnrealAssetsName(filename):
+def clean_filename_for_unreal(filename):
     # Normalizes string, removes non-alpha characters
     # Asset name in Unreal use
 
@@ -1062,42 +1119,33 @@ def ValidUnrealAssetsName(filename):
     filename = ''.join(c for c in filename if c in valid_chars)
     return filename
 
-
-def GetCollectionExportDir(col, abspath=False):
-    # Generate assset folder path
+def get_unreal_import_location():
     scene = bpy.context.scene
 
-    dirpath = os.path.join(
-        scene.bfu_export_static_file_path,
-        col.bfu_export_folder_name)
+    dirpath = os.path.join(scene.bfu_unreal_import_module,scene.bfu_unreal_import_location)
 
-    if abspath:
-        return bpy.path.abspath(dirpath)
-    else:
-        return dirpath
+    # Clean path
+    dirpath = os.path.normpath(dirpath)
+    return dirpath
 
-def get_export_folder_name(obj):
-    folder_name = bfu_basics.ValidDirName(obj.bfu_export_folder_name)
-    return folder_name
-
-def GetImportAssetScriptCommand():
+def get_import_asset_script_command() -> str:
     scene = bpy.context.scene
     fileName = scene.bfu_file_import_asset_script_name
-    absdirpath = bpy.path.abspath(scene.bfu_export_other_file_path)
-    fullpath = os.path.join(absdirpath, fileName)
-    return 'py "'+fullpath+'"'
+    absdirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path)).resolve()
+    fullpath = absdirpath / fileName
+    return 'py "'+str(fullpath)+'"'
 
 
-def GetImportSequencerScriptCommand():
+def get_import_sequencer_script_command() -> str:
     scene = bpy.context.scene
     fileName = scene.bfu_file_import_sequencer_script_name
-    absdirpath = bpy.path.abspath(scene.bfu_export_other_file_path)
-    fullpath = os.path.join(absdirpath, fileName)
+    absdirpath = Path(bpy.path.abspath(scene.bfu_export_other_file_path)).resolve()
+    fullpath = absdirpath / fileName
 
-    return 'py "'+fullpath+'"'  # Vania
+    return 'py "'+str(fullpath)+'"'
 
 
-def GetAnimSample(obj):
+def get_anim_sample(obj: bpy.types.Object) -> float:
     # return obj sample animation
     return obj.bfu_sample_anim_for_export
 
@@ -1109,7 +1157,7 @@ def get_armature_root_bones(armature: bpy.types.Object) -> List[bpy.types.EditBo
         if armature.bfu_export_deform_only:
             for bone in armature.data.bones:
                 if bone.use_deform:
-                    rootBone = bfu_basics.getRootBoneParent(bone)
+                    rootBone = bfu_basics.get_root_bone_parent(bone)
                     if rootBone not in root_bones:
                         root_bones.append(rootBone)
 
@@ -1120,24 +1168,19 @@ def get_armature_root_bones(armature: bpy.types.Object) -> List[bpy.types.EditBo
     return root_bones
 
 
-def GetDesiredExportArmatureName(obj):
-    addon_prefs = bfu_basics.GetAddonPrefs()
+def get_desired_export_armature_name(obj: bpy.types.Object) -> str:
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     single_root = len(get_armature_root_bones(obj)) == 1
     if addon_prefs.add_skeleton_root_bone or single_root != 1:
         return addon_prefs.skeleton_root_bone_name
     return "Armature"
 
 
-def GetObjExportScale(obj):
+def GetObjExportScale(obj: bpy.types.Object) -> float:
     return obj.bfu_export_global_scale
 
 
-
-
-
-
-
-def AddFrontEachLine(ImportScript, text="\t"):
+def AddFrontEachLine(ImportScript: str, text: str = "\t") -> str:
 
     NewImportScript = ""
     text_splited = ImportScript.split('\n')
@@ -1150,71 +1193,131 @@ def AddFrontEachLine(ImportScript, text="\t"):
 # Custom property
 
 
-def SetVarOnObject(obj, VarName, Value):
+def set_var_on_object(obj, VarName, Value):
     obj[VarName] = Value
 
 
-def GetVarOnObject(obj, VarName):
+def get_var_on_object(obj, VarName):
     return obj[VarName]
 
 
-def HasVarOnObject(obj, VarName):
+def has_var_on_object(obj, VarName):
     return VarName in obj
 
 
-def ClearVarOnObject(obj, VarName):
+def clear_var_on_object(obj, VarName):
     if VarName in obj:
         del obj[VarName]
 
 
-def SaveObjCurrentName(obj):
+def save_obj_current_name(obj: bpy.types.Object):
     # Save object current name as Custom property
-    SetVarOnObject(obj, "BFU_OriginName", obj.name)
+    set_var_on_object(obj, "BFU_OriginName", obj.name)
 
 
-def GetObjOriginName(obj):
-    return GetVarOnObject(obj, "BFU_OriginName")
+def get_obj_origin_name(obj: bpy.types.Object) -> str:
+    return get_var_on_object(obj, "BFU_OriginName")
 
 
-def ClearObjOriginNameVar(obj):
-    ClearVarOnObject(obj, "BFU_OriginName")
+def clear_obj_origin_name_var(obj: bpy.types.Object) -> None:
+    clear_var_on_object(obj, "BFU_OriginName")
 
 
-def SetObjProxyData(obj):
+def set_obj_proxy_data(obj: bpy.types.Object):
     # Save object proxy info as Custom property
-    SetVarOnObject(obj, "BFU_ExportAsProxy", GetExportAsProxy(obj))
-    SetVarOnObject(obj, "BFU_ExportProxyChild", GetExportProxyChild(obj))
+    set_var_on_object(obj, "BFU_ExportAsProxy", GetExportAsProxy(obj))
+    set_var_on_object(obj, "BFU_ExportProxyChild", GetExportProxyChild(obj))
 
 
-def GetObjProxyChild(obj):
-    if (not HasVarOnObject(obj, "BFU_ExportAsProxy")):
+def get_obj_proxy_child(obj: bpy.types.Object) -> bool:
+    if (not has_var_on_object(obj, "BFU_ExportAsProxy")):
         return False
 
-    if (not HasVarOnObject(obj, "BFU_ExportProxyChild")):
+    if (not has_var_on_object(obj, "BFU_ExportProxyChild")):
         return False
 
-    if GetVarOnObject(obj, "BFU_ExportAsProxy"):
-        return GetVarOnObject(obj, "BFU_ExportProxyChild")
+    if get_var_on_object(obj, "BFU_ExportAsProxy"):
+        return get_var_on_object(obj, "BFU_ExportProxyChild")
     return None
 
 
-def ClearObjProxyDataVars(obj):
-    ClearVarOnObject(obj, "BFU_ExportAsProxy")
-    ClearVarOnObject(obj, "BFU_ExportProxyChild")
+def clear_obj_proxy_data_vars(obj: bpy.types.Object) -> None:
+    clear_var_on_object(obj, "BFU_ExportAsProxy")
+    clear_var_on_object(obj, "BFU_ExportProxyChild")
 
 
-def ClearAllBFUTempVars(obj):
-    ClearVarOnObject(obj, "BFU_OriginName")
-    ClearVarOnObject(obj, "BFU_ExportAsProxy")
-    ClearVarOnObject(obj, "BFU_ExportProxyChild")
+def clear_all_bfu_temp_vars(obj: bpy.types.Object) -> None:
+    clear_var_on_object(obj, "BFU_OriginName")
+    clear_var_on_object(obj, "BFU_ExportAsProxy")
+    clear_var_on_object(obj, "BFU_ExportProxyChild")
 
-def get_scene_unit_scale():
+def get_scene_unit_scale() -> float:
     #Have to round for avoid microscopic offsets.
+    if bpy.context is None:
+        return 1.0
     scene = bpy.context.scene
     return round(scene.unit_settings.scale_length, 8)
 
-def get_scene_unit_scale_is_close(value: float):
+def get_scene_unit_scale_is_close(value: float) -> bool:
     #Check if value is close to scene unit class.
     scene = bpy.context.scene
     unit_scale = round(scene.unit_settings.scale_length, 8)
     return math.isclose(unit_scale, value, rel_tol=1e-5)
+
+def check_path_valid(dirpath: Path) -> bool:
+    """
+    Check if the path is valid.
+    If the path ends with a file extension, it will check the directory of that file.
+    """
+    absdirpath = dirpath.resolve()
+
+    # If the path ends with an extension, it is assumed to be a file
+    if absdirpath.suffix:
+        absdirpath = absdirpath.parent
+
+    try:
+        if absdirpath.exists():
+            # Path already exists so return True
+            return True
+    except Exception as e:
+        # Path does a script fail so invalid.
+        print(bpl.color_set.red(f"Invalid path: {absdirpath}"))
+        error_text: str = f"An error occurred during makedirs: {str(e)}"
+        print(error_text)
+        return False
+
+    return True
+
+def check_and_make_export_path(dirpath: Path) -> bool:
+    """
+    Check if the directory exists, and create it if it doesn't.
+    If the path ends with a file extension, it will create the directory of that file.
+    """
+    absdirpath = dirpath.resolve()
+
+    # If the path ends with an extension, it is assumed to be a file
+    if absdirpath.suffix:
+        absdirpath = absdirpath.parent
+
+    try:
+        if absdirpath.exists():
+            # Path already exists so return True
+            return True
+    except Exception as e:
+        # Path does a script fail so invalid.
+        print(bpl.color_set.red(f"Invalid path: {absdirpath}"))
+        error_text: str = f"An error occurred during makedirs: {str(e)}"
+        print(error_text)
+        return False
+
+
+    try:
+        os.makedirs(absdirpath)
+    except Exception as e:
+        # Make dir does a script fail.
+        print(bpl.color_set.red(f"Impossible to create path: {absdirpath}"))
+        error_text: str = f"An error occurred during makedirs: {str(e)}"
+        print(error_text)
+        return False
+
+    return True

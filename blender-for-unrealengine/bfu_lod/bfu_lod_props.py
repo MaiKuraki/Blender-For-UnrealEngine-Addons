@@ -17,17 +17,12 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
+from typing import List
 import bpy
-from . import bfu_lod_utils
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_ui
 from .. import bbpl
 
 
-
-
-def get_preset_values():
+def get_preset_values() -> List[str]:
     preset_values = [
             'obj.bfu_export_as_lod_mesh',
             'obj.bfu_use_static_mesh_lod_group',

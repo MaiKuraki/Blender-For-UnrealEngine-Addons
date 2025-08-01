@@ -18,35 +18,39 @@
 
 
 import bpy
-from . import bfu_vertex_color_utils
-from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
+from .. import bfu_static_mesh
+from .. import bfu_skeletal_mesh
+from .. import bfu_export_control
+from .. import bfu_addon_prefs
+from . import bfu_vertex_color_utils
 
 
 
-def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
+
+def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
     # Hide filters
     if obj is None:
         return
     if addon_prefs.useGeneratedScripts is False:
         return
-    if obj.bfu_export_type != "export_recursive":
+    if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     if obj.bfu_export_as_lod_mesh:
         return
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
 
-        scene.bfu_object_vertex_color_properties_expanded.draw(layout)
-        if scene.bfu_object_vertex_color_properties_expanded.is_expend():
+        accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_vertex_color_properties_expanded")
+        _, panel = accordion.draw(layout)
+        if accordion.is_expend():
             # Vertex color
-            bfu_vertex_color_settings = layout.column()
+            bfu_vertex_color_settings = panel.column()
             bbpl.blender_layout.layout_doc_button.add_doc_page_operator(bfu_vertex_color_settings, text="About Vertex Color", url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Vertex-Color")
             bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_import_option')
             if obj.bfu_vertex_color_import_option == "OVERRIDE":
@@ -75,8 +79,15 @@ def draw_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
             
             # Add 'colors_type' parameter if Blender version is 3.4 or above
             blender_version = bpy.app.version
-            if blender_version >= (3, 4, 0):
-                bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_type')
+
+            if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
+                export_type = bfu_skeletal_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
+            else:
+                export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
+
+            if export_type == "FBX":
+                if blender_version >= (3, 4, 0):
+                    bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_type')
                             
 
 def draw_ui_scene_collision(layout: bpy.types.UILayout):

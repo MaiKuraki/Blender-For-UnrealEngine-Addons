@@ -16,11 +16,12 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
+from typing import Any, List, Callable, Optional
 import bpy
 from bpy.app.handlers import persistent
 
-def update_variable(data, old_var_names, new_var_name, callback=None):
+
+def update_variable(data: Any, old_var_names: List[str], new_var_name: str, callback: Optional[Callable[[Any, str, str], Any]] = None):
     for old_var_name in old_var_names:
         if old_var_name in data:
             try:
@@ -35,6 +36,36 @@ def update_variable(data, old_var_names, new_var_name, callback=None):
             except Exception as e:
                 print(f'Error updating "{old_var_name}" to "{new_var_name}" in {data.name}: {str(e)}')
 
+def remove_variable(data: Any, old_var_names: List[str]):
+    for old_var_name in old_var_names:
+        if old_var_name in data:
+            try:
+                del data[old_var_name]
+                print(f'"{old_var_name}" removed from {data.name}')
+            except Exception as e:
+                print(f'Error removing "{old_var_name}" from {data.name}: {str(e)}')
+
+def enum_callback(data: Any, old_var_name: str, new_var_name: str) -> Any:
+    value = data[old_var_name] # Get value ast int
+
+    enum_definition = data.bl_rna.properties.get(new_var_name)
+
+    if enum_definition and enum_definition.type == "ENUM":
+        # Obtenez la liste des valeurs de l'enum
+        for enum_item in enum_definition.enum_items:
+            if value == enum_item.value:
+                return enum_item.identifier
+    else:
+        print("La propriété spécifiée n'est pas une énumération.")
+
+    return value
+
+def object_pointer_callback(data: Any, old_var_name: str, new_var_name: str) -> Any:
+    value = data[old_var_name]
+    if isinstance(value, bpy.types.Object):
+        return value
+    return None
+
 def update_old_variables():
     print("Updating old bfu variables...")
 
@@ -44,7 +75,6 @@ def update_old_variables():
         update_variable(obj, ["bfu_target_skeleton_custom_name"], "bfu_engine_ref_skeleton_custom_name")
         update_variable(obj, ["bfu_target_skeleton_custom_ref"], "bfu_engine_ref_skeleton_custom_ref")
         
-        update_variable(obj, ["exportWithCustomProps"], "bfu_export_with_custom_props")
         update_variable(obj, ["exportWithMetaData"], "bfu_export_with_meta_data")
         update_variable(obj, ["bfu_export_procedure"], "bfu_skeleton_export_procedure", enum_callback)
         update_variable(obj, ["ExportEnum"], "bfu_export_type", enum_callback)
@@ -82,10 +112,8 @@ def update_old_variables():
         update_variable(obj, ["SimplifyAnimForExport"], "bfu_simplify_anim_for_export")
 
         update_variable(obj, ["exportGlobalScale"], "bfu_export_global_scale")
-        update_variable(obj, ["exportAxisForward"], "bfu_export_axis_forward")
-        update_variable(obj, ["exportAxisUp"], "bfu_export_axis_up")
-        update_variable(obj, ["exportPrimaryBoneAxis"], "bfu_export_primary_bone_axis")
-        update_variable(obj, ["exportSecondaryBoneAxis"], "bfu_export_secondary_bone_axis")
+        
+
 
         update_variable(obj, ["MoveToCenterForExport"], "bfu_move_to_center_for_export")
         update_variable(obj, ["RotateToZeroForExport"], "bfu_rotate_to_zero_for_export")
@@ -103,6 +131,15 @@ def update_old_variables():
         
         update_variable(obj, ["correct_extrem_uv_scale", "bfu_correct_extrem_uv_scale"], "bfu_use_correct_extrem_uv_scale")
         update_variable(obj, ["bfu_invert_normal_maps"], "bfu_flip_normal_map_green_channel")
+
+        update_variable(obj, ["exportAxisForward", "bfu_export_use_space_transform"], "bfu_fbx_export_use_space_transform")
+        update_variable(obj, ["exportAxisForward", "bfu_export_axis_forward"], "bfu_fbx_export_axis_forward")
+        update_variable(obj, ["exportAxisUp", "bfu_export_axis_up"], "bfu_fbx_export_axis_up")
+        update_variable(obj, ["exportPrimaryBoneAxis", "bfu_export_primary_bone_axis"], "bfu_fbx_export_primary_bone_axis")
+        update_variable(obj, ["exportSecondaryBoneAxis", "bfu_export_secondary_bone_axis"], "bfu_fbx_export_secondary_bone_axis")
+
+        update_variable(obj, ["exportWithCustomProps", "bfu_export_with_custom_props"], "bfu_fbx_export_with_custom_props")
+
 
     for col in bpy.data.collections:
         update_variable(col, ["exportFolderName"], "bfu_export_folder_name")
@@ -133,7 +170,7 @@ def update_old_variables():
         update_variable(scene, ["static_export"], "bfu_use_static_export")
         update_variable(scene, ["static_collection_export"], "bfu_use_static_collection_export")
         update_variable(scene, ["skeletal_export"], "bfu_use_skeletal_export")
-        update_variable(scene, ["anin_export"], "bfu_use_anin_export")
+        update_variable(scene, ["anin_export", "bfu_use_anin_export", "bfu_use_anim_export"], "bfu_use_animation_export")
         update_variable(scene, ["alembic_export"], "bfu_use_alembic_export")
         update_variable(scene, ["groom_simulation_export"], "bfu_use_groom_simulation_export")
         update_variable(scene, ["camera_export"], "bfu_use_camera_export")
@@ -143,36 +180,15 @@ def update_old_variables():
         update_variable(scene, ["text_ImportAssetScript"], "bfu_use_text_import_asset_script")
         update_variable(scene, ["text_ImportSequenceScript"], "bfu_use_text_import_sequence_script")
         update_variable(scene, ["text_AdditionalData"], "bfu_use_text_additional_data")
-        update_variable(scene, ["UnrealExportedAssetsList"], "bfu_unreal_exported_assets_logs")
+        remove_variable(scene, ["UnrealExportedAssetsList", "bfu_unreal_exported_assets_logs"])
         update_variable(scene, ["potentialErrorList"], "bfu_export_potential_errors")
         
 
 
-def enum_callback(data, old_var_name, new_var_name):
-    value = data[old_var_name] # Get value ast int
-
-    enum_definition = data.bl_rna.properties.get(new_var_name)
-
-    if enum_definition and enum_definition.type == "ENUM":
-        # Obtenez la liste des valeurs de l'enum
-        for enum_item in enum_definition.enum_items:
-            if value == enum_item.value:
-                return enum_item.identifier
-    else:
-        print("La propriété spécifiée n'est pas une énumération.")
-
-    return value
-
-def object_pointer_callback(data, old_var_name, new_var_name):
-    value = data[old_var_name]
-    if isinstance(value, bpy.types.Object):
-        return value
-    return None
-
 
 
 @persistent
-def bfu_load_handler(dummy):
+def bfu_load_handler(dummy: Any):
     update_old_variables()
 
 def deferred_execution():

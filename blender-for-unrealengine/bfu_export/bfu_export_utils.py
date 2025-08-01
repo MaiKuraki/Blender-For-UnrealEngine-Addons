@@ -22,37 +22,93 @@ import math
 import os
 import mathutils
 from bpy_extras.io_utils import axis_conversion
-from . import bfu_export_get_info
+from pathlib import Path
+from typing import Optional, Dict, Any, List
 from .. import bpl
 from .. import bfu_export_text_files
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bbpl
-from .. import bfu_addon_parts
-from .. import bfu_camera
-from .. import bfu_vertex_color
-from .. import bfu_export_procedure
-from .. import bfu_collision
+from .. import bfu_static_mesh
+from .. import bfu_skeletal_mesh
 from .. import bfu_socket
 from .. import bfu_export_logs
+from .. import bfu_addon_prefs
+from .. import bfu_skeletal_mesh
 
-
-dup_temp_name = "BFU_Temp"  # DuplicateTemporarilyNameForUe4Export
+# @TODO: Move this to a config file.
+dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
 Export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
 
-def print_export_fail(string):
-    print(bpl.color_set.red(string))
+class SavedSceneSimplfy():
+    def __init__(self):
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
 
-def check_and_make_export_path(dirpath, filename):
-    # Check and create a folder if it does not exist
-    absdirpath = bpy.path.abspath(dirpath)
-    if not os.path.exists(absdirpath):
-        try:
-            os.makedirs(absdirpath)
-        except Exception as e:
-            print_export_fail(f"An error occurred during makedirs: {str(e)}")
-            return False
-    return os.path.join(absdirpath, filename)
+        # General
+        self.use_simplify: bool = bpy.context.scene.render.use_simplify
+
+        # Viewport
+        self.simplify_subdivision: int = scene.render.simplify_subdivision
+        self.simplify_child_particles: int = scene.render.simplify_child_particles
+        self.simplify_volumes: int = scene.render.simplify_volumes
+        self.use_simplify_normals: bool = scene.render.use_simplify_normals
+
+        # Render
+        self.simplify_subdivision_render: int = scene.render.simplify_subdivision_render
+        self.simplify_child_particles_render: int = scene.render.simplify_child_particles_render
+
+    def simplify_scene(self):
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
+
+        simplify_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Simplify scene")
+        # General
+        scene.render.use_simplify = True
+
+        # Viewport
+        scene.render.simplify_subdivision = 0
+        scene.render.simplify_child_particles = 0
+        scene.render.simplify_volumes = 0
+        scene.render.use_simplify_normals = False
+
+        # Render
+        scene.render.simplify_subdivision_render = 0
+        scene.render.simplify_child_particles_render = 0
+        simplify_time_log.end_time_log()
+
+    def unsimplify_scene(self):
+        # Reset scene for without data loose.
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
+
+        unsimplify_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Unsimplify scene")
+        # General
+        scene.render.use_simplify = False
+        unsimplify_time_log.end_time_log()
+
+
+    def reset_scene(self):
+        # Reset scene to saved scene.
+        if bpy.context is None:
+            return
+        scene = bpy.context.scene
+
+        # General
+        scene.render.use_simplify = self.use_simplify
+
+        # Viewport
+        scene.render.simplify_subdivision = self.simplify_subdivision
+        scene.render.simplify_child_particles = self.simplify_child_particles
+        scene.render.simplify_volumes = self.simplify_volumes
+        scene.render.use_simplify_normals = self.use_simplify_normals
+
+        # Render
+        scene.render.simplify_subdivision_render = self.simplify_subdivision_render
+        scene.render.simplify_child_particles_render = self.simplify_child_particles_render
 
 
 def ApplyProxyData(obj):
@@ -115,18 +171,18 @@ def ApplyProxyData(obj):
             SavedSelect = bbpl.save_data.select_save.UserSelectSave()
             SavedSelect.save_current_select()
 
-            RemovedObjects = bfu_utils.CleanDeleteObjects(ToRemove)
+            RemovedObjects = bfu_utils.clean_delete_objects(ToRemove)
             SavedSelect.remove_from_list_by_name(RemovedObjects)
             SavedSelect.reset_select()
 
 
-def BakeArmatureAnimation(armature, frame_start, frame_end):
+def bake_armature_animation(armature: bpy.types.Object, frame_start: int, frame_end: int):
     # Change to pose mode
     SavedSelect = bbpl.save_data.select_save.UserSelectSave()
     SavedSelect.save_current_select()
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action='DESELECT')  # type: ignore
     bbpl.utils.select_specific_object(armature)
-    bpy.ops.nla.bake(
+    bpy.ops.nla.bake(  # type: ignore
         frame_start=frame_start-10,
         frame_end=frame_end+10,
         only_selected=False,
@@ -135,100 +191,188 @@ def BakeArmatureAnimation(armature, frame_start, frame_end):
         use_current_action=False,
         bake_types={'POSE'}
         )
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action='DESELECT')  # type: ignore
     SavedSelect.reset_select()
 
+class DelegateOldData():
+    # contain a data to remove and function for remove
 
-def DuplicateSelectForExport():
-    duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection", 3)
+    def __init__(self, data_name: str, data_type: str):
+        self.data_name = data_name
+        self.data_type = data_type
 
-    # Note: Need look for a optimized duplicate, This is too long
+    def remove_data(self):
+        bfu_utils.remove_useless_specific_data(self.data_name, self.data_type)
 
-    class DuplicateData():
-        def __init__(self):
-            self.data_to_remove = []
-            self.origin_select = None
-            self.duplicate_select = None
+class DuplicateData():
+    def __init__(self):
+        self.data_to_remove: list[DelegateOldData] = []
+        self.origin_select: Optional[bbpl.save_data.select_save.UserSelectSave] = None
+        self.duplicate_select: Optional[bbpl.save_data.select_save.UserSelectSave] = None
 
-        def SetOriginSelect(self):
-            select = bbpl.save_data.select_save.UserSelectSave()
-            select.save_current_select()
-            self.origin_select = select
+    def duplicate_select_for_export(self, context: bpy.types.Context, reset_simplify_after_duplicate: bool = True):
+        duplicate_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate asset selection")
 
-        def SetDuplicateSelect(self):
-            select = bbpl.save_data.select_save.UserSelectSave()
-            select.save_current_select()
-            self.duplicate_select = select
+        # Enable simplify for faster duplicate (Don't )
+        saved_simplify: SavedSceneSimplfy = SavedSceneSimplfy()
+        saved_simplify.simplify_scene()
 
-    class DelegateOldData():
-        # contain a data to remove and function for remove
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare duplicate")
+        scene = context.scene
 
-        def __init__(self, data_name, data_type):
-            self.data_name = data_name
-            self.data_type = data_type
+        self.set_origin_select()
+        if self.origin_select:
+            for user_selected in self.origin_select.user_selecteds:
+                if user_selected:
+                    bfu_utils.save_obj_current_name(user_selected)
+                    if user_selected.type == "ARMATURE":  # type: ignore
+                        bfu_utils.set_obj_proxy_data(user_selected)
 
-        def RemoveData(self):
-            bfu_utils.RemoveUselessSpecificData(self.data_name, self.data_type)
+        data_to_remove: list[DelegateOldData] = []
 
-    scene = bpy.context.scene
+        # Save action befor export
+        action_names: list[str] = []
+        for action in bpy.data.actions:
+            action_names.append(action.name)
+
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Duplicate")
+        # Note: Need look for a optimized duplicate, This is too long
+        bpy.ops.object.duplicate()  # type: ignore
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare clean")
+        # Save the name for found after "Make Instances Real"
+        current_select_names: list[str] = []
+        for current_select_name in context.selected_objects:
+            current_select_names.append(current_select_name.name)
+
+        for obj_select in current_select_names:
+            if obj_select not in context.selected_objects:  # type: ignore
+                scene.objects[obj_select].select_set(True)  # type: ignore
+
+        # Make sigle user and clean useless data.
+        for objScene in context.selected_objects:
+            if objScene.data is not None:
+                oldData = objScene.data.name
+                objScene.data = objScene.data.copy()
+                data_to_remove.append(DelegateOldData(oldData, objScene.type))  # type: ignore
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Clean")
+        # Clean create actions by duplication
+        for action in bpy.data.actions:
+            if action.name not in action_names:
+                bpy.data.actions.remove(action)  # type: ignore
+
+        if reset_simplify_after_duplicate:
+            saved_simplify.reset_scene()
+        log_4.end_time_log()
+
+        log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Update select")
+        self.set_duplicate_select()
+        log_4.end_time_log()
+
+        duplicate_time_log.end_time_log()
+
+    def set_origin_select(self):
+        select = bbpl.save_data.select_save.UserSelectSave()
+        select.save_current_select()
+        self.origin_select = select
+
+    def set_duplicate_select(self):
+        select = bbpl.save_data.select_save.UserSelectSave()
+        select.save_current_select()
+        self.duplicate_select = select
+
+    def set_duplicate_name_for_export(self, origin_prefix: str = "or_"):
+        # Add prefix to the original objects.
+        if self.origin_select:
+            for user_selected in self.origin_select.user_selecteds:
+                user_selected.name = origin_prefix + user_selected.name
+        
+        # Rename the duplicated copies with the original names.
+        if self.duplicate_select:
+            for user_selected in self.duplicate_select.user_selecteds:
+                user_selected.name = bfu_utils.get_obj_origin_name(user_selected)
+
+
+    def reset_duplicate_name_after_export(self):
+        # Restore the original names of the objects after export.
+        # Considering that the duplicated objects have been renamed.
+        if self.origin_select:
+            for user_selected in self.origin_select.user_selecteds:
+                user_selected.name = bfu_utils.get_obj_origin_name(user_selected)
+                bfu_utils.clear_obj_origin_name_var(user_selected)
+
+
+def duplicate_select_for_export(context: bpy.types.Context, reset_simplify_after_duplicate: bool = True) -> DuplicateData:
     duplicate_data = DuplicateData()
-    duplicate_data.SetOriginSelect()
-    for user_selected in duplicate_data.origin_select.user_selecteds:
-        if user_selected:
-            bfu_utils.SaveObjCurrentName(user_selected)
-            if user_selected.type == "ARMATURE":
-                bfu_utils.SetObjProxyData(user_selected)
-
-    data_to_remove = []
-
-    # Save action befor export
-    actionNames = []
-    for action in bpy.data.actions:
-        actionNames.append(action.name)
-
-    bpy.ops.object.duplicate()
-
-    # Save the name for found after "Make Instances Real"
-    currentSelectNames = []
-    for currentSelectName in bpy.context.selected_objects:
-        currentSelectNames.append(currentSelectName.name)
-
-    for objSelect in currentSelectNames:
-        if objSelect not in bpy.context.selected_objects:
-            scene.objects[objSelect].select_set(True)
-
-    # Make sigle user and clean useless data.
-    for objScene in bpy.context.selected_objects:
-        if objScene.data is not None:
-            oldData = objScene.data.name
-            objScene.data = objScene.data.copy()
-            data_to_remove.append(DelegateOldData(oldData, objScene.type))
-
-    # Clean create actions by duplication
-    for action in bpy.data.actions:
-        if action.name not in actionNames:
-            bpy.data.actions.remove(action)
-
-    duplicate_data.SetDuplicateSelect()
-
-    duplicate_time_log.end_time_log()
+    duplicate_data.duplicate_select_for_export(context, reset_simplify_after_duplicate)
     return duplicate_data
 
 
-def SetDuplicateNameForExport(duplicate_data, origin_prefix="or_"):
-    for user_selected in duplicate_data.origin_select.user_selecteds:
-        user_selected.name = origin_prefix+user_selected.name
+def apply_select_needed_modifiers_for_export():
+    if bpy.context is None:
+        return
 
-    for user_selected in duplicate_data.duplicate_select.user_selecteds:
-        user_selected.name = bfu_utils.GetObjOriginName(user_selected)
+    apply_modifiers_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Apply modifiers")
+    apply_modifiers_prepare_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare for apply modifiers")
+    saved_select = bbpl.save_data.select_save.UserSelectSave()
+    saved_select.save_current_select()
+
+    # Disable simplify for avoid, skipping apply.
+    bpy.context.scene.render.use_simplify = False
+    apply_modifiers_prepare_time_log.end_time_log()
+
+    # Get selected objects with modifiers.
+    for obj in bpy.context.selected_objects:
+        apply_object_modifiers(obj, ['ARMATURE'])
+
+    saved_select.reset_select()
+    apply_modifiers_time_log.end_time_log()
+
+def apply_object_modifiers(obj: bpy.types.Object, blacklist_type = []):
+
+    if(obj.type == "MESH" and obj.data.shape_keys is not None):
+        # Can't apply modifiers with shape key
+        return
+
+    apply_modifiers_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Apply modifiers for: {obj.name}")
+    apply_modifiers_prepare_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Search modifiers to apply")
+    # Get Modifier to Apply
+    mod_to_apply: list[bpy.types.Modifier] = []
+    for mod in obj.modifiers:
+        if mod.type not in blacklist_type:
+            if mod.show_viewport == True:
+                mod_to_apply.append(mod)
+    apply_modifiers_prepare_time_log.end_time_log()
+
+    if len(mod_to_apply) > 0:
+        time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Select object for apply modifiers")
+        bbpl.utils.select_specific_object(obj)
+        time_log.end_time_log()
+        
+        time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Make single user")
+        if obj.data.users > 1:
+            # Make single user.
+            obj.data = obj.data.copy()
+        time_log.end_time_log()
+
+        for mod in mod_to_apply:
+            if bpy.ops.object.modifier_apply.poll():
+                apply_modifier_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Apply modifier: {mod.name} ({mod.type})")
+                try:
+                    bpy.ops.object.modifier_apply(modifier=mod.name)
+                except RuntimeError as ex:
+                    # print the error incase its important... but continue
+                    print(ex)
+                apply_modifier_time_log.end_time_log()
+    apply_modifiers_time_log.end_time_log()
 
 
-def ResetDuplicateNameAfterExport(duplicate_data):
-    for user_selected in duplicate_data.origin_select.user_selecteds:
-        user_selected.name = bfu_utils.GetObjOriginName(user_selected)
-        bfu_utils.ClearObjOriginNameVar(user_selected)
-
-def ConvertSelectedToMesh():
+def convert_selected_to_mesh():
     # Have to convert text and curve objects to mesh before MakeSelectVisualReal to avoid duplicate issue.
     type_to_convert = ["CURVE", "SURFACE", "META", "FONT"]
 
@@ -265,7 +409,7 @@ def ConvertSelectedToMesh():
             obj.select_set(True)
 
 
-def MakeSelectVisualReal():
+def make_select_visual_real():
     scene = bpy.context.scene
     select = bbpl.save_data.select_save.UserSelectSave()
     select.save_current_select()
@@ -293,13 +437,13 @@ def MakeSelectVisualReal():
             obj.select_set(True)
 
 # Sockets
-def SetSocketsExportName(obj):
+def SetSocketsExportName(obj: bpy.types.Object):
     '''
     Try to apply the custom SocketName
     '''
 
     scene = bpy.context.scene
-    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_child(obj):
+    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_children(obj):
         if socket.bfu_use_socket_custom_Name:
             if socket.bfu_socket_custom_Name not in scene.objects:
 
@@ -315,15 +459,15 @@ def SetSocketsExportName(obj):
                     )
 
 
-def SetSocketsExportTransform(obj):
+def SetSocketsExportTransform(obj: bpy.types.Object):
     # Set socket Transform for Unreal
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
-    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_child(obj):
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_children(obj):
         socket["BFU_PreviousSocketScale"] = socket.scale
         socket["BFU_PreviousSocketLocation"] = socket.location
         socket["BFU_PreviousSocketRotationEuler"] = socket.rotation_euler
-        if GetShouldRescaleSocket():
+        if get_should_rescale_sockets():
             socket.delta_scale *= GetRescaleSocketFactor()
 
         if addon_prefs.staticSocketsAdd90X:
@@ -337,19 +481,19 @@ def SetSocketsExportTransform(obj):
             socket.location = savedLocation
 
 
-def ResetSocketsExportName(obj):
+def reset_sockets_export_name(obj: bpy.types.Object):
     # Reset socket Name
 
-    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_child(obj):
+    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_children(obj):
         if "BFU_PreviousSocketName" in socket:
             socket.name = socket["BFU_PreviousSocketName"]
             del socket["BFU_PreviousSocketName"]
 
 
-def ResetSocketsTransform(obj):
+def reset_sockets_transform(obj: bpy.types.Object):
     # Reset socket Transform
 
-    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_child(obj):
+    for socket in bfu_socket.bfu_socket_utils.get_socket_desired_children(obj):
         if "BFU_PreviousSocketScale" in socket:
             socket.scale = socket["BFU_PreviousSocketScale"]
             del socket["BFU_PreviousSocketScale"]
@@ -363,55 +507,56 @@ def ResetSocketsTransform(obj):
 
 # Main asset
 
+class SavedObjectNames():
+    def __init__(self):
+        self.saved_names: Dict[bpy.types.Object, str] = {}
 
-class PrepareExportName():
-    def __init__(self, obj, is_armature):
-        # Rename temporarily the assets
-        if obj:
+    def save_new_name(self, obj: bpy.types.Object):
+        # Add object to save without clearing the previous saved names.
+        self.saved_names[obj] = obj.name
 
-            self.target_object = obj
-            self.is_armature = is_armature
-            self.old_asset_name = ""
-            self.new_asset_name = ""
+    def save_new_names(self, objs: List[bpy.types.Object]):
+        # Add objects to save without clearing the previous saved names.
+        for obj in objs:
+            self.saved_names[obj] = obj.name
 
-            if self.is_armature:
-                self.new_asset_name = bfu_utils.GetDesiredExportArmatureName(obj)
-            else:
-                self.new_asset_name = obj.name  # Keep the same name
+    def restore_names(self):
+        for obj, name in self.saved_names.items():
+            obj.name = name
+        self.saved_names.clear()
 
-    def SetExportName(self):
-        '''
-        Set the name of the asset for export
-        '''
+def set_object_export_name(obj: bpy.types.Object, is_skeletal: bool):
+    # Set is_skeleton = True only for skeletal assets.
+    # Static meshes with armature should use is_skeleton = False
+    return set_duplicated_object_export_name(obj, obj, is_skeletal)
 
-        scene = bpy.context.scene
-        obj = self.target_object
-        if obj.name != self.new_asset_name:
-            self.old_asset_name = obj.name
-            # Avoid same name for two assets
-            if self.new_asset_name in scene.objects:
-                confli_asset = scene.objects[self.new_asset_name]
-                confli_asset.name = dup_temp_name
-            obj.name = self.new_asset_name
+def set_duplicated_object_export_name(duplicated_obj: bpy.types.Object, original_obj: bpy.types.Object, is_skeletal: bool):
+    # Set is_skeleton = True only for skeletal assets.
+    # Static meshes with armature should use is_skeleton = False
+    if bpy.context is None:
+        return
+    scene = bpy.context.scene
 
-    def ResetNames(self):
-        '''
-        Reset names after export
-        '''
+    # get the desired export name.
+    if is_skeletal:
+        desired_export_name: str = bfu_utils.get_desired_export_armature_name(original_obj)
+    else:
+        # Consider duplicated object as already renamed in set_duplicate_name_for_export() so keep the name.
+        desired_export_name: str = duplicated_obj.name # Could be used in future?
 
-        scene = bpy.context.scene
-        if self.old_asset_name != "":
-            obj = self.target_object
-            obj.name = self.old_asset_name
+    # Check if needs change before applying it.
+    if duplicated_obj.name != desired_export_name:
+        # Avoid same name for two assets.
+        # Set a temporary name for conflict assets. 
+        # Use SavedObjectNames() to save the original name and restore it after export.
+        if desired_export_name in scene.objects:
+            conflict_asset = scene.objects[desired_export_name]
+            conflict_asset.name = dup_temp_name
+        duplicated_obj.name = desired_export_name
 
-            if dup_temp_name in scene.objects:
-                armature = scene.objects[dup_temp_name]
-                armature.name = self.new_asset_name
 
 # UVs
-
-
-def ConvertGeometryNodeAttributeToUV(obj, attrib_name):
+def ConvertGeometryNodeAttributeToUV(obj: bpy.types.Object, attrib_name: str):
     # I need apply the geometry modifier for get the data.
     # So this work only when I do export of the duplicate object.
     
@@ -489,7 +634,7 @@ def ConvertGeometryNodeAttributeToUV(obj, attrib_name):
             obj.data.attributes.remove(attrib_name)
 
 
-def CorrectExtremUVAtExport(obj):
+def CorrectExtremUVAtExport(obj: bpy.types.Object):
     if obj.bfu_use_correct_extrem_uv_scale:
         SavedSelect = bbpl.save_data.select_save.UserSelectSave()
         SavedSelect.save_current_select()
@@ -504,7 +649,7 @@ def CorrectExtremUVAtExport(obj):
 # Armature
 
 
-def ConvertArmatureConstraintToModifiers(armature):
+def ConvertArmatureConstraintToModifiers(armature: bpy.types.Object):
     for obj in bfu_utils.GetExportDesiredChilds(armature):
         previous_enabled_armature_constraints = []
 
@@ -535,7 +680,7 @@ def ConvertArmatureConstraintToModifiers(armature):
         obj["BFU_PreviousEnabledArmatureConstraints"] = previous_enabled_armature_constraints
 
 
-def ResetArmatureConstraintToModifiers(armature):
+def ResetArmatureConstraintToModifiers(armature: bpy.types.Object):
     for obj in bfu_utils.GetExportDesiredChilds(armature):
         if "BFU_PreviousEnabledArmatureConstraints" in obj:
             for const_names in obj["BFU_PreviousEnabledArmatureConstraints"]:
@@ -560,13 +705,15 @@ def ResetArmatureConstraintToModifiers(armature):
 
 
 
-def GetShouldRescaleRig(obj):
+def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
     # This will return if the rig should be rescale.
+    # This is only with FBX export. 
+    # GlTF export support native blender scale to Unreal Engine. <3<3<3
 
-    if obj.bfu_skeleton_export_procedure == "auto-rig-pro":
-        return False
+    if not bfu_skeletal_mesh.bfu_export_procedure.is_fbx_file_export(obj):
+        return False  # Rescale only if FBX export.
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     if addon_prefs.rescaleFullRigAtExport == "auto":
 
         if bfu_utils.get_scene_unit_scale_is_close(0.01):
@@ -580,20 +727,20 @@ def GetShouldRescaleRig(obj):
     return False
 
 
-def GetRescaleRigFactor():
+def get_rescale_rig_factor() -> float:
     # This will return the rescale factor.
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     if addon_prefs.rescaleFullRigAtExport == "auto":
         return 100 * bfu_utils.get_scene_unit_scale()
     else:
         return addon_prefs.newRigScale  # rigRescaleFactor
 
 
-def GetShouldRescaleSocket():
+def get_should_rescale_sockets():
     # This will return if the socket should be rescale.
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     if addon_prefs.rescaleSocketsAtExport == "auto":
         if bpy.context.scene.unit_settings.scale_length == 0.01:
             return False  # False because that useless to rescale at 1 :v
@@ -609,117 +756,68 @@ def GetShouldRescaleSocket():
 def GetRescaleSocketFactor():
     # This will return the rescale factor.
 
-    addon_prefs = bfu_basics.GetAddonPrefs()
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
     if addon_prefs.rescaleSocketsAtExport == "auto":
         return 1/(100*bfu_utils.get_scene_unit_scale())
     else:
         return addon_prefs.staticSocketsImportedSize
 
-
-def ExportAutoProRig(
-        filepath,
-        use_selection=True,
-        export_rig_name="root",
-        bake_anim=True,
-        anim_export_name_string="",
-        mesh_smooth_type="OFF",
-        arp_simplify_fac=0.0
-        ):
-
-    bpy.context.scene.arp_engine_type = 'unreal'
-    bpy.context.scene.arp_export_rig_type = 'mped'  # types: 'humanoid', 'mped'
-    bpy.context.scene.arp_ge_sel_only = use_selection
-
-    # Rig
-    bpy.context.scene.arp_export_twist = False
-    bpy.context.scene.arp_export_noparent = False
-    bpy.context.scene.arp_units_x100 = True
-    bpy.context.scene.arp_ue_root_motion = True
-
-    # Anim
-    bpy.context.scene.arp_bake_actions = bake_anim
-    bpy.context.scene.arp_export_name_actions = True
-    bpy.context.scene.arp_export_name_string = anim_export_name_string
-    bpy.context.scene.arp_simplify_fac = arp_simplify_fac
-
-    # Misc
-    bpy.context.scene.arp_mesh_smooth_type = mesh_smooth_type
-    bpy.context.scene.arp_use_tspace = False
-    bpy.context.scene.arp_fix_fbx_matrix = False
-    bpy.context.scene.arp_fix_fbx_rot = False
-    bpy.context.scene.arp_init_fbx_rot = False
-    bpy.context.scene.arp_bone_axis_primary_export = 'Y'
-    bpy.context.scene.arp_bone_axis_secondary_export = 'X'
-    bpy.context.scene.arp_export_rig_name = export_rig_name
-
-    # export it
-    print("Start AutoProRig Export")
-    # TODO Need update
-    #bpy.ops.id.arp_export_fbx_panel(filepath=filepath)
-
-def ExportAdditionalParameter(dirpath, filename, unreal_exported_asset):
-    # Export additional parameter from static and skeletal mesh track for ue4
+def export_additional_data(fullpath: Path, data: Dict[str, str]) -> None:
+    # Export additional parameter from static and skeletal mesh track for
     # SocketsList
 
-    absdirpath = bpy.path.abspath(dirpath)
-    result = check_and_make_export_path(absdirpath, filename)
+    result = bfu_utils.check_and_make_export_path(fullpath)
     if result:
-        AdditionalTrack = bfu_export_text_files.bfu_export_text_files_asset_additional_data.write_single_asset_additional_data(unreal_exported_asset)
-        return bfu_export_text_files.bfu_export_text_files_utils.export_single_json_file(
-            AdditionalTrack,
-            absdirpath,
-            filename
-            )
-    else:
-        return None
+        additional_data: Dict[str, Any] = bfu_export_text_files.bfu_export_text_files_asset_additional_data.write_additional_data(data)
+        bfu_export_text_files.bfu_export_text_files_utils.export_single_json_file(additional_data, fullpath)
 
-def get_final_export_primary_bone_axis(obj):
+def get_final_fbx_export_primary_bone_axis(obj: bpy.types.Object) -> str:
     if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_primary_bone_axis
+        return obj.bfu_fbx_export_primary_bone_axis
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_procedure_preset(obj)["primary_bone_axis"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["primary_bone_axis"]
 
-def get_final_export_secondary_bone_axis(obj):
+def get_final_fbx_export_secondary_bone_axis(obj: bpy.types.Object) -> str:
     if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_secondary_bone_axis
+        return obj.bfu_fbx_export_secondary_bone_axis
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_procedure_preset(obj)["secondary_bone_axis"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["secondary_bone_axis"]
 
-def get_skeleton_export_use_space_transform(obj):
+def get_skeleton_fbx_export_use_space_transform(obj: bpy.types.Object) -> bool:
     if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_use_space_transform
+        return obj.bfu_fbx_export_use_space_transform
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_procedure_preset(obj)["use_space_transform"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["use_space_transform"]
 
-def get_skeleton_export_axis_forward(obj):
+def get_skeleton_export_axis_forward(obj: bpy.types.Object) -> str:
     if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_axis_forward
+        return obj.bfu_fbx_export_axis_forward
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_procedure_preset(obj)["axis_forward"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_forward"]
 
-def get_skeleton_export_axis_up(obj):
+def get_skeleton_export_axis_up(obj: bpy.types.Object) -> str:
     if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_axis_up
+        return obj.bfu_fbx_export_axis_up
     else:
-        return bfu_export_procedure.bfu_skeleton_export_procedure.get_obj_skeleton_procedure_preset(obj)["axis_up"]
-    
-def get_static_export_use_space_transform(obj):
-    if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_use_space_transform
-    else:
-        return bfu_export_procedure.bfu_static_export_procedure.get_obj_static_procedure_preset(obj)["use_space_transform"]
+        return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_up"]
 
-def get_static_export_axis_forward(obj):
+def get_static_fbx_export_use_space_transform(obj: bpy.types.Object) -> bool:
     if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_axis_forward
+        return obj.bfu_fbx_export_use_space_transform
     else:
-        return bfu_export_procedure.bfu_static_export_procedure.get_obj_static_procedure_preset(obj)["axis_forward"]
+        return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["use_space_transform"]
 
-def get_static_export_axis_up(obj):
+def get_static_fbx_export_axis_forward(obj: bpy.types.Object) -> str:
     if obj.bfu_override_procedure_preset:
-        return obj.bfu_export_axis_up
+        return obj.bfu_fbx_export_axis_forward
     else:
-        return bfu_export_procedure.bfu_static_export_procedure.get_obj_static_procedure_preset(obj)["axis_up"]
+        return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_forward"]
+
+def get_static_fbx_export_axis_up(obj: bpy.types.Object) -> str:
+    if obj.bfu_override_procedure_preset:
+        return obj.bfu_fbx_export_axis_up
+    else:
+        return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_up"]
     
 class SaveTransformObjects():
     def __init__(self, obj: bpy.types.Object):
@@ -735,7 +833,7 @@ class SaveTransformObjects():
             if saved_transform_object.init_object:
                 saved_transform_object.reset_object_transform()
 
-def get_skeleton_axis_conversion(obj):
+def get_skeleton_axis_conversion(obj: bpy.types.Object) -> mathutils.Matrix:
     axis_forward = get_skeleton_export_axis_forward(obj)
     axis_up = get_skeleton_export_axis_up(obj)
 
@@ -744,10 +842,10 @@ def get_skeleton_axis_conversion(obj):
     except Exception as e:
         print(f"For asset \"{obj.name}\" : {e}")
         return axis_conversion("-Z", "Y").to_4x4()
-    
-def get_static_axis_conversion(obj):
-    axis_forward = get_static_export_axis_forward(obj)
-    axis_up = get_static_export_axis_up(obj)
+
+def get_static_axis_conversion(obj: bpy.types.Object) -> mathutils.Matrix:
+    axis_forward = get_static_fbx_export_axis_forward(obj)
+    axis_up = get_static_fbx_export_axis_up(obj)
 
     try:
         return axis_conversion(to_forward=axis_forward, to_up=axis_up).to_4x4()
