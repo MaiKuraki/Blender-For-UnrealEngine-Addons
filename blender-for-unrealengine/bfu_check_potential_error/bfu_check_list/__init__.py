@@ -20,7 +20,7 @@ import bpy
 import os
 import importlib
 import inspect
-from typing import List, Any
+from typing import List, Any, Dict
 from ..bfu_check_types import bfu_checker
 from .. import bfu_check_utils
 from ... import bpl
@@ -43,7 +43,7 @@ types_dir = os.path.join(os.path.dirname(__file__), "types")
 # Import and reload modules dynamically
 module_names = get_modules_from_directory(types_dir)
 
-modules: dict[str, Any] = {}
+modules: Dict[str, Any] = {}
 all_classes: List[Any] = []
 for module_name in module_names:
     module = importlib.import_module(f".types.{module_name}", package=__package__)

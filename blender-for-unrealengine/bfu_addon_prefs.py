@@ -18,7 +18,7 @@
 
 import os
 import bpy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 from . import languages
 from .bbpl.blender_layout import layout_doc_button
 
@@ -189,7 +189,7 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
         revertExportPath: bool
         show_hiden_linked_propertys: bool
         useGeneratedScripts: bool
-        collisionColor: tuple[float, float, float, float]
+        collisionColor: Tuple[float, float, float, float]
         notifyUnitScalePotentialError: bool
         bake_only_key_visible_in_cut: bool
         scale_camera_fstop_with_unit_scale: bool

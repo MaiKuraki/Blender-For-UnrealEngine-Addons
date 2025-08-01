@@ -23,6 +23,13 @@ from .. import bfu_export_nomenclature
 from .. import bfu_export_filter
 from .. import bfu_export_process
 
+def get_export_global_preset_propertys() -> List[str]:
+    preset_values: List[str] = []
+    preset_values += bfu_export_nomenclature.bfu_export_nomenclature_props.get_preset_values()
+    preset_values += bfu_export_filter.bfu_export_filter_props.get_preset_values()
+    preset_values += bfu_export_process.bfu_export_process_props.get_preset_values()
+    return preset_values
+
 class BFU_PT_Export(bpy.types.Panel):
     # Is Export panel
 
@@ -47,13 +54,6 @@ class BFU_PT_Export(bpy.types.Panel):
         bl_description = 'Add or remove a preset for Nomenclature'
         preset_menu = 'BFU_MT_NomenclaturePresets'
 
-        @staticmethod
-        def get_export_global_preset_propertys() -> List[str]:
-            preset_values: List[str] = []
-            preset_values += bfu_export_nomenclature.bfu_export_nomenclature_props.get_preset_values()
-            preset_values += bfu_export_filter.bfu_export_filter_props.get_preset_values()
-            preset_values += bfu_export_process.bfu_export_process_props.get_preset_values()
-            return preset_values
 
         # Common variable used for all preset values
         preset_defines = [

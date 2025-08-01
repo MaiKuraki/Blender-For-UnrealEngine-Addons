@@ -18,7 +18,7 @@
 
 import bpy
 from enum import Enum
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union 
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_SplineExportProcedure(str, Enum):
@@ -74,8 +74,8 @@ def get_object_export_procedure(obj: bpy.types.Object) -> BFU_SplineExportProced
     print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_spline_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_SplineExportProcedure.default()
 
-def get_spline_procedure_preset(procedure: BFU_SplineExportProcedure) -> Dict[str, str | bool]:
-    preset: Dict[str, str | bool] = {}
+def get_spline_procedure_preset(procedure: BFU_SplineExportProcedure) -> Dict[str, Union[str, bool]]:
+    preset: Dict[str, Union[str, bool]] = {}
     return preset
 
 def draw_object_export_procedure(layout: bpy.types.UILayout, obj: bpy.types.Object) -> bpy.types.UILayout:

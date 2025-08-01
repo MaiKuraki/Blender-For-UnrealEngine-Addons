@@ -37,6 +37,8 @@ class BFU_PT_BlenderForUnrealTool(bpy.types.Panel):
     def draw(self, context: bpy.types.Context):
 
         layout = self.layout
+        if layout is None:
+            return
 
         # Tools sections
         bfu_camera.bfu_camera_ui.draw_tools_ui(layout, context)

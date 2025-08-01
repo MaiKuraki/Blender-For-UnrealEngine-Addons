@@ -139,7 +139,7 @@ class SafeTimeLogHandle():
 
 class SafeTimeGroup():
     def __init__(self) -> None:
-        self.log_handles: list[SafeTimeLogHandle] = []
+        self.log_handles: List[SafeTimeLogHandle] = []
 
     def start_timer(self, timer_name: str) -> SafeTimeLogHandle:
         process_task_proxy = SafeTimeLogHandle()

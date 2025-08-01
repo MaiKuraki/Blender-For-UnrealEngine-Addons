@@ -18,7 +18,7 @@
 
 import bpy
 from enum import Enum
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_SkeletonExportProcedure(str, Enum):
@@ -74,11 +74,11 @@ def get_export_file_type(procedure: BFU_SkeletonExportProcedure) -> BFU_FileType
 def is_fbx_file_export(obj: bpy.types.Object) -> bool:
     return get_obj_export_file_type(obj).value == BFU_FileTypeEnum.FBX.value
 
-def get_obj_skeleton_fbx_procedure_preset(obj: bpy.types.Object) -> Dict[str, str | bool]:
+def get_obj_skeleton_fbx_procedure_preset(obj: bpy.types.Object) -> Dict[str, Union[str, bool]]:
     return get_skeleton_procedure_preset(get_object_export_procedure(obj))
 
-def get_skeleton_procedure_preset(procedure: BFU_SkeletonExportProcedure) -> Dict[str, str | bool]:
-    preset: Dict[str, str | bool] = {}
+def get_skeleton_procedure_preset(procedure: BFU_SkeletonExportProcedure) -> Dict[str, Union[str, bool]]:
+    preset: Dict[str, Union[str, bool]] = {}
     if procedure.value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
         preset["use_space_transform"] = True
         preset["axis_forward"] = '-Z'

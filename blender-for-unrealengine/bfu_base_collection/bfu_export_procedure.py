@@ -18,7 +18,7 @@
 
 import bpy
 from enum import Enum
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_CollectionExportProcedure(str, Enum):
@@ -61,8 +61,8 @@ def get_col_export_procedure(col: bpy.types.Collection) -> BFU_CollectionExportP
     print(f"Warning: Object {col.name} has unknown export procedure '{col.bfu_collection_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_CollectionExportProcedure.default()
 
-def get_col_procedure_preset(procedure: BFU_CollectionExportProcedure) -> Dict[str, str | bool]:
-    preset: Dict[str, str | bool] = {}
+def get_col_procedure_preset(procedure: BFU_CollectionExportProcedure) -> Dict[str, Union[str, bool]]:
+    preset: Dict[str, Union[str, bool]] = {}
     return preset
 
 def draw_col_export_procedure(layout: bpy.types.UILayout, col: bpy.types.Collection) -> bpy.types.UILayout:

@@ -18,7 +18,7 @@
 
 
 import bpy
-from typing import Dict, Any, Optional, TYPE_CHECKING
+from typing import Dict, Any, Optional, TYPE_CHECKING, Tuple
 from . import bfu_vertex_color_utils
 from .. import bbpl
 from .. import bfu_utils
@@ -31,7 +31,7 @@ class VertexColorExportData:
         self.parent = parent
         self.export_type = "IGNORE"
         self.name = ""
-        self.color: tuple[float, float, float] = (1.0, 1.0, 1.0) # R, G, B
+        self.color: Tuple[float, float, float] = (1.0, 1.0, 1.0) # R, G, B
         self.index = -1
 
         owner = self.get_property_owner()

@@ -18,7 +18,7 @@
 
 import bpy
 from enum import Enum
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_AlembicExportProcedure(str, Enum):
@@ -54,8 +54,8 @@ def get_object_export_procedure(obj: bpy.types.Object) -> BFU_AlembicExportProce
     print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_alembic_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_AlembicExportProcedure.default()
 
-def get_alembic_procedure_preset(procedure: BFU_AlembicExportProcedure) -> Dict[str, str | bool]:
-    preset: Dict[str, str | bool] = {}
+def get_alembic_procedure_preset(procedure: BFU_AlembicExportProcedure) -> Dict[str, Union[str, bool]]:
+    preset: Dict[str, Union[str, bool]] = {}
     return preset
 
 def draw_object_export_procedure(layout: bpy.types.UILayout, obj: bpy.types.Object) -> bpy.types.UILayout:

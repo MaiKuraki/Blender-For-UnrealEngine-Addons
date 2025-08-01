@@ -17,6 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
+from typing import List
 from .bfu_export_control_type import BFU_ExportTypeEnum
 
 
@@ -63,16 +64,16 @@ def set_auto(obj: bpy.types.Object) -> None:
 
 # Objects getters
 
-def get_all_export_recursive_objects() -> list[bpy.types.Object]:
-    found_objects: list[bpy.types.Object] = []
+def get_all_export_recursive_objects() -> List[bpy.types.Object]:
+    found_objects: List[bpy.types.Object] = []
     if bpy.context:
         for obj in bpy.context.scene.objects:
             if is_export_recursive(obj):
                 found_objects.append(obj)
     return found_objects
 
-def get_all_export_recursive_armatures() -> list[bpy.types.Object]:
-    found_objects: list[bpy.types.Object] = []
+def get_all_export_recursive_armatures() ->  List[bpy.types.Object]:
+    found_objects: List[bpy.types.Object] = []
     if bpy.context:
         for obj in bpy.context.scene.objects:
             if obj.type == "ARMATURE" and is_export_recursive(obj):  # type: ignore

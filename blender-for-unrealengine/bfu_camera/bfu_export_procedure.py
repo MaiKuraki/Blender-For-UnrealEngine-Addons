@@ -18,7 +18,7 @@
 
 import bpy
 from enum import Enum
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
 class BFU_CameraExportProcedure(str, Enum):
@@ -75,8 +75,8 @@ def get_object_export_procedure(obj: bpy.types.Object) -> BFU_CameraExportProced
     print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_camera_export_procedure}'. Falling back to default export procedure...")  # type: ignore
     return BFU_CameraExportProcedure.default()
 
-def get_camera_procedure_preset(procedure: BFU_CameraExportProcedure) -> Dict[str, str | bool]:
-    preset: Dict[str, str | bool] = {}
+def get_camera_procedure_preset(procedure: BFU_CameraExportProcedure) -> Dict[str, Union[str, bool]]:
+    preset: Dict[str, Union[str, bool]] = {}
     return preset
 
 def draw_object_export_procedure(layout: bpy.types.UILayout, obj: bpy.types.Object) -> bpy.types.UILayout:

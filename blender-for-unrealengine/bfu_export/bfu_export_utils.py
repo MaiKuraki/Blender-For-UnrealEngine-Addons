@@ -134,7 +134,7 @@ class DelegateOldData():
 
 class DuplicateData():
     def __init__(self):
-        self.data_to_remove: list[DelegateOldData] = []
+        self.data_to_remove: List[DelegateOldData] = []
         self.origin_select: Optional[bbpl.save_data.select_save.UserSelectSave] = None
         self.duplicate_select: Optional[bbpl.save_data.select_save.UserSelectSave] = None
 
@@ -156,10 +156,10 @@ class DuplicateData():
                     if user_selected.type == "ARMATURE":  # type: ignore
                         bfu_utils.set_obj_proxy_data(user_selected)
 
-        data_to_remove: list[DelegateOldData] = []
+        data_to_remove: List[DelegateOldData] = []
 
         # Save action befor export
-        action_names: list[str] = []
+        action_names: List[str] = []
         for action in bpy.data.actions:
             action_names.append(action.name)
 
@@ -172,7 +172,7 @@ class DuplicateData():
 
         log_4 = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Prepare clean")
         # Save the name for found after "Make Instances Real"
-        current_select_names: list[str] = []
+        current_select_names: List[str] = []
         for current_select_name in context.selected_objects:
             current_select_names.append(current_select_name.name)
 
@@ -270,7 +270,7 @@ def apply_object_modifiers(obj: bpy.types.Object, blacklist_type = []):
     apply_modifiers_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Apply modifiers for: {obj.name}")
     apply_modifiers_prepare_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log(f"Search modifiers to apply")
     # Get Modifier to Apply
-    mod_to_apply: list[bpy.types.Modifier] = []
+    mod_to_apply: List[bpy.types.Modifier] = []
     for mod in obj.modifiers:
         if mod.type not in blacklist_type:
             if mod.show_viewport == True:

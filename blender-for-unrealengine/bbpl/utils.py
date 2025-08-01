@@ -335,7 +335,7 @@ def set_collection_exclude(collection: bpy.types.Collection, exclude: bool):
                 if layer.collection == collection:
                     layer.exclude = exclude
 
-def get_vertex_colors(obj: bpy.types.Object) -> bpy.types.Attribute:
+def get_vertex_colors(obj: bpy.types.Object) -> List[bpy.types.MeshLoopColorLayer]:
     """
     Get the vertex colors of an object.
     """
@@ -525,7 +525,7 @@ class SaveObjectReferanceUser():
         """
         Initializes the instance with an empty list to store constraints using the specified object.
         """
-        self.using_constraints: list[Dict[str, str]] = []
+        self.using_constraints: List[Dict[str, str]] = []
 
     def save_refs_from_object(self, targe_obj: bpy.types.Object):
         """
@@ -627,7 +627,7 @@ def get_bones_from_armature(armature: bpy.types.Object) -> Union[bpy.types.EditB
     else:
         return armature.data.bones  # type: ignore
 
-def get_bone_path(armature: bpy.types.Object, start_bone_name: str, end_bone_name: str) -> Optional[list[str]]:
+def get_bone_path(armature: bpy.types.Object, start_bone_name: str, end_bone_name: str) -> Optional[List[str]]:
     """
     Returns a list of bone names between start_bone and end_bone in an armature.
     
@@ -649,7 +649,7 @@ def get_bone_path(armature: bpy.types.Object, start_bone_name: str, end_bone_nam
 
 
     # Depth-First Search to find the path from start_bone to end_bone
-    def find_path(current_bone: Union[bpy.types.EditBone, bpy.types.PoseBone, bpy.types.Bone], path: list[str]) -> Optional[list[str]]:
+    def find_path(current_bone: Union[bpy.types.EditBone, bpy.types.PoseBone, bpy.types.Bone], path: List[str]) -> Optional[List[str]]:
         path.append(current_bone.name)
 
         # Check if we've reached the end bone
@@ -668,7 +668,7 @@ def get_bone_path(armature: bpy.types.Object, start_bone_name: str, end_bone_nam
     all_bones = find_path(start_bone, [])
     return all_bones
     
-def get_bone_path_to_end(armature: bpy.types.Object, start_bone_name: str) -> list[str]:
+def get_bone_path_to_end(armature: bpy.types.Object, start_bone_name: str) -> List[str]:
     """
     Returns a list of bone names from the start_bone to the last child in a chain.
     
@@ -694,7 +694,7 @@ def get_bone_path_to_end(armature: bpy.types.Object, start_bone_name: str) -> li
 
     return bone_path
 
-def get_bone_and_children(armature: bpy.types.Object, start_bone_name: str) -> list[str]:
+def get_bone_and_children(armature: bpy.types.Object, start_bone_name: str) -> List[str]:
     """
     Returns a list of all descendant bones of the specified start_bone, including all children recursively.
     
@@ -711,7 +711,7 @@ def get_bone_and_children(armature: bpy.types.Object, start_bone_name: str) -> l
     
 
     # Recursive function to collect all children bones
-    def collect_children(bone: Union[bpy.types.EditBone, bpy.types.PoseBone, bpy.types.Bone]) -> list[str]:
+    def collect_children(bone: Union[bpy.types.EditBone, bpy.types.PoseBone, bpy.types.Bone]) -> List[str]:
         bone_list = [bone.name]
         for child in bone.children:
             bone_list.extend(collect_children(child))
@@ -721,7 +721,7 @@ def get_bone_and_children(armature: bpy.types.Object, start_bone_name: str) -> l
     all_bones = collect_children(start_bone)
     return all_bones
 
-def get_bones_name_contains(armature: bpy.types.Object, name_filter: str) -> list[str]:
+def get_bones_name_contains(armature: bpy.types.Object, name_filter: str) -> List[str]:
     """
     Returns a list of bones whose names contain the specified substring.
     """
@@ -733,7 +733,7 @@ def get_bones_name_contains(armature: bpy.types.Object, name_filter: str) -> lis
 
     return [bone.name for bone in bones if name_filter in bone.name]
 
-def get_bones_name_starts_with(armature: bpy.types.Object, name_filter: str) -> list[str]:
+def get_bones_name_starts_with(armature: bpy.types.Object, name_filter: str) -> List[str]:
     """
     Returns a list of bones whose names start with the specified string.
     """
@@ -745,7 +745,7 @@ def get_bones_name_starts_with(armature: bpy.types.Object, name_filter: str) -> 
 
     return [bone.name for bone in bones if bone.name.startswith(name_filter)]
 
-def get_bones_name_ends_with(armature: bpy.types.Object, name_filter: str) -> list[str]:
+def get_bones_name_ends_with(armature: bpy.types.Object, name_filter: str) -> List[str]:
     """
     Returns a list of bones whose names end with the specified string.
     """
@@ -757,7 +757,7 @@ def get_bones_name_ends_with(armature: bpy.types.Object, name_filter: str) -> li
 
     return [bone.name for bone in bones if bone.name.endswith(name_filter)]
 
-def get_bones_name_contains_starts_with(armature: bpy.types.Object, contains_filter: str, startswith_filter: str) -> list[str]:
+def get_bones_name_contains_starts_with(armature: bpy.types.Object, contains_filter: str, startswith_filter: str) -> List[str]:
     """
     Match bones whose names contain one string and start with another.
     """
@@ -772,7 +772,7 @@ def get_bones_name_contains_starts_with(armature: bpy.types.Object, contains_fil
         if contains_filter in b.name and b.name.startswith(startswith_filter)
     ]
 
-def get_bones_name_contains_ends_with(armature: bpy.types.Object, contains_filter: str, endswith_filter: str) -> list[str]:
+def get_bones_name_contains_ends_with(armature: bpy.types.Object, contains_filter: str, endswith_filter: str) -> List[str]:
     """
     Match bones whose names contain one string and end with another.
     """

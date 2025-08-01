@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 import bpy
 from . import bfu_spline_data
 from . import bfu_spline_unreal_utils
@@ -60,7 +60,7 @@ def add_spline_to_command(spline: bpy.types.Object, pre_bake_spline: bfu_spline_
         return t
     return None
 
-def get_spline_unreal_clipboard(objs: list[bpy.types.Object]) -> tuple[bool, str, str]:
+def get_spline_unreal_clipboard(objs: List[bpy.types.Object]) -> Tuple[bool, str, str]:
     # Return (success, command)
     save_select = bbpl.save_data.select_save.UserSelectSave()
     save_select.save_current_select()
@@ -70,7 +70,7 @@ def get_spline_unreal_clipboard(objs: list[bpy.types.Object]) -> tuple[bool, str
     report = ""
     add_spline_num = 0
 
-    splines: list[bpy.types.Object] = []
+    splines: List[bpy.types.Object] = []
     for obj in objs:
         if obj.type == "CURVE":
             splines.append(obj)

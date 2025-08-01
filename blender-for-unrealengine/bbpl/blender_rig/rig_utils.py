@@ -24,7 +24,7 @@
 
 import bpy
 import mathutils
-from typing import Optional
+from typing import Optional, List, Union
 from .. import utils
 
 
@@ -59,13 +59,13 @@ def create_safe_bone(arm, bone_name, context_id=None) -> Optional[bpy.types.Edit
 
     return bone
 
-def get_mirror_bone_name(original_bones: str | list[str]) -> str | list[str]:
+def get_mirror_bone_name(original_bones: Union[str, List[str]]) -> Union[str, List[str]]:
     """
     Returns the mirror name of a bone or a list of bones.
     Automatically handles .l/.r, .L/.R, _l/_r, _L/_R, _left/_right, Left/Right, etc.
     """
     from typing import Union
-    bones: list[str] = [original_bones] if isinstance(original_bones, str) else original_bones
+    bones: List[str] = [original_bones] if isinstance(original_bones, str) else original_bones
 
     def mirror_name(bone: str) -> str:
         bases = [("l", "r"), ("left", "right")]

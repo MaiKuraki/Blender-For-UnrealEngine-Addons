@@ -18,7 +18,7 @@
 
 
 import bpy
-from typing import TYPE_CHECKING, List, Literal
+from typing import TYPE_CHECKING, Set
 from .. import bfu_cached_assets
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch, AssetDataSearchMode
 from . import bfu_asset_preview_ui
@@ -36,7 +36,7 @@ class BFU_OT_ShowAssetToExport(bpy.types.Operator):
         asset_to_search_str: str
 
 
-    def execute(self, context: bpy.types.Context | None):
+    def execute(self, context: bpy.types.Context):
 
         if context is None:
             return {'CANCELLED'}
@@ -64,19 +64,19 @@ class BFU_OT_OpenShowAssetToExport(bpy.types.Operator):
     if TYPE_CHECKING:
         asset_to_search_str: str
 
-    def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[str]:
+    def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
         if context is None:
             return {'CANCELLED'}
         
         wm = context.window_manager
         return wm.invoke_popup(self, width=1200)  # type: ignore
 
-    def execute(self, context: bpy.types.Context | None):
+    def execute(self, context: bpy.types.Context):
         if context is None:
             return {'CANCELLED'}
         return {'FINISHED'}
 
-    def draw(self, context: bpy.types.Context | None):
+    def draw(self, context: bpy.types.Context):
         if context is None:
             return
         layout = self.layout

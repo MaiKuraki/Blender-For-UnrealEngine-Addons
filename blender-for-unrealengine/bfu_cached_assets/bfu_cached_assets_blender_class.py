@@ -39,7 +39,7 @@ class BFU_CollectionExportAssetCache(bpy.types.PropertyGroup):
     def get_collection_asset_list(self):
 
         scene: bpy.types.Scene = self.id_data
-        collection_export_asset_list: list[bpy.types.Collection] = []
+        collection_export_asset_list: List[bpy.types.Collection] = []
 
         for col in scene.bfu_collection_asset_list:
             col: bpy.types.Collection
@@ -56,12 +56,12 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
         # Force update cache export auto action list
         return self.get_cached_export_auto_action_list(True)
 
-    def get_cached_export_auto_action_list(self, force_update_cache: bool = False)-> list[bpy.types.Action]:
+    def get_cached_export_auto_action_list(self, force_update_cache: bool = False)->  List[bpy.types.Action]:
         # This will cheak if the action contains
         # the same bones of the armature
 
         obj: bpy.types.Object = self.id_data
-        actions: list[bpy.types.Action] = []
+        actions: List[bpy.types.Action] = []
 
         # Use the cache
         if force_update_cache:

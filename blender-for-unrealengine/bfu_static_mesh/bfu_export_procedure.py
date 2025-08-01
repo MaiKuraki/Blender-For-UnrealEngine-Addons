@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 from enum import Enum
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 
@@ -74,11 +74,11 @@ def get_export_file_type(procedure: BFU_StaticExportProcedure) -> BFU_FileTypeEn
     elif procedure == BFU_StaticExportProcedure.STANDARD_GLTF:
         return BFU_FileTypeEnum.GLTF
 
-def get_obj_static_fbx_procedure_preset(obj: bpy.types.Object) -> Dict[str, bool | str]:
+def get_obj_static_fbx_procedure_preset(obj: bpy.types.Object) -> Dict[str, Union[bool, str]]:
     return get_static_fbx_procedure_preset(get_object_export_procedure(obj))
 
-def get_static_fbx_procedure_preset(procedure: BFU_StaticExportProcedure) -> Dict[str, bool | str]: # Object.bfu_static_export_procedure
-    preset: Dict[str, bool | str] = {}
+def get_static_fbx_procedure_preset(procedure: BFU_StaticExportProcedure) -> Dict[str, Union[bool, str]]: # Object.bfu_static_export_procedure
+    preset: Dict[str, Union[bool, str]] = {}
     if procedure == BFU_StaticExportProcedure.CUSTOM_FBX_EXPORT:
         preset["use_space_transform"]=True
         preset["axis_forward"]='-Z'

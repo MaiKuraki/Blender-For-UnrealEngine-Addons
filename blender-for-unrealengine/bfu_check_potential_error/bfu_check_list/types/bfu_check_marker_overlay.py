@@ -27,7 +27,7 @@ class BFU_Checker_MarkerOverlay(bfu_checker):
 
     # Check that there is no overlap with the markers in the scene timeline
     def run_scene_check(self, scene: bpy.types.Scene):
-        used_frames: list[int] = []
+        used_frames: List[int] = []
         for marker in scene.timeline_markers:
             if marker.frame in used_frames:
                 my_po_error = self.add_potential_error()

@@ -18,6 +18,7 @@
 
 import string
 from pathlib import Path
+from typing import List
 import bpy
 import shutil
 import bmesh
@@ -145,7 +146,7 @@ def valid_file_name(filename: str) -> str:
     return filename
 
 
-def get_if_action_can_associate_bone(action: bpy.types.Action, bone_names: list[str]) -> bool:
+def get_if_action_can_associate_bone(action: bpy.types.Action, bone_names: List[str]) -> bool:
     for group in action.groups:
         for fcurve in group.channels:
             s = fcurve.data_path

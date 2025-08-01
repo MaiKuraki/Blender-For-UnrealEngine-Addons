@@ -18,7 +18,7 @@
 
 
 import bpy
-from typing import TYPE_CHECKING, Literal
+from typing import List
 from .. import bfu_cached_assets
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch, AssetToExport, AssetDataSearchMode, AssetType, AssetPackage
 from .. import bpl
@@ -176,7 +176,7 @@ def draw_assets_list(
     layout: bpy.types.UILayout, 
     context: bpy.types.Context, 
     asset_to_count: AssetToSearch,
-    final_asset_list_to_export: list[AssetToExport]
+    final_asset_list_to_export: List[AssetToExport]
 ) -> None:
 
     # Popup title

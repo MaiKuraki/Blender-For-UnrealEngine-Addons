@@ -1,5 +1,5 @@
 import bpy
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Tuple
 from . import bfu_camera_data
 from . import bfu_camera_unreal_utils
 from . import bfu_camera_write_text
@@ -108,7 +108,7 @@ def add_camera_to_command(camera: bpy.types.Object, pre_bake_camera: bfu_camera_
     return t
     return None
 
-def get_import_camera_script_command(objs: List[bpy.types.Object]) -> tuple[bool, str, str]:
+def get_import_camera_script_command(objs: List[bpy.types.Object]) ->  Tuple[bool, str, str]:
     # Return (success, command)
     scene = bpy.context.scene
     if not scene:
