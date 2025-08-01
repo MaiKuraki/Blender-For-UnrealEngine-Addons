@@ -22,7 +22,7 @@ from . import bfu_export_utils
 from .. import bfu_export_logs
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetPackage
-from .. import bbpl
+from .. import bfu_utils
 
 def prepare_scene_for_package_export(package: AssetPackage):
     if bpy.context is None:
@@ -57,7 +57,11 @@ def process_generic_export_from_asset(
 
         # Check folder before export
         if package.file:
-            bfu_export_utils.check_and_make_export_path(package.file.get_full_path())
+            result = bfu_utils.check_and_make_export_path(package.file.get_full_path())
+            if not result:
+                new_log.end_package_export(package, False)
+                continue
+
 
         if package.export_function:
             my_timer_group.start_timer(f"Exporting package: {package.name}")

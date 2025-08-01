@@ -216,7 +216,7 @@ def register():
         name="Other Export Path",
         description="Choose a directory to export text file and other",
         maxlen=512,
-        default=blender_relpath("ExportedAssets", "Other"),
+        default=blender_relpath("ExportedAssets"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )

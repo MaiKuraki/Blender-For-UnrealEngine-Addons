@@ -24,6 +24,7 @@ from typing import Dict, Any
 from pathlib import Path
 from .. import bbpl
 from .. import languages
+from .. import bfu_utils
 
 
 def add_generated_json_header(json_data: Dict[str, Any], text: str):
@@ -75,14 +76,24 @@ def is_read_only(filepath: Path) -> bool:
 
 def export_single_text_file(text: str, fullpath: Path):
 
+    if not bfu_utils.check_and_make_export_path(fullpath):
+        print(f"Cannot write to '{fullpath}': Path is invalid.")
+        return
+
     if is_read_only(fullpath):
         print(f"Cannot write to '{fullpath}': File is read-only.")
+        return
 
+    print(f"Writing text file to: {fullpath}")
     with open(fullpath, "w") as file:
         file.write(text)
         
 
 def export_single_json_file(json_data: Dict[str, Any], fullpath: Path) -> bool:
+
+    if not bfu_utils.check_and_make_export_path(fullpath):
+        print(f"Cannot write to '{fullpath}': Path is invalid.")
+        return False
 
     if is_read_only(fullpath):
         print(f"Cannot write to '{fullpath}': File is read-only.")

@@ -111,28 +111,6 @@ class SavedSceneSimplfy():
         scene.render.simplify_child_particles_render = self.simplify_child_particles_render
 
 
-def check_and_make_export_path(dirpath: Path):
-    """
-    Check if the directory exists, and create it if it doesn't.
-    If the path ends with a file extension, it will create the directory of that file.
-    """
-    absdirpath = dirpath.resolve()
-
-    # Si le chemin finit par une extension, on suppose que c'est un fichier
-    if absdirpath.suffix:
-        absdirpath = absdirpath.parent
-
-    if not absdirpath.exists():
-        try:
-            os.makedirs(absdirpath)
-        except Exception as e:
-            error_text: str = f"An error occurred during makedirs: {str(e)}"
-            print(bpl.color_set.red(error_text))
-            return False
-
-    return True
-
-
 def ApplyProxyData(obj):
 
     scene = bpy.context.scene
@@ -788,7 +766,7 @@ def export_additional_data(fullpath: Path, data: Dict[str, str]) -> None:
     # Export additional parameter from static and skeletal mesh track for
     # SocketsList
 
-    result = check_and_make_export_path(fullpath)
+    result = bfu_utils.check_and_make_export_path(fullpath)
     if result:
         additional_data: Dict[str, Any] = bfu_export_text_files.bfu_export_text_files_asset_additional_data.write_additional_data(data)
         bfu_export_text_files.bfu_export_text_files_utils.export_single_json_file(additional_data, fullpath)

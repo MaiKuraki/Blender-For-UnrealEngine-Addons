@@ -31,6 +31,7 @@ from . import bbpl
 from . import bfu_basics
 from . import bfu_export_control
 from . import bfu_addon_prefs
+from . import bpl
 
 
 class SavedBones():
@@ -1262,3 +1263,61 @@ def get_scene_unit_scale_is_close(value: float) -> bool:
     scene = bpy.context.scene
     unit_scale = round(scene.unit_settings.scale_length, 8)
     return math.isclose(unit_scale, value, rel_tol=1e-5)
+
+def check_path_valid(dirpath: Path) -> bool:
+    """
+    Check if the path is valid.
+    If the path ends with a file extension, it will check the directory of that file.
+    """
+    absdirpath = dirpath.resolve()
+
+    # If the path ends with an extension, it is assumed to be a file
+    if absdirpath.suffix:
+        absdirpath = absdirpath.parent
+
+    try:
+        if absdirpath.exists():
+            # Path already exists so return True
+            return True
+    except Exception as e:
+        # Path does a script fail so invalid.
+        print(bpl.color_set.red(f"Invalid path: {absdirpath}"))
+        error_text: str = f"An error occurred during makedirs: {str(e)}"
+        print(error_text)
+        return False
+
+    return True
+
+def check_and_make_export_path(dirpath: Path) -> bool:
+    """
+    Check if the directory exists, and create it if it doesn't.
+    If the path ends with a file extension, it will create the directory of that file.
+    """
+    absdirpath = dirpath.resolve()
+
+    # If the path ends with an extension, it is assumed to be a file
+    if absdirpath.suffix:
+        absdirpath = absdirpath.parent
+
+    try:
+        if absdirpath.exists():
+            # Path already exists so return True
+            return True
+    except Exception as e:
+        # Path does a script fail so invalid.
+        print(bpl.color_set.red(f"Invalid path: {absdirpath}"))
+        error_text: str = f"An error occurred during makedirs: {str(e)}"
+        print(error_text)
+        return False
+
+
+    try:
+        os.makedirs(absdirpath)
+    except Exception as e:
+        # Make dir does a script fail.
+        print(bpl.color_set.red(f"Impossible to create path: {absdirpath}"))
+        error_text: str = f"An error occurred during makedirs: {str(e)}"
+        print(error_text)
+        return False
+
+    return True
