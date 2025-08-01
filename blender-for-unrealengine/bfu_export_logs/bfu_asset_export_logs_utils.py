@@ -85,7 +85,7 @@ def get_export_asset_logs_details(exported_asset_log: List[bfu_asset_export_logs
 
             # Append file details
             if package.file:
-                fullpath = str(package.file.get_full_path())
+                fullpath = str(package.file.get_full_path().resolve())
             else:
                 fullpath = "No file path set"
             export_log += f"    {fullpath}\n"
