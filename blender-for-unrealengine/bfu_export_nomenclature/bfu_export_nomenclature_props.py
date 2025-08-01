@@ -19,6 +19,7 @@
 
 from typing import List
 import os
+from pathlib import Path
 import bpy
 from .. import bbpl
 
@@ -150,12 +151,18 @@ def register():
         maxlen=512,
         default='ImportedBlenderAssets')
 
+    def blender_relpath(*parts: str) -> str:
+        # Relative blender path. 
+        # Need use pathlib join to support different OS.
+        # os.sep at end because it a folder path.
+        return str(Path("//").joinpath(*parts)) + os.sep
+
     # File path
     bpy.types.Scene.bfu_export_static_file_path = bpy.props.StringProperty(
         name="StaticMesh Export Path",
         description="Choose a directory to export StaticMesh(s)",
         maxlen=512,
-        default="//ExportedAssets\\StaticMesh\\", # Relative blender path
+        default=blender_relpath("ExportedAssets", "StaticMesh"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )
@@ -164,7 +171,7 @@ def register():
         name="SkeletalMesh Export Path",
         description="Choose a directory to export SkeletalMesh(s)",
         maxlen=512,
-        default="//ExportedAssets\\SkeletalMesh\\", # Relative blender path
+        default=blender_relpath("ExportedAssets", "SkeletalMesh"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )
@@ -173,7 +180,7 @@ def register():
         name="Alembic Export Path",
         description="Choose a directory to export Alembic animation(s)",
         maxlen=512,
-        default="//ExportedAssets\\Alembic\\", # Relative blender path
+        default=blender_relpath("ExportedAssets", "Alembic"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )
@@ -182,7 +189,7 @@ def register():
         name="Groom Export Path",
         description="Choose a directory to export Groom simulation(s)",
         maxlen=512,
-        default="//ExportedAssets\\Groom\\", # Relative blender path
+        default=blender_relpath("ExportedAssets", "Groom"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )
@@ -191,7 +198,7 @@ def register():
         name="Camera Export Path",
         description="Choose a directory to export Camera(s)",
         maxlen=512,
-        default="//ExportedAssets\\Sequencer\\", # Relative blender path
+        default=blender_relpath("ExportedAssets", "Sequencer"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )
@@ -200,7 +207,7 @@ def register():
         name="Spline Export Path",
         description="Choose a directory to export Spline(s)",
         maxlen=512,
-        default="//ExportedAssets\\Spline\\", # Relative blender path
+        default=blender_relpath("ExportedAssets", "Spline"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )
@@ -209,7 +216,7 @@ def register():
         name="Other Export Path",
         description="Choose a directory to export text file and other",
         maxlen=512,
-        default="//ExportedAssets\\Other\\", # Relative blender path
+        default=blender_relpath("ExportedAssets", "Other"),
         subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'}
     )
