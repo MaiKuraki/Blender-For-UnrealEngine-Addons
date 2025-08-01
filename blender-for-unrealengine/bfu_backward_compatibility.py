@@ -16,11 +16,12 @@
 #
 # ======================= END GPL LICENSE BLOCK =============================
 
-
+from typing import Any, List, Callable, Optional
 import bpy
 from bpy.app.handlers import persistent
 
-def update_variable(data, old_var_names, new_var_name, callback=None):
+
+def update_variable(data: Any, old_var_names: List[str], new_var_name: str, callback: Optional[Callable[[Any, str, str], Any]] = None):
     for old_var_name in old_var_names:
         if old_var_name in data:
             try:
@@ -34,6 +35,36 @@ def update_variable(data, old_var_names, new_var_name, callback=None):
                 print(f'"{old_var_name}" updated to "{new_var_name}" in {data.name}')
             except Exception as e:
                 print(f'Error updating "{old_var_name}" to "{new_var_name}" in {data.name}: {str(e)}')
+
+def remove_variable(data: Any, old_var_names: List[str]):
+    for old_var_name in old_var_names:
+        if old_var_name in data:
+            try:
+                del data[old_var_name]
+                print(f'"{old_var_name}" removed from {data.name}')
+            except Exception as e:
+                print(f'Error removing "{old_var_name}" from {data.name}: {str(e)}')
+
+def enum_callback(data: Any, old_var_name: str, new_var_name: str) -> Any:
+    value = data[old_var_name] # Get value ast int
+
+    enum_definition = data.bl_rna.properties.get(new_var_name)
+
+    if enum_definition and enum_definition.type == "ENUM":
+        # Obtenez la liste des valeurs de l'enum
+        for enum_item in enum_definition.enum_items:
+            if value == enum_item.value:
+                return enum_item.identifier
+    else:
+        print("La propriété spécifiée n'est pas une énumération.")
+
+    return value
+
+def object_pointer_callback(data: Any, old_var_name: str, new_var_name: str) -> Any:
+    value = data[old_var_name]
+    if isinstance(value, bpy.types.Object):
+        return value
+    return None
 
 def update_old_variables():
     print("Updating old bfu variables...")
@@ -149,35 +180,15 @@ def update_old_variables():
         update_variable(scene, ["text_ImportAssetScript"], "bfu_use_text_import_asset_script")
         update_variable(scene, ["text_ImportSequenceScript"], "bfu_use_text_import_sequence_script")
         update_variable(scene, ["text_AdditionalData"], "bfu_use_text_additional_data")
-        update_variable(scene, ["UnrealExportedAssetsList"], "bfu_unreal_exported_assets_logs")
+        remove_variable(scene, ["UnrealExportedAssetsList", "bfu_unreal_exported_assets_logs"])
         update_variable(scene, ["potentialErrorList"], "bfu_export_potential_errors")
         
 
-def enum_callback(data, old_var_name, new_var_name):
-    value = data[old_var_name] # Get value ast int
-
-    enum_definition = data.bl_rna.properties.get(new_var_name)
-
-    if enum_definition and enum_definition.type == "ENUM":
-        # Obtenez la liste des valeurs de l'enum
-        for enum_item in enum_definition.enum_items:
-            if value == enum_item.value:
-                return enum_item.identifier
-    else:
-        print("La propriété spécifiée n'est pas une énumération.")
-
-    return value
-
-def object_pointer_callback(data, old_var_name, new_var_name):
-    value = data[old_var_name]
-    if isinstance(value, bpy.types.Object):
-        return value
-    return None
 
 
 
 @persistent
-def bfu_load_handler(dummy):
+def bfu_load_handler(dummy: Any):
     update_old_variables()
 
 def deferred_execution():
