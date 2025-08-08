@@ -73,9 +73,9 @@ class BFU_StaticMesh(BFU_ObjectAssetClass):
         return AssetType.STATIC_MESH
 
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
         scene = bpy.context.scene
+        if scene is None:
+            return False
         return scene.bfu_use_static_export  # type: ignore
 
     def get_asset_import_directory_path(self, data: bpy.types.Object, details: Any = None, extra_path: Optional[Path] = None) -> Path:
@@ -116,9 +116,6 @@ class BFU_StaticMesh(BFU_ObjectAssetClass):
         
         if data.bfu_export_as_lod_mesh: # type: ignore[attr-defined]
             # Asset exported as Lod will be included as package content in the Lod0 Asset.
-            return []
-        
-        if bpy.context is None:
             return []
         
         asset_list: List[AssetToExport] = []

@@ -50,9 +50,9 @@ class BFU_StaticMesh_Collection(BFU_CollectionAssetClass):
         return AssetType.COLLECTION_AS_STATIC_MESH
     
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
         scene = bpy.context.scene
+        if scene is None:
+            return False
         return scene.bfu_use_static_collection_export  # type: ignore
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
@@ -89,9 +89,6 @@ class BFU_StaticMesh_Collection(BFU_CollectionAssetClass):
 # ####################################################################
 
     def get_asset_export_data(self, data: bpy.types.Collection, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-        
-        if bpy.context is None:
-            return []
         
         asset_list: List[AssetToExport] = []
 
