@@ -18,8 +18,8 @@
 
 
 import bpy
+from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bpl
-from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
@@ -75,7 +75,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
             else:
                 export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
 
-            if export_type == "FBX":
+            if export_type.value == BFU_FileTypeEnum.FBX.value:
                 AxisProperty.prop(obj, 'bfu_override_procedure_preset')
                 if obj.bfu_override_procedure_preset:
                     AxisProperty.prop(obj, 'bfu_fbx_export_use_space_transform')
