@@ -155,7 +155,7 @@ def register():
         # Relative blender path. 
         # Need use pathlib join to support different OS.
         # os.sep at end because it a folder path.
-        return str(Path("//").joinpath(*parts)) + os.sep
+        return "//" + str(Path("").joinpath(*parts)) + os.sep
 
     def export_property_options() -> Set[str]:
         if bpy.app.version >= (4, 5, 0): # Added in Blender 4.5
