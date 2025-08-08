@@ -2,4 +2,4 @@
 Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Release-Logs
 
 ### Version 4.4.1
-- 
+- Fixed: Exporting scene collection produces script fail.

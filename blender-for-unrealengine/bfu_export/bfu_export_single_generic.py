@@ -18,25 +18,32 @@
 
 
 import bpy
+from typing import List
 from . import bfu_export_utils
 from .. import bfu_export_logs
 from ..bfu_export_logs.bfu_process_time_logs_types import SafeTimeGroup
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetPackage
 from .. import bfu_utils
 
-def prepare_scene_for_package_export(package: AssetPackage):
-    if bpy.context is None:
-        return
-    
+def prepare_scene_for_package_export(package: AssetPackage):    
     scene = bpy.context.scene
+    if scene is None:
+        return
+
+    export_objects_list: List[bpy.types.Object] = package.objects
+
+    if package.collection:
+        objs = bfu_utils.get_export_collection_objects(package.collection)
+        export_objects_list.extend(objs)
 
     for obj in scene.objects:
-        if obj in package.objects:
+        if obj in export_objects_list:
             if obj.hide_viewport is True:
                 obj.hide_viewport = False
         else:
             if obj.hide_viewport is False:
                 obj.hide_viewport = True
+
 
 
 def process_generic_export_from_asset(
