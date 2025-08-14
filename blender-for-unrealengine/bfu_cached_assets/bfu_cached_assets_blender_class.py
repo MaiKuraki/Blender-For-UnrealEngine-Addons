@@ -18,12 +18,14 @@
 
 
 import bpy
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Set
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetToSearch, AssetDataSearchMode, AssetType
 from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_assets_manager
 from .. import bfu_export_control
+from .. import bfu_debug_settings
+from .. import bfu_anim_action
 from . import bfu_cached_assets_types
 
 
@@ -31,7 +33,8 @@ from . import bfu_cached_assets_types
 
 
 
-MyCachedActions = bfu_cached_assets_types.CachedAction()
+
+my_cached_actions = bfu_cached_assets_types.CachedAction()
 
 
 class BFU_CollectionExportAssetCache(bpy.types.PropertyGroup):
@@ -65,21 +68,21 @@ class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
 
         # Use the cache
         if force_update_cache:
-            MyCachedActions.is_cached = False
+            my_cached_actions.is_cached = False
 
-        if MyCachedActions.check_cache(obj):
-            actions = MyCachedActions.get_stored_actions()
+        if my_cached_actions.check_cache(obj):
+            actions = my_cached_actions.get_stored_actions()
 
         else:
-            MyCachedActions.clear()
+            my_cached_actions.clear()
 
-            obj_bone_names: List[str] = [bone.name for bone in obj.data.bones]
+            obj_bone_names: Set[str] = {b.name for b in obj.data.bones}
             for action in bpy.data.actions:
                 if action.library is None:
-                    if bfu_basics.get_if_action_can_associate_bone(action, obj_bone_names):
+                    if bfu_basics.get_if_action_can_associate_str_set(action, obj_bone_names):
                         actions.append(action)
             # Update the cache
-            MyCachedActions.store_actions(obj, actions)
+            my_cached_actions.store_actions(obj, actions)
         return actions
 
 
@@ -89,8 +92,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # Returns all assets that will be exported
         # WARNING: the assets not to be ordered. First asset are exported first.
 
-        if bpy.context is None:
-            return []
+        events = bfu_debug_settings.root_events
+        events.new_event("Get Final Asset List")
+        events.add_sub_event("Prepare")
 
         def get_have_parent_to_export(obj: bpy.types.Object) -> Optional[bpy.types.Object]:
             if obj.parent is not None:
@@ -105,6 +109,8 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         export_filter = scene.bfu_export_selection_filter  # type: ignore[attr-defined]
 
         target_asset_to_export: List[AssetToExport] = []
+
+        events.stop_last_and_start_new_event("Search Assets")
 
         if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
             # Search for collections
@@ -147,7 +153,11 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                 for asset_class in asset_class_list:
                     target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
 
+        events.stop_last_and_start_new_event("Search Armatures")
+
         if asset_to_search.value in [AssetToSearch.ALL_ASSETS.value, AssetToSearch.ANIMATION_ONLY.value]:
+            events.add_sub_event("-> S1")
+            
             # Search for armatures and their actions
             armature_list: List[bpy.types.Object] = []
             if export_filter == "default":
@@ -164,26 +174,29 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                         if armature_parent_target not in armature_list:
                             armature_list.append(armature_parent_target)
 
+            events.stop_last_and_start_new_event("-> S2")
+
             armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
             if export_filter == "only_object_and_active":
+                events.add_sub_event("Active Search")
                 for armature in armature_list:
                     if armature.animation_data and armature.animation_data.action:
                         armature_actions_map.append((armature, armature.animation_data.action))
+                events.stop_last_event()
             else:
-                for armature in armature_list:
-                    if isinstance(armature.data, bpy.types.Armature):
-                        obj_bone_names: List[str] = [bone.name for bone in armature.data.bones]
-                        for action in bpy.data.actions:
-                            if not action.library:
-                                if bfu_basics.get_if_action_can_associate_bone(action, obj_bone_names):
-                                    armature_actions_map.append((armature, action))
+                armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(armature_list)
 
+            events.stop_last_and_start_new_event("-> S3")
 
             # Search for actions assets
             for armature, action in armature_actions_map:
                 asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(armature, action)
                 for asset_class in asset_class_list:
                     target_asset_to_export.extend(asset_class.get_asset_export_data(armature, action, search_mode=search_mode))
+
+            events.stop_last_event()
+
+        events.stop_last_and_start_new_event("Search Other Assets")
 
         # Reorder the asset list
         asset_type_order = [
@@ -205,6 +218,8 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             return type_priority.get(asset.asset_type, len(asset_type_order))
         
         target_asset_to_export.sort(key=sort_key)
+        events.stop_last_event()
+        events.stop_last_event()
         return target_asset_to_export
   
         # NLA

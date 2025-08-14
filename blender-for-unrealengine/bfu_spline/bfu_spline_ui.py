@@ -22,6 +22,7 @@ import bpy
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_export_control
+from .. import bfu_debug_settings
 from ..bbpl.blender_layout import layout_doc_button
 from . import bfu_spline_utils
 from . import bfu_spline_data
@@ -106,7 +107,7 @@ def draw_ui_object_spline(layout: bpy.types.UILayout, context: bpy.types.Context
     if obj.type != "CURVE":
         return
 
-    show_spline_debug_panel = False
+    show_spline_debug_panel = bfu_debug_settings.show_spline_debug_panel
 
     scene = context.scene 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):

@@ -27,6 +27,7 @@ def get_all_supported_asset_class(data: Any, details: Any = None) -> List[bfu_as
     :param details: Additional details that may affect asset class support.
     :return: A list of supported asset classes.
     """
+
     supported_classes: List[bfu_asset_manager_type.BFU_BaseAssetClass] = []
     for asset in bfu_asset_manager_registred_assets.get_registred_asset_class():
         asset: bfu_asset_manager_type.BFU_BaseAssetClass

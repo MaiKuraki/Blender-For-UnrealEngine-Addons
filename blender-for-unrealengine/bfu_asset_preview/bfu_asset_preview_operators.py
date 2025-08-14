@@ -38,9 +38,6 @@ class BFU_OT_ShowAssetToExport(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
 
-        if context is None:
-            return {'CANCELLED'}
-        
         obj = context.object
         if obj:
             if obj.type == "ARMATURE":  # type: ignore

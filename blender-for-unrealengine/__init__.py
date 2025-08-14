@@ -37,6 +37,7 @@ try:
     import importlib
     from . import bpl
     from . import bbpl
+    from . import bfu_debug_settings
     from . import bfu_simple_file_type_enum
     from . import bfu_assets_manager
     from . import bfu_export_control
@@ -92,6 +93,8 @@ try:
         importlib.reload(bpl)
     if "bbpl" in locals():
         importlib.reload(bbpl)
+    if "bfu_debug_settings" in locals():
+        importlib.reload(bfu_debug_settings)
     if "bfu_simple_file_type_enum" in locals():
         importlib.reload(bfu_simple_file_type_enum)
     if "bfu_assets_manager" in locals():

@@ -24,5 +24,5 @@ registred_asset_class: List[BFU_BaseAssetClass] = []
 def register_asset_class(asset: BFU_BaseAssetClass):
     registred_asset_class.append(asset)
 
-def get_registred_asset_class():
+def get_registred_asset_class() -> List[BFU_BaseAssetClass]:
     return registred_asset_class

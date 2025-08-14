@@ -22,6 +22,7 @@ from typing import List
 from .. import bfu_cached_assets
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch, AssetToExport, AssetDataSearchMode, AssetType, AssetPackage
 from .. import bpl
+from .. import bfu_debug_settings
 
 def get_asset_title_text(asset_count: int, asset_to_search: AssetToSearch) -> str:
     if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
@@ -39,13 +40,18 @@ def get_asset_title_text(asset_count: int, asset_to_search: AssetToSearch) -> st
             return "1 animation will be exported."
         else:
             return f"{asset_count} animations will be exported."
+    else:
+        return "Unknown asset type."
 
 def draw_asset_preview_bar(
     layout: bpy.types.UILayout, 
     context: bpy.types.Context,
     asset_to_search: AssetToSearch = AssetToSearch.ALL_ASSETS
 ) -> None:
-    
+
+    print_draw_debug_times = bfu_debug_settings.print_draw_debug_times
+    if print_draw_debug_times:
+        bfu_debug_settings.start_draw_record()
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
     final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.ASSET_NUMBER)
 
@@ -54,7 +60,8 @@ def draw_asset_preview_bar(
     asset_info_text = get_asset_title_text(asset_count, asset_to_search)
     asset_info_ui.label(text=asset_info_text)
     asset_info_ui.operator("object.showasset", text="Show Assets").asset_to_search_str = asset_to_search.value
-
+    if print_draw_debug_times:
+        bfu_debug_settings.stop_draw_record_and_print()
 
 def draw_asset_content_line(
     layout: bpy.types.UILayout, 
@@ -170,7 +177,6 @@ def draw_asset(
     for package in asset.asset_packages:
         draw_asset_package(asset, package, asset_col, context)
     draw_additional_data(asset, asset_col, context)
-
 
 def draw_assets_list(
     layout: bpy.types.UILayout, 

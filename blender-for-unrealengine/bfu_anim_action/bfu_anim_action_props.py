@@ -73,6 +73,12 @@ def get_object_anim_action_export_enum(obj: bpy.types.Object) -> BFU_AnimActionE
     print(f"Warning: Object {obj.name} has unknown export procedure '{obj.bfu_anim_action_export_enum}'. Falling back to default export procedure...")  # type: ignore
     return BFU_AnimActionExportEnum.default()
 
+def has_object_with_export_enum(objects: List[bpy.types.Object], export_enum: BFU_AnimActionExportEnum) -> bool:
+    for obj in objects:
+        if get_object_anim_action_export_enum(obj) == export_enum:
+            return True
+    return False
+
 def get_preset_values() -> List[str]:
     preset_values = [
         'obj.bfu_anim_action_export_enum',
@@ -88,7 +94,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 class BFU_UL_ActionExportTarget(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
+    def draw_item(self, context: bpy.types.Context, layout: bpy.types.UILayout, data, item, icon, active_data, active_property, index):
         action_is_valid = False
         if item.name in bpy.data.actions:
             action_is_valid = True
@@ -119,13 +125,13 @@ class BFU_OT_UpdateObjActionListButton(bpy.types.Operator):
     bl_idname = "object.updateobjactionlist"
     bl_description = "Update action list"
 
-    def execute(self, context):
-        def UpdateExportActionList(obj):
+    def execute(self, context: bpy.types.Context):
+        def UpdateExportActionList(obj: bpy.types.Object):
             # Update the provisional action list known by the object
 
-            def SetUseFromLast(anim_list, ActionName):
+            def SetUseFromLast(anim_list: List[Tuple[str, bool]], action_name: str) -> bool:
                 for item in anim_list:
-                    if item[0] == ActionName:
+                    if item[0] == action_name:
                         if item[1]:
                             return True
                 return False
@@ -148,7 +154,7 @@ class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
     bl_idname = "object.selectallobjactionlist"
     bl_description = "Select all action list"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context):
         if bpy.context.object.bfu_action_asset_list:
             for item in bpy.context.object.bfu_action_asset_list:
                 item.use = True
@@ -159,7 +165,7 @@ class BFU_OT_DeselectAllObjActionListButton(bpy.types.Operator):
     bl_idname = "object.deselectallobjactionlist"
     bl_description = "Deselect all action list"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context):
         if bpy.context.object.bfu_action_asset_list:
             for item in bpy.context.object.bfu_action_asset_list:
                 item.use = False
