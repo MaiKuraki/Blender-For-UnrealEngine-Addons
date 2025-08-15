@@ -73,7 +73,7 @@ class BFU_OT_OpenShowAssetToExport(bpy.types.Operator):
         if layout:
             final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
             asset_to_search = AssetToSearch(self.asset_to_search_str)
-            final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.FULL)
+            final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.FULL, force_cache_update=True)
             bfu_asset_preview_ui.draw_assets_list(layout, context, asset_to_search, final_asset_list_to_export)
 
 

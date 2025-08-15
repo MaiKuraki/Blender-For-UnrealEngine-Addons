@@ -37,7 +37,7 @@ def draw_asset_preview_bar(
     events.add_sub_event("Draw Asset Preview Bar")
     events.add_sub_event("Get asset list")
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
-    final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.ASSET_NUMBER)
+    final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.ASSET_NUMBER, force_cache_update=False)
 
     events.stop_last_and_start_new_event("Get asset count")
     asset_count = len(final_asset_list_to_export)

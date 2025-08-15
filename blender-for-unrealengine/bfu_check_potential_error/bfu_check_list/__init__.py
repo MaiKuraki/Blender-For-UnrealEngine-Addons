@@ -72,7 +72,7 @@ def run_all_check():
 
     bpl.advprint.print_simple_title("Run check potential issues.")
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
-    final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetToSearch.ALL_ASSETS, AssetDataSearchMode.FULL)
+    final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetToSearch.ALL_ASSETS, AssetDataSearchMode.FULL, force_cache_update=True)
     print(checker_classes)
 
     for index, my_check_cls in enumerate(checker_classes, start=1):

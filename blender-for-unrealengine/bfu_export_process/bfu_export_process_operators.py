@@ -96,7 +96,7 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
             return True
 
         final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
-        final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetToSearch.ALL_ASSETS, AssetDataSearchMode.FULL)
+        final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetToSearch.ALL_ASSETS, AssetDataSearchMode.FULL, force_cache_update=True)
 
         if not is_ready_for_export(final_asset_list_to_export):
             return {'FINISHED'}

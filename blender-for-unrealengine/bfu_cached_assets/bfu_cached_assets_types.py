@@ -18,7 +18,7 @@
 
 
 import bpy
-from typing import List
+from typing import List, Tuple
 
 
 
@@ -79,3 +79,32 @@ class CachedAction():
 
     def clear(self) -> None:
         pass
+
+class CachedActionManager():
+    def __init__(self):
+        self.cached_object_count: int = 0
+        self.cached_total_action_count: int = 0
+        self.armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
+
+    def get_need_update_cache(self, scene: bpy.types.Scene, objects: List[bpy.types.Object]) -> bool:
+        if self.cached_object_count != len(objects):
+            print(f"CachedActionManager: Need update cache, because object count changed: {self.cached_object_count} != {len(objects)}")
+            return True
+        if self.cached_total_action_count != len(bpy.data.actions):
+            print(f"CachedActionManager: Need update cache, because action count changed: {self.cached_total_action_count} != {len(bpy.data.actions)}")
+            return True
+        for obj in objects:
+            if obj.name not in [o.name for o, _ in self.armature_actions_map]:
+                print(f"CachedActionManager: Need update cache, because armature '{obj.name}' is not in the cache")
+                return True
+        return False
+
+    def set_cache(self, objects: List[bpy.types.Object], new_armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]]) -> None:
+        self.cached_object_count = len(objects)
+        self.cached_total_action_count = len(bpy.data.actions)
+        self.armature_actions_map = new_armature_actions_map
+
+    def get_cache(self) -> List[Tuple[bpy.types.Object, bpy.types.Action]]:
+        return self.armature_actions_map
+
+cached_action_manager = CachedActionManager()

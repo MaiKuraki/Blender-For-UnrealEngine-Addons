@@ -25,13 +25,12 @@ from .. import bfu_export_control
 from .. import bfu_debug_settings
 from .. import bfu_anim_action
 from .. import bfu_base_collection
-
 from . import bfu_cached_assets_types
 
 
 class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
-    def get_final_asset_list(self, asset_to_search: AssetToSearch = AssetToSearch.ALL_ASSETS, search_mode: AssetDataSearchMode = AssetDataSearchMode.ASSET_NUMBER) -> List[AssetToExport]:
+    def get_final_asset_list(self, asset_to_search: AssetToSearch = AssetToSearch.ALL_ASSETS, search_mode: AssetDataSearchMode = AssetDataSearchMode.ASSET_NUMBER, force_cache_update: bool = False) -> List[AssetToExport]:
         # Returns all assets that will be exported
         # WARNING: the assets not to be ordered. First asset are exported first.
 
@@ -136,7 +135,12 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                 events.stop_last_event()
             else:
                 if scene:
-                    armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(scene, armature_list)
+                    cached_action_manager = bfu_cached_assets_types.cached_action_manager
+                    if force_cache_update or cached_action_manager.get_need_update_cache(scene, armature_list):
+                        armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(scene, armature_list)
+                        cached_action_manager.set_cache(armature_list, armature_actions_map)
+                    else:
+                        armature_actions_map = cached_action_manager.get_cache()
 
             events.stop_last_and_start_new_event("-> S3")
 
