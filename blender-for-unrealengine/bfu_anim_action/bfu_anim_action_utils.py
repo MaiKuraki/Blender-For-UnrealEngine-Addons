@@ -76,7 +76,7 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
             action_export_enum = bfu_anim_action_props.get_object_anim_action_export_enum(obj)
 
             # Export Auto
-            if action_export_enum == BFU_AnimActionExportEnum.EXPORT_AUTO:
+            if action_export_enum.value == BFU_AnimActionExportEnum.EXPORT_AUTO.value:
                 events.add_sub_event(f'Export Auto "{obj.name}" Prepare')
                 obj_bone_names: Set[str] = {b.name for b in obj.data.bones}
                 events.stop_last_and_start_new_event(f'Export Auto "{obj.name}" Loop actions')
@@ -87,7 +87,7 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
                 events.stop_last_event()
 
             # Export Specific List
-            elif action_export_enum == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST:
+            elif action_export_enum.value == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST.value:
                 events.add_sub_event(f'Export Specific List "{obj.name}"')
                 for target_action in bfu_anim_action_props.object_action_asset_list(obj):
                     if target_action.use:
@@ -97,7 +97,7 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
                 events.stop_last_event()
 
             # Export Specific Prefix
-            elif action_export_enum == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_PREFIX:
+            elif action_export_enum.value == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_PREFIX.value:
                 events.add_sub_event(f'Export Specific Prefix "{obj.name}"')
                 for action in bpy.data.actions:
                     if get_action_use_prefix(obj, action):
@@ -105,7 +105,7 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
                 events.stop_last_event()
 
             # Export Current
-            elif action_export_enum == BFU_AnimActionExportEnum.EXPORT_CURRENT:
+            elif action_export_enum.value == BFU_AnimActionExportEnum.EXPORT_CURRENT.value:
                 events.add_sub_event(f'Export Current "{obj.name}"')
                 if obj.animation_data and obj.animation_data.action:
                         armature_actions_map.append((obj, obj.animation_data.action))

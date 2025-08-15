@@ -11,7 +11,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
     - Action Specific Prefix: from 32.0 ms to 0.1 ms
     - Action Current: from 32.0 ms to 0.005 ms
     Draw with caching:
-    - Any: from 32.0 ms to 0.5 ms
+    - Any: from 32.0 ms to 0.6 ms
 - Changes: Improved translation support and performance.
 - Fixed: Exporting scene collection produces script fail.
 - Fixed: Default path export at disc root instead of relative to .blend file.

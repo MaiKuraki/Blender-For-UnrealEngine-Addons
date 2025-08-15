@@ -55,15 +55,19 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         events.stop_last_and_start_new_event("Search Assets")
         if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
 
-            events.add_sub_event("-> S1")
+            
             # Search for objects
             obj_list: List[bpy.types.Object] = []
             if export_filter == "default":
+                events.add_sub_event("Search recursive objects 01")
                 obj_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+                events.stop_last_event()
 
             elif export_filter in ["only_object", "only_object_and_active"]:
+                events.add_sub_event("Search recursive objects 02")
                 recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
 
+                events.stop_last_and_start_new_event("filter recursive objects")
                 for obj in bpy.context.selected_objects:
                     if obj in recursive_list:
                         if obj not in obj_list:
@@ -72,14 +76,14 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                     if parent_target is not None:
                         if parent_target not in obj_list:
                             obj_list.append(parent_target)
+                events.stop_last_event()
 
-            events.stop_last_and_start_new_event("-> S2")
+            events.add_sub_event("Create object assets class")
             # Search for objects assets
             for obj in obj_list:
                 asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(obj)
                 for asset_class in asset_class_list:
                     target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
-
             events.stop_last_event()
 
 
@@ -136,11 +140,18 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             else:
                 if scene:
                     cached_action_manager = bfu_cached_assets_types.cached_action_manager
-                    if force_cache_update or cached_action_manager.get_need_update_cache(scene, armature_list):
+                    if force_cache_update:
                         armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(scene, armature_list)
-                        cached_action_manager.set_cache(armature_list, armature_actions_map)
+                        cached_action_manager.set_cache(scene, armature_list, armature_actions_map)
                     else:
-                        armature_actions_map = cached_action_manager.get_cache()
+                        events.add_sub_event("Check action cache")
+                        cache_result = cached_action_manager.get_need_update_cache(scene, armature_list)
+                        events.stop_last_event()
+                        if cache_result:
+                            armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(scene, armature_list)
+                            cached_action_manager.set_cache(scene, armature_list, armature_actions_map)
+                        else:
+                            armature_actions_map = cached_action_manager.get_cache()
 
             events.stop_last_and_start_new_event("-> S3")
 

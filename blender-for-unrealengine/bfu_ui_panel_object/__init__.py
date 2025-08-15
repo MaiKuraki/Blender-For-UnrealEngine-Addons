@@ -144,7 +144,7 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         credit_box.label(text=bpy.app.translations.pgettext("Unreal Engine Assets Exporter by Xavier Loux. (BleuRaven)", "interface.intro"))
         credit_box.label(text='Version '+ addon_cached_propertys.ADDON_VERSION_STR)
 
-        events.stop_last_and_start_new_event("S1")
+        events.stop_last_and_start_new_event("S2")
         bbpl.blender_layout.layout_doc_button.functions.add_doc_page_operator(
             layout = layout,
             url = "https://github.com/xavier150/Blender-For-UnrealEngine-Addons",
