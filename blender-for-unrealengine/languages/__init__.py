@@ -11,19 +11,6 @@ if "utils" in locals():
     importlib.reload(utils)
 
 
-
-# Translate function
-def tt(phrase: str) -> str:
-    return "N/A"
-
-def ti(phrase: str) -> str:
-    return "N/A"
-
-def td(phrase: str) -> str:
-    return "N/A"
-
-
-
 # -------------------------------------------------------------------
 #   Register & Unregister
 # -------------------------------------------------------------------
