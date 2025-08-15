@@ -1,7 +1,6 @@
 import bpy
 from typing import Any, Optional,Dict
 from . import bfu_camera_data
-from .. import languages
 from .. import bfu_export_text_files
 
 def WriteOneFrameCameraAnimationTracks(obj: bpy.types.Object, target_frame: int, pre_bake_camera: Optional[bfu_camera_data.BFU_CameraTracks] = None):
@@ -21,7 +20,7 @@ def WriteCameraAnimationTracks(obj: bpy.types.Object, target_frame_start: Option
 
     scene = bpy.context.scene
     data: Dict[str, Any] = {}
-    bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_camera'))
+    bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_header(data, bpy.app.translations.pgettext("This file contains additional Camera animation informations that is not supported with .fbx files", "interface.write_text_additional_track_camera"))
     bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_meta_data(data)
 
     data["frame_start"] = target_frame_start

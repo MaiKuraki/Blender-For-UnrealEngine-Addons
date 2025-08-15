@@ -22,7 +22,6 @@ import bpy
 from typing import List, Dict, Any, Union, Optional
 from . import bfu_export_text_files_utils
 from .. import bfu_export_logs
-from .. import languages
 from .. import bfu_utils
 from .. import bfu_material
 from .. import bfu_nanite
@@ -38,7 +37,7 @@ def write_main_assets_data(exported_asset_log: List[bfu_export_logs.bfu_asset_ex
 
     data: Dict[str, Any] = {}
 
-    bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_all'))
+    bfu_export_text_files_utils.add_generated_json_header(data, bpy.app.translations.pgettext("It used for import into Unreal Engine all the assets of type StaticMesh, SkeletalMesh, Animation, Pose, Camera, [...]", "interface.write_text_additional_track_all"))
     bfu_export_text_files_utils.add_generated_json_meta_data(data)
 
     data['unreal_import_location'] = str(bfu_export_nomenclature.bfu_export_nomenclature_utils.get_import_location())

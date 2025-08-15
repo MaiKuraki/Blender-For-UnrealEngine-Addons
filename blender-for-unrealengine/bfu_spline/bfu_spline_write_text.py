@@ -1,7 +1,6 @@
 import bpy
 from typing import Any, Optional, Dict
 from . import bfu_spline_data
-from .. import languages
 from .. import bfu_export_text_files
 
 def write_spline_points_data(obj: bpy.types.Object, pre_bake_spline: Optional[bfu_spline_data.BFU_SplinesList] = None) -> Dict[str, Any]:
@@ -9,7 +8,7 @@ def write_spline_points_data(obj: bpy.types.Object, pre_bake_spline: Optional[bf
 
 
     data: Dict[str, Any] = {}
-    bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_spline'))
+    bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_header(data, bpy.app.translations.pgettext("This file contains additional Spline data informations that is not supported with .fbx files", "interface.write_text_additional_track_spline"))
     bfu_export_text_files.bfu_export_text_files_utils.add_generated_json_meta_data(data)
 
  

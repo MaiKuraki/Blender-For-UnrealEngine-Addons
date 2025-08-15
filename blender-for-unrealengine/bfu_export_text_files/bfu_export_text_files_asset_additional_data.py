@@ -18,7 +18,7 @@
 
 from typing import Dict, Any
 from . import bfu_export_text_files_utils
-from .. import languages
+import bpy
 
 def write_additional_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -28,7 +28,7 @@ def write_additional_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     asset_additional_data: Dict[str, Any] = {}
 
-    bfu_export_text_files_utils.add_generated_json_header(asset_additional_data, languages.ti('write_text_additional_track_all'))
+    bfu_export_text_files_utils.add_generated_json_header(asset_additional_data, bpy.app.translations.pgettext("It used for import into Unreal Engine all the assets of type StaticMesh, SkeletalMesh, Animation, Pose, Camera, [...]", "interface.write_text_additional_track_all"))
     bfu_export_text_files_utils.add_generated_json_meta_data(asset_additional_data)
 
     # Defaultsettings

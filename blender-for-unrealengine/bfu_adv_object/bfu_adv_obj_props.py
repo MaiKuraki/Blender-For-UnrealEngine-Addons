@@ -20,7 +20,6 @@
 from typing import List
 import bpy
 from .. import bbpl
-from .. import languages
 
 
 def get_preset_values() -> List[str]:
@@ -173,8 +172,8 @@ def register():
         )
 
     bpy.types.Object.bfu_export_with_meta_data = bpy.props.BoolProperty(
-        name=(languages.ti('export_with_meta_data_name')),
-        description=(languages.tt('export_with_meta_data_desc')),
+        name=bpy.app.translations.pgettext("Export meta data", "interface.export_with_meta_data_name"),
+        description=bpy.app.translations.pgettext("Process export with meta data.", "tooltips.export_with_meta_data_desc"),
         override={'LIBRARY_OVERRIDABLE'},
         default=False,
         )

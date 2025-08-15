@@ -147,7 +147,6 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         
         events.stop_last_and_start_new_event("S2")
         credit_box = layout.box()
-        #credit_box.label(text=languages.ti('intro'))
         credit_box.label(text=bpy.app.translations.pgettext("Unreal Engine Assets Exporter by Xavier Loux. (BleuRaven)", "interface.intro"))
         credit_box.label(text=version_str)
 

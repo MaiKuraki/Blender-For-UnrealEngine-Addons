@@ -19,7 +19,6 @@
 
 from typing import List
 import bpy
-from .. import languages
 
 classes = (
 )
@@ -36,8 +35,8 @@ def register():
         bpy.utils.register_class(cls)
 
     bpy.types.Object.bfu_fbx_export_with_custom_props = bpy.props.BoolProperty(
-        name=(languages.ti('export_with_custom_props_name')),
-        description=(languages.tt('export_with_custom_props_desc')),
+        name=bpy.app.translations.pgettext("Export Custom Properties", "interface.export_with_custom_props_name"),
+        description=bpy.app.translations.pgettext("Process export with custom properties (Can be used for Metadata).", "tooltips.export_with_custom_props_desc"),
         override={'LIBRARY_OVERRIDABLE'},
         default=False,
         )
@@ -53,4 +52,5 @@ def register():
 
 def unregister():
     for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
         bpy.utils.unregister_class(cls)

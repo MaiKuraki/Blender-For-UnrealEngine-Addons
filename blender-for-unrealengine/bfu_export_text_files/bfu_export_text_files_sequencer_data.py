@@ -18,7 +18,6 @@
 
 import bpy
 from typing import Dict, List, Any, Union, Optional
-from .. import languages
 from .. import bfu_export_logs
 from .. import bfu_utils
 from .. import bfu_export_control
@@ -33,7 +32,7 @@ def write_sequencer_tracks_data(exported_asset_log: List[bfu_export_logs.bfu_ass
         raise ValueError("No active scene found!")
 
     data: Dict[str, Any] = {}
-    bfu_export_text_files_utils.add_generated_json_header(data, languages.ti('write_text_additional_track_all'))
+    bfu_export_text_files_utils.add_generated_json_header(data, bpy.app.translations.pgettext("It used for import into Unreal Engine all the assets of type StaticMesh, SkeletalMesh, Animation, Pose, Camera, [...]", "interface.write_text_additional_track_all"))
     bfu_export_text_files_utils.add_generated_json_meta_data(data)
 
     data['spawnable_camera'] = True  # Default but open for change

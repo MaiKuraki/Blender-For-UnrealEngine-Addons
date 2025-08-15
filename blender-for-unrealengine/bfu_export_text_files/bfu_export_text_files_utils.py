@@ -23,16 +23,15 @@ import json
 from typing import Dict, Any
 from pathlib import Path
 from .. import bbpl
-from .. import languages
 from .. import bfu_utils
 
 
 def add_generated_json_header(json_data: Dict[str, Any], text: str):
 
     json_data['comment'] = {
-        '1/3': languages.ti('write_text_additional_track_start'),
+        '1/3': bpy.app.translations.pgettext("This file was generated with the addons Blender for UnrealEngine : https://github.com/xavier150/Blender-For-UnrealEngine-Addons", "interface.write_text_additional_track_start"),
         '2/3': text,
-        '3/3': languages.ti('write_text_additional_track_end'),
+        '3/3': bpy.app.translations.pgettext("The script must be used in Unreal Engine Editor with Python plugins : https://docs.unrealengine.com/en-US/Engine/Editor/ScriptingAndAutomation/Python", "interface.write_text_additional_track_end"),
     }
 
 def add_generated_json_footer(json_data: Dict[str, Any]):
@@ -101,4 +100,5 @@ def export_single_json_file(json_data: Dict[str, Any], fullpath: Path) -> bool:
 
     with open(fullpath, 'w') as json_file:
         json.dump(json_data, json_file, ensure_ascii=False, sort_keys=False, indent=4)
+    return True
     return True

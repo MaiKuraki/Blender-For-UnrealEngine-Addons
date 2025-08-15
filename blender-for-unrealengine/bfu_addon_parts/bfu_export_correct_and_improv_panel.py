@@ -1,7 +1,6 @@
 import bpy
 
 from .. import bfu_utils
-from .. import languages
 
 class BFU_PT_CorrectAndImprov(bpy.types.Panel):
     # Is Clipboard panel
@@ -13,22 +12,22 @@ class BFU_PT_CorrectAndImprov(bpy.types.Panel):
     bl_category = "Unreal Engine"
 
     class BFU_OT_CorrectExtremUV(bpy.types.Operator):
-        bl_label = (languages.ti('correct_use_extrem_uv_scale_name'))
+        bl_label = bpy.app.translations.pgettext("Correct Extrem UV Scale For Unreal", "interface.correct_use_extrem_uv_scale_name")
         bl_idname = "object.correct_extrem_uv"
-        bl_description = (languages.tt('correct_extrem_uv_scale_operator_desc'))
+        bl_description = bpy.app.translations.pgettext("Correct Extrem UV Scale for better UV quality in Unreal Engine (Export will take more time).", "tooltips.correct_extrem_uv_scale_operator_desc")
         bl_options = {'REGISTER', 'UNDO'}
 
         step_scale: bpy.props.IntProperty(
-            name=(languages.ti('correct_extrem_uv_scale_step_scale_name')),
-            description =(languages.tt('correct_use_extrem_uv_scale_desc')),
+            name=bpy.app.translations.pgettext("Step Scale", "interface.correct_extrem_uv_scale_step_scale_name"),
+            description=bpy.app.translations.pgettext("Scale of the snap grid.", "tooltips.correct_extrem_uv_scale_step_scale_desc"),
             default=2,
             min=1,
             max=100,
             )
         
         move_to_absolute: bpy.props.BoolProperty(
-            name=(languages.ti('correct_extrem_uv_scale_use_absolute_name')),
-            description =(languages.tt('correct_extrem_uv_scale_use_absolute_desc')),
+            name=bpy.app.translations.pgettext("Use Positive Pos", "interface.correct_extrem_uv_scale_use_absolute_name"),
+            description=bpy.app.translations.pgettext("Keep uv islands to positive positions.", "tooltips.correct_extrem_uv_scale_use_absolute_desc"),
             default=False,
             )
 
@@ -72,4 +71,5 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
+    bpy.types.VIEW3D_MT_uv_map.remove(menu_func)
     bpy.types.VIEW3D_MT_uv_map.remove(menu_func)

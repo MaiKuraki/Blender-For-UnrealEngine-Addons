@@ -28,100 +28,100 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__  # type: ignore
 
     bakeArmatureAction: bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('bake_armature_action_name')),
-        description=(languages.tt('bake_armature_action_desc')),
+        name=bpy.app.translations.pgettext("Bake Armature animation", "interface.bake_armature_action_name"),
+        description=bpy.app.translations.pgettext("Bake Armature animation for export (Export will take more time).", "tooltips.bake_armature_action_desc"),
         default=False,
         )
 
     add_skeleton_root_bone: bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('add_skeleton_root_bone_name')),
-        description=(languages.tt('add_skeleton_root_bone_desc')),
+        name=bpy.app.translations.pgettext("Add root bone", "interface.add_skeleton_root_bone_name"),
+        description=bpy.app.translations.pgettext("Remove the armature root bone.", "tooltips.add_skeleton_root_bone_desc"),
         default=False,
         )
 
     skeleton_root_bone_name: bpy.props.StringProperty(  # type: ignore
-        name=(languages.ti('skeleton_root_bone_name_name')),
-        description=(languages.tt('skeleton_root_bone_name_desc')),
+        name=bpy.app.translations.pgettext("Skeleton root bone name", "interface.skeleton_root_bone_name_name"),
+        description=bpy.app.translations.pgettext("Name of the armature when exported. This is used to change the root bone name. If egal \"Armature\" Ue4 will remove the Armature root bone.", "tooltips.skeleton_root_bone_name_desc"),
         default="ArmatureRoot",
         )
 
     rescaleFullRigAtExport: bpy.props.EnumProperty(  # type: ignore
-        name=(languages.ti('rescale_full_rig_at_export_name')),
-        description=(languages.tt('rescale_full_rig_at_export_desc')),
+        name=bpy.app.translations.pgettext("Rescale exported rig", "interface.rescale_full_rig_at_export_name"),
+        description=bpy.app.translations.pgettext("This will rescale the full rig at the export with the all constraints.", "tooltips.rescale_full_rig_at_export_desc"),
         items=[
             ("auto",
-                languages.ti('rescale_full_rig_at_export_auto_name'),
-                languages.tt('rescale_full_rig_at_export_auto_desc'),
+                bpy.app.translations.pgettext("Auto", "interface.rescale_full_rig_at_export_auto_name"),
+                bpy.app.translations.pgettext("Rescale only if the the Unit Scale is not = to 0.01", "tooltips.rescale_full_rig_at_export_auto_desc"),
                 "SHADERFX",
                 1),
             ("custom_rescale",
-                languages.ti('rescale_full_rig_at_export_custom_rescale_name'),
-                languages.tt('rescale_full_rig_at_export_custom_rescale_desc'),
+                bpy.app.translations.pgettext("Custom Rescale", "interface.rescale_full_rig_at_export_custom_rescale_name"),
+                bpy.app.translations.pgettext("You can choose how rescale the rig at the export", "tooltips.rescale_full_rig_at_export_custom_rescale_desc"),
                 "MODIFIER",
                 2),
             ("dont_rescale",
-                languages.ti('rescale_full_rig_at_export_dont_rescale_name'),
-                languages.tt('rescale_full_rig_at_export_dont_rescale_desc'),
+                bpy.app.translations.pgettext("Dont Rescale", "interface.rescale_full_rig_at_export_dont_rescale_name"),
+                bpy.app.translations.pgettext("Will not rescale the rig", "tooltips.rescale_full_rig_at_export_dont_rescale_desc"),
                 "CANCEL",
                 3)
             ]
         )
 
     newRigScale: bpy.props.FloatProperty(  # type: ignore
-        name=(languages.ti('new_rig_scale_name')),
-        description=(languages.tt('new_rig_scale_desc')),
+        name=bpy.app.translations.pgettext("New scale", "interface.new_rig_scale_name"),
+        description=bpy.app.translations.pgettext("The new rig scale. AUTO: [New scale} = 100 * [Unit scale]", "tooltips.new_rig_scale_desc"),
         default=100,
         )
 
     staticSocketsAdd90X: bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('static_sockets_add_90_x_name')),
-        description=(languages.tt('static_sockets_add_90_x_desc')),
+        name=bpy.app.translations.pgettext("Export StaticMesh Sockets with +90 degrees on X", "interface.static_sockets_add_90_x_name"),
+        description=bpy.app.translations.pgettext("On StaticMesh the sockets are auto imported by unreal with -90 degrees on X", "tooltips.static_sockets_add_90_x_desc"),
         default=True,
         )
 
     rescaleSocketsAtExport: bpy.props.EnumProperty(  # type: ignore
-        name=(languages.ti('rescale_sockets_at_export_name')),
-        description=(languages.tt('rescale_sockets_at_export_desc')),
+        name=bpy.app.translations.pgettext("Rescale exported sockets", "interface.rescale_sockets_at_export_name"),
+        description=bpy.app.translations.pgettext("This will rescale the all sockets at the export.", "tooltips.rescale_sockets_at_export_desc"),
         items=[
             ("auto",
-                languages.ti('rescale_sockets_at_export_auto_name'),
-                languages.tt('rescale_sockets_at_export_auto_desc'),
+                bpy.app.translations.pgettext("Auto", "interface.rescale_sockets_at_export_auto_name"),
+                bpy.app.translations.pgettext("Rescale only if the the Unit Scale is not = to 0.01.", "tooltips.rescale_sockets_at_export_auto_desc"),
                 "SHADERFX",
                 1),
             ("custom_rescale",
-                languages.ti('rescale_sockets_at_export_custom_rescale_name'),
-                languages.tt('rescale_sockets_at_export_custom_rescale_desc'),
+                bpy.app.translations.pgettext("Custom Rescale", "interface.rescale_sockets_at_export_custom_rescale_name"),
+                bpy.app.translations.pgettext("You can choose how rescale the sockets at the export.", "tooltips.rescale_sockets_at_export_custom_rescale_desc"),
                 "MODIFIER",
                 2),
             ("dont_rescale",
-                languages.ti('rescale_sockets_at_export_dont_rescale_name'),
-                languages.tt('rescale_sockets_at_export_dont_rescale_desc'),
+                bpy.app.translations.pgettext("Dont Rescale", "interface.rescale_sockets_at_export_dont_rescale_name"),
+                bpy.app.translations.pgettext("Will not rescale the sockets. AUTO: 1 ([New scale} = 100 / [Unit scale]", "tooltips.rescale_sockets_at_export_dont_rescale_desc"),
                 "CANCEL",
                 3)
             ]
         )
 
     staticSocketsImportedSize: bpy.props.FloatProperty(  # type: ignore
-        name=(languages.ti('static_sockets_imported_size_name')),
-        description=(languages.tt('static_sockets_imported_size_desc')),
+        name=bpy.app.translations.pgettext("StaticMesh sockets import size", "interface.static_sockets_imported_size_name"),
+        description=bpy.app.translations.pgettext("ize of the socket when imported in Unreal Engine.", "tooltips.static_sockets_imported_size_desc"),
         default=1,
         )
 
     skeletalSocketsImportedSize: bpy.props.FloatProperty(  # type: ignore
-        name=(languages.ti('skeletal_sockets_imported_size_name')),
-        description=(languages.tt('skeletal_sockets_imported_size_desc')),
+        name=bpy.app.translations.pgettext("SkeletalMesh sockets import size", "interface.skeletal_sockets_imported_size_name"),
+        description=bpy.app.translations.pgettext("Size of the socket when imported in Unreal Engine. AUTO: 1 ([New scale} = 100 / [Unit scale])", "tooltips.skeletal_sockets_imported_size_desc"),
         default=1,
         )
 
     ignoreNLAForAction: bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('ignore_nla_for_action_name')),
-        description=(languages.tt('ignore_nla_for_action_desc')),
+        name=bpy.app.translations.pgettext("Ignore NLA for Actions", "interface.ignore_nla_for_action_name"),
+        description=bpy.app.translations.pgettext("This will export the action and ignore the all layer in Nonlinear Animation.", "tooltips.ignore_nla_for_action_desc"),
         default=False,
         )
 
     revertExportPath: bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('revert_export_path_name')),
-        description=(languages.tt('revert_export_path_desc')),
+        name=bpy.app.translations.pgettext("Revert all export path at each export.", "interface.revert_export_path_name"),
+        description=bpy.app.translations.pgettext("will remove the folder of the all export path at each export.", "tooltips.revert_export_path_desc"),
         default=False,
         )
 
@@ -132,14 +132,14 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
         )
 
     useGeneratedScripts: bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('use_generated_scripts_name')),
-        description=(languages.tt('use_generated_scripts_desc')),
+        name=bpy.app.translations.pgettext("Use generated script for import assets and sequencer.", "interface.use_generated_scripts_name"),
+        description=bpy.app.translations.pgettext("If false the all properties that only works with import scripts will be disabled.", "tooltips.use_generated_scripts_desc"),
         default=True,
         )
 
     collisionColor:  bpy.props.FloatVectorProperty(  # type: ignore
-        name=languages.ti('collision_color_name'),
-        description='Color of the collision in Blender',
+        name=bpy.app.translations.pgettext("Collision color", "interface.collision_color_name"),
+        description=bpy.app.translations.pgettext("Color of the collision in Blender.", "tooltips.collision_color_desc"),
         subtype='COLOR',
         size=4,
         default=(0, 0.6, 0, 0.11),
@@ -147,19 +147,16 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
         )
 
     notifyUnitScalePotentialError: bpy.props.BoolProperty(  # type: ignore
-        name=languages.ti('notify_unit_scale_potential_error_name'),
-        description=(
-            'Notify as potential error' +
-            ' if the unit scale is not equal to 0.01.'
-            ),
+        name=bpy.app.translations.pgettext("Notify UnitScale in potential error check", "interface.notify_unit_scale_potential_error_name"),
+        description=bpy.app.translations.pgettext("Notify as potential error if the unit scale is not equal to 0.01.", "tooltips.notify_unit_scale_potential_error_desc"),
         default=True,
         )
     
     #CAMERA
 
     bake_only_key_visible_in_cut: bpy.props.BoolProperty(  # type: ignore
-        name=(languages.ti('bake_only_key_visible_in_cut_name')),
-        description=(languages.tt('bake_only_key_visible_in_cut_desc')),
+        name=bpy.app.translations.pgettext("Bake Only Visible Cuts", "interface.bake_only_key_visible_in_cut_name"),
+        description=bpy.app.translations.pgettext("Bake camera only when visible in camera cuts.", "tooltips.bake_only_key_visible_in_cut_desc"),
         default=True,
         )
     
