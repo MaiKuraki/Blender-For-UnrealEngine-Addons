@@ -3,8 +3,8 @@ from typing import List
 from . import bpl
 
 # WARNING /!\ Keep all on False for production.
-show_spline_debug_panel = False
-print_draw_debug_times = True
+SHOW_SPLINE_DEBUG_PANEL = False
+PRINT_DRAW_DEBUG_TIMES = False
 
 # ------------------------
 
@@ -41,30 +41,26 @@ class debug_event():
 current_record: List[debug_event] = []
 
 
-def start_draw_record():
-    current_record.clear()
+def start_draw_record() -> None:
+    if PRINT_DRAW_DEBUG_TIMES:
+        current_record.clear()
 
-def stop_draw_record_and_print():
-    if print_draw_debug_times:
+def stop_draw_record_and_print() -> None:
+    if PRINT_DRAW_DEBUG_TIMES:
         count = len(current_record)
         print("------------------------------------")
         print(f"Recorded: {count} events")
         for record in current_record:
             record.print_state()
-    current_record.clear()
+        current_record.clear()
 
-def start_event(name: str) -> debug_event:
-    event = debug_event(name)
-    current_record.append(event)
-
-    return event
 
 class event_helper():
     def __init__(self):
         self.current_events: List[debug_event] = []
 
     def new_event(self, name: str) -> debug_event:
-        if not print_draw_debug_times:
+        if not PRINT_DRAW_DEBUG_TIMES:
             return debug_event("")
         
         event = debug_event(name)
@@ -73,7 +69,7 @@ class event_helper():
         return event
 
     def stop_last_event(self):
-        if not print_draw_debug_times:
+        if not PRINT_DRAW_DEBUG_TIMES:
             return
 
         if self.current_events:
@@ -82,14 +78,14 @@ class event_helper():
             self.current_events.remove(last_event)
 
     def stop_last_and_start_new_event(self, name: str) -> debug_event:
-        if not print_draw_debug_times:
+        if not PRINT_DRAW_DEBUG_TIMES:
             return debug_event("")
 
         self.stop_last_event()
         return self.add_sub_event(name)
 
     def add_sub_event(self, name: str) -> debug_event:
-        if not print_draw_debug_times:
+        if not PRINT_DRAW_DEBUG_TIMES:
             return debug_event("")
 
         if self.current_events:
