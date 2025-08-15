@@ -1,0 +1,1 @@
+languages_folder: str = "local_list"

@@ -37,6 +37,7 @@ try:
     import importlib
     from . import bpl
     from . import bbpl
+    from . import languages
     from . import bfu_debug_settings
     from . import bfu_simple_file_type_enum
     from . import bfu_assets_manager
@@ -93,6 +94,8 @@ try:
         importlib.reload(bpl)
     if "bbpl" in locals():
         importlib.reload(bbpl)
+    if "languages" in locals():
+        importlib.reload(languages)
     if "bfu_debug_settings" in locals():
         importlib.reload(bfu_debug_settings)
     if "bfu_simple_file_type_enum" in locals():
@@ -206,6 +209,7 @@ try:
             for cls in classes:
                 bpy.utils.register_class(cls)  # type: ignore
             bbpl.register()
+            languages.register()
             bfu_assets_manager.register()
             bfu_export_control.register()
             bfu_check_potential_error.register()
@@ -303,6 +307,7 @@ try:
             bfu_check_potential_error.unregister()
             bfu_export_control.unregister()
             bfu_assets_manager.unregister()
+            languages.unregister()
             bbpl.unregister()
 
             for cls in reversed(classes):
