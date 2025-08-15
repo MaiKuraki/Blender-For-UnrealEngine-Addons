@@ -179,10 +179,10 @@ class BFU_OT_ObjExportAction(bpy.types.PropertyGroup):
         name: str
         use: bool
 
-def get_object_action_asset_list(obj: bpy.types.Object) -> List[BFU_OT_ObjExportAction]:
+def object_action_asset_list(obj: bpy.types.Object) -> List[BFU_OT_ObjExportAction]:
     return obj.bfu_action_asset_list #  type: ignore
 
-def get_object_prefix_name_to_export(obj: bpy.types.Object) -> str:
+def object_prefix_name_to_export(obj: bpy.types.Object) -> str:
     return obj.bfu_prefix_name_to_export #  type: ignore
 
 # -------------------------------------------------------------------

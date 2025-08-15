@@ -18,32 +18,26 @@
 
 from typing import List
 import bpy
-from .. import bfu_export_filter
 from . import bfu_base_col_props
+from .. import bfu_export_filter
+from .. import bfu_debug_settings
 
 def support_collection_export(scene: bpy.types.Scene) -> bool:
     return bfu_export_filter.bfu_export_filter_props.scene_use_static_collection_export(scene)
-
-def get_collection_asset_list(scene: bpy.types.Scene) -> List[bpy.types.Collection]:
-    collection_export_asset_list: List[bpy.types.Collection] = []
-
-    for target_col in bfu_base_col_props.scene_collection_asset_list(scene):
-        if target_col.use:
-            if target_col.name in bpy.data.collections:
-                collection = bpy.data.collections[target_col.name]
-                collection_export_asset_list.append(collection)
-    return collection_export_asset_list
 
 def optimized_collection_search(scene: bpy.types.Scene) -> List[bpy.types.Collection]:
     if not support_collection_export(scene):
         return []
 
+    events = bfu_debug_settings.root_events
     collection_list: List[bpy.types.Collection] = []
 
-    collection_export_asset_list = get_collection_asset_list(scene)
-    for col_asset in collection_export_asset_list:
-        if col_asset.name in bpy.data.collections:
-            collection = bpy.data.collections[col_asset.name]
-            collection_list.append(collection)
+    events.add_sub_event(f'Export Specific Collection List')
+    for target_col in bfu_base_col_props.scene_collection_asset_list(scene):
+        if target_col.use:
+            # No need to check if not collection.library: because alredsy checked in scene_collection_asset_list
+            if target_col.name in bpy.data.collections:
+                collection_list.append(bpy.data.collections[target_col.name])
+    events.stop_last_event()
 
     return collection_list

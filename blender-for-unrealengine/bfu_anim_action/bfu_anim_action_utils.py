@@ -89,7 +89,7 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
             # Export Specific List
             elif action_export_enum == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST:
                 events.add_sub_event(f'Export Specific List "{obj.name}"')
-                for target_action in bfu_anim_action_props.get_object_action_asset_list(obj):
+                for target_action in bfu_anim_action_props.object_action_asset_list(obj):
                     if target_action.use:
                         # No need to check if not action.library: because alredsy checked in get_object_action_asset_list
                         if target_action.name in bpy.data.actions:
@@ -121,7 +121,7 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
 def get_action_is_in_action_asset_list(obj: bpy.types.Object, action: bpy.types.Action) -> bool:
     events = bfu_debug_settings.root_events
     events.add_sub_event("Get bfu list")
-    action_asset_list = bfu_anim_action_props.get_object_action_asset_list(obj)  # CollectionProperty<BFU_OT_ObjExportAction>
+    action_asset_list = bfu_anim_action_props.object_action_asset_list(obj)  # CollectionProperty<BFU_OT_ObjExportAction>
     events.stop_last_and_start_new_event("Check Action In Asset List")
     for target_action in action_asset_list:
         if target_action.use:
@@ -132,7 +132,7 @@ def get_action_is_in_action_asset_list(obj: bpy.types.Object, action: bpy.types.
     return False
 
 def get_action_use_prefix(obj: bpy.types.Object, action: bpy.types.Action) -> bool:
-    if fnmatch.fnmatchcase(action.name, bfu_anim_action_props.get_object_prefix_name_to_export(obj) + "*"):
+    if fnmatch.fnmatchcase(action.name, bfu_anim_action_props.object_prefix_name_to_export(obj) + "*"):
         return True
     return False
 
