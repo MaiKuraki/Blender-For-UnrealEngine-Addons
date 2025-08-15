@@ -56,10 +56,15 @@ class BFU_OT_ComputAllLightMap(bpy.types.Operator):
         "Click to calculate the surface of the all object in the scene"
         )
 
-    def execute(self, context):
-        updated = bfu_utils.UpdateAreaLightMapList()
-        self.report({'INFO'}, "The light maps of " + str(updated) + " object(s) have been updated.")
-        return {'FINISHED'}
+    def execute(self, context: bpy.types.Context):
+        scene = context.scene
+        if scene:
+            updated = bfu_light_map_utils.update_area_light_map_list(scene)
+            self.report({'INFO'}, "The light maps of " + str(updated) + " object(s) have been updated.")
+            return {'FINISHED'}
+        else:
+            self.report({'WARNING'}, "No objects found to update.")
+            return {'CANCELLED'}
 
 
 # -------------------------------------------------------------------

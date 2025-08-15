@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import Dict, TYPE_CHECKING, Any
+from typing import Dict, TYPE_CHECKING, Any, Optional, List
 from .. import bpl
 from .. import bbpl
 from .. import bfu_basics
@@ -98,14 +98,14 @@ def GetCompuntedLightMap(obj):
             return bpl.math.nearest_power_of_two(int(round(area)))
         return int(round(area))
 
-def UpdateAreaLightMapList(objects_to_update=None):
+def update_area_light_map_list(scene: bpy.types.Scene, objects_to_update: Optional[List[bpy.types.Object]] = None):
     # Updates area LightMap
 
     if objects_to_update is not None:
         objs = objects_to_update
     else:
-        objs = []
-        export_recu_objs = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects()
+        objs: List[bpy.types.Object] = []
+        export_recu_objs = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects(scene)
         for export_recu_obj in export_recu_objs:
 
             if bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(export_recu_obj):
