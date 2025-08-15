@@ -153,8 +153,6 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             )
         events.stop_last_event()
         
-        
-
         # Presets
         events.stop_last_and_start_new_event("Draw Presets")
         row = layout.row(align=True)
@@ -168,19 +166,17 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         layout.row().prop(scene, "bfu_active_tab", expand=True)
         if scene.bfu_active_tab == "OBJECT":
             layout.row().prop(scene, "bfu_active_object_tab", expand=True)
+        events.stop_last_event()
 
         # Modules UI
-        events.stop_last_and_start_new_event("Draw Modules UI")
         if context.object is None:
             layout.row().label(text='No active object.')
-            events.stop_last_event()
-            events.stop_last_event()
-            bfu_debug_settings.stop_draw_record_and_print()
-            return
+
         else:
             obj: bpy.types.Object = context.object
         
             # Object
+            events.add_sub_event("Draw Object")
             bfu_base_object.bfu_base_obj_ui.draw_ui(layout, context, obj)
             bfu_adv_object.bfu_adv_obj_ui.draw_ui(layout, context, obj)
             bfu_static_mesh.bfu_static_mesh_ui.draw_ui_object(layout, context, obj)
@@ -200,13 +196,16 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             bfu_assets_references.bfu_asset_ref_ui.draw_ui(layout, context, obj)
 
             # Animations
+            events.stop_last_and_start_new_event("Draw Animations")
             bfu_anim_action.bfu_anim_action_ui.draw_ui(layout, context, obj)
             bfu_anim_action_adv.bfu_anim_action_adv_ui.draw_ui(layout, context, obj)
             bfu_anim_nla.bfu_anim_nla_ui.draw_ui(layout, context, obj)
             bfu_anim_nla_adv.bfu_anim_nla_adv_ui.draw_ui(layout, context, obj)
             bfu_anim_base.bfu_anim_base_ui.draw_ui(layout, context, obj)
+            events.stop_last_event()
 
         # Scene
+        events.add_sub_event("Draw Scene")
         bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
         events.stop_last_event()
 

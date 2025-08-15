@@ -19,6 +19,7 @@
 
 from typing import List
 import bpy
+from .. import bfu_debug_settings
 from .. import bfu_export_nomenclature
 from .. import bfu_export_filter
 from .. import bfu_export_process
@@ -74,16 +75,28 @@ class BFU_PT_Export(bpy.types.Panel):
         if layout is None:
             return
         
+        bfu_debug_settings.start_draw_record()
+        events = bfu_debug_settings.root_events
+        events.new_event("Draw Export")
+
         # Presets
+        events.add_sub_event("Draw Export Presets")
         row = layout.row(align=True)
         row.menu('BFU_MT_NomenclaturePresets', text='Export Presets')
         row.operator('object.add_nomenclature_preset', text='', icon='ADD')
         row.operator('object.add_nomenclature_preset', text='', icon='REMOVE').remove_active = True
 
         # Export sections
+        events.stop_last_and_start_new_event("Draw Export Nomenclature")
         bfu_export_nomenclature.bfu_export_nomenclature_ui.draw_ui(layout, context)
+        events.stop_last_and_start_new_event("Draw Export Filter")
         bfu_export_filter.bfu_export_filter_ui.draw_ui(layout, context)
+        events.stop_last_and_start_new_event("Draw Export Process")
         bfu_export_process.bfu_export_process_ui.draw_ui(layout, context)
+        events.stop_last_event()
+
+        events.stop_last_event()
+        bfu_debug_settings.stop_draw_record_and_print()
 
 # -------------------------------------------------------------------
 #   Register & Unregister

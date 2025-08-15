@@ -18,6 +18,7 @@
 
 
 import bpy
+from .. import bfu_debug_settings
 from .. import bfu_camera
 from .. import bfu_spline
 from .. import bfu_collision
@@ -39,17 +40,30 @@ class BFU_PT_BlenderForUnrealTool(bpy.types.Panel):
         layout = self.layout
         if layout is None:
             return
+        
+        bfu_debug_settings.start_draw_record()
+        events = bfu_debug_settings.root_events
+        events.new_event("Draw Tools")
 
         # Tools sections
+        events.add_sub_event("Draw Camera Tools")
         bfu_camera.bfu_camera_ui.draw_tools_ui(layout, context)
+        events.stop_last_and_start_new_event("Draw Spline Tools")
         bfu_spline.bfu_spline_ui.draw_tools_ui(layout, context)
 
+        events.stop_last_and_start_new_event("Draw Collision Tools")
         bfu_collision.bfu_collision_ui.draw_tools_ui(layout, context)
+        events.stop_last_and_start_new_event("Draw Socket Tools")
         bfu_socket.bfu_socket_ui.draw_tools_ui(layout, context)
 
+        events.stop_last_and_start_new_event("Draw UV Map Tools")
         bfu_uv_map.bfu_uv_map_ui.draw_tools_ui(layout, context)
+        events.stop_last_and_start_new_event("Draw Light Map Tools")
         bfu_light_map.bfu_light_map_ui.draw_tools_ui(layout, context)
+        events.stop_last_event()
 
+        events.stop_last_event()
+        bfu_debug_settings.stop_draw_record_and_print()
 
 ''
 
