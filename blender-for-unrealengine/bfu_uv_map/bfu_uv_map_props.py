@@ -100,4 +100,3 @@ def unregister():
 
     del bpy.types.Scene.bfu_tools_uv_map_properties_expanded
     del bpy.types.Scene.bfu_object_uv_map_properties_expanded
-    del bpy.types.Scene.bfu_object_uv_map_properties_expanded

@@ -240,7 +240,6 @@ def get_final_asset_cache() -> BFU_FinalExportAssetCache:
 # -------------------------------------------------------------------
 
 classes = (
-
     BFU_CollectionExportAssetCache,
     BFU_AnimationExportAssetCache,
     BFU_FinalExportAssetCache,
@@ -274,5 +273,12 @@ def register():
 
 
 def unregister():
+
+    del bpy.types.Scene.final_asset_cache
+    del bpy.types.Object.animation_asset_cache
+    del bpy.types.Scene.collection_asset_cache
+
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+
+    
