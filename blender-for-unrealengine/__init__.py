@@ -38,6 +38,7 @@ try:
     from . import bpl
     from . import bbpl
     from . import languages
+    from . import addon_cached_propertys
     from . import bfu_debug_settings
     from . import bfu_simple_file_type_enum
     from . import bfu_assets_manager
@@ -96,6 +97,8 @@ try:
         importlib.reload(bbpl)
     if "languages" in locals():
         importlib.reload(languages)
+    if "addon_cached_propertys" in locals():
+        importlib.reload(addon_cached_propertys)
     if "bfu_debug_settings" in locals():
         importlib.reload(bfu_debug_settings)
     if "bfu_simple_file_type_enum" in locals():

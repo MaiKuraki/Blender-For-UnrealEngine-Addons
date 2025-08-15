@@ -20,7 +20,7 @@ from typing import List, Dict, Optional, Tuple
 import bpy
 from .. import bfu_debug_settings
 from .. import bbpl
-from .. import languages
+from .. import addon_cached_propertys
 from .. import bfu_custom_property
 from .. import bfu_base_object
 from .. import bfu_adv_object
@@ -139,18 +139,12 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
 
         # Extension details
         events.add_sub_event("Draw Extension Details")
-        events.add_sub_event("S1")
-        if bpy.app.version >= (4, 2, 0):
-            version_str = 'Version '+ str(bbpl.blender_extension.extension_utils.get_package_version())
-        else:
-            version_str = 'Version '+ bbpl.blender_addon.addon_utils.get_addon_version_str("Unreal Engine Assets Exporter")
-        
-        events.stop_last_and_start_new_event("S2")
+        events.stop_last_and_start_new_event("S1")
         credit_box = layout.box()
         credit_box.label(text=bpy.app.translations.pgettext("Unreal Engine Assets Exporter by Xavier Loux. (BleuRaven)", "interface.intro"))
-        credit_box.label(text=version_str)
+        credit_box.label(text='Version '+ addon_cached_propertys.ADDON_VERSION_STR)
 
-        events.stop_last_and_start_new_event("S3")
+        events.stop_last_and_start_new_event("S1")
         bbpl.blender_layout.layout_doc_button.functions.add_doc_page_operator(
             layout = layout,
             url = "https://github.com/xavier150/Blender-For-UnrealEngine-Addons",
