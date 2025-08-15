@@ -49,19 +49,20 @@ def draw_asset_preview_bar(
     asset_to_search: AssetToSearch = AssetToSearch.ALL_ASSETS
 ) -> None:
 
-    print_draw_debug_times = bfu_debug_settings.print_draw_debug_times
-    if print_draw_debug_times:
-        bfu_debug_settings.start_draw_record()
+    events = bfu_debug_settings.root_events
+    events.add_sub_event("Draw Asset Preview Bar")
+    events.add_sub_event("Get asset list")
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
     final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.ASSET_NUMBER)
 
+    events.stop_last_and_start_new_event("Get asset count")
     asset_count = len(final_asset_list_to_export)
     asset_info_ui = layout.row().box().split(factor=0.75)
     asset_info_text = get_asset_title_text(asset_count, asset_to_search)
     asset_info_ui.label(text=asset_info_text)
     asset_info_ui.operator("object.showasset", text="Show Assets").asset_to_search_str = asset_to_search.value
-    if print_draw_debug_times:
-        bfu_debug_settings.stop_draw_record_and_print()
+    events.stop_last_event()
+    events.stop_last_event()
 
 def draw_asset_content_line(
     layout: bpy.types.UILayout, 

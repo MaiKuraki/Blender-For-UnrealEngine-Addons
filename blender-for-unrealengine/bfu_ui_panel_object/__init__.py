@@ -18,6 +18,7 @@
 
 from typing import List
 import bpy
+from .. import bfu_debug_settings
 from .. import bbpl
 from .. import languages
 from .. import bfu_custom_property
@@ -132,7 +133,12 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         if layout is None:
             return
         
+        bfu_debug_settings.start_draw_record()
+        events = bfu_debug_settings.root_events
+        events.new_event("Draw Object Properties")
+
         # Extension details
+        events.add_sub_event("Draw Extension Details")
         if bpy.app.version >= (4, 2, 0):
             version_str = 'Version '+ str(bbpl.blender_extension.extension_utils.get_package_version())
         else:
@@ -148,22 +154,29 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             icon="HELP"
             )
         
-        scene = context.scene
         
 
         # Presets
+        events.stop_last_and_start_new_event("Draw Presets")
         row = layout.row(align=True)
         row.menu('BFU_MT_ObjectGlobalPropertiesPresets', text='Global Properties Presets')
         row.operator('object.add_globalproperties_preset', text='', icon='ADD')
         row.operator('object.add_globalproperties_preset', text='', icon='REMOVE').remove_active = True
 
         # Tab Buttons
+        events.stop_last_and_start_new_event("Draw Tab Buttons")
+        scene = context.scene
         layout.row().prop(scene, "bfu_active_tab", expand=True)
         if scene.bfu_active_tab == "OBJECT":
             layout.row().prop(scene, "bfu_active_object_tab", expand=True)
 
+        # Modules UI
+        events.stop_last_and_start_new_event("Draw Modules UI")
         if context.object is None:
             layout.row().label(text='No active object.')
+            events.stop_last_event()
+            events.stop_last_event()
+            bfu_debug_settings.stop_draw_record_and_print()
             return
         else:
             obj: bpy.types.Object = context.object
@@ -196,6 +209,10 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
 
         # Scene
         bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
+        events.stop_last_event()
+
+        events.stop_last_event()
+        bfu_debug_settings.stop_draw_record_and_print()
 
 
 # -------------------------------------------------------------------

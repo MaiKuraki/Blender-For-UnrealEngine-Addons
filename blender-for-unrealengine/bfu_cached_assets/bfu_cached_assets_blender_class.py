@@ -93,7 +93,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         # WARNING: the assets not to be ordered. First asset are exported first.
 
         events = bfu_debug_settings.root_events
-        events.new_event("Get Final Asset List")
+        events.add_sub_event("Get Final Asset List")
         events.add_sub_event("Prepare")
 
         def get_have_parent_to_export(obj: bpy.types.Object) -> Optional[bpy.types.Object]:
@@ -221,33 +221,6 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         events.stop_last_event()
         events.stop_last_event()
         return target_asset_to_export
-  
-        # NLA
-        if scene.bfu_use_animation_export:
-            if obj.bfu_anim_nla_use:
-                TargetAssetToExport.append(AssetToExport(obj, obj.animation_data, AssetType.ANIM_NLA))
-
-        animation_asset_cache = get_animation_asset_cache(obj)
-        animation_to_export = animation_asset_cache.GetAnimationAssetList()
-        for action in animation_to_export:
-            if scene.bfu_export_selection_filter == "only_object_and_active":
-                if obj.animation_data:
-                    if obj.animation_data.action == action:
-                        TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_ACTION))
-            else:
-                if scene.bfu_use_animation_export:
-                    
-                    if bfu_utils.action_is_one_frame(action) == True:
-                        # Action
-                        TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_ACTION))
-                    else:
-                        # Pose
-                        TargetAssetToExport.append(AssetToExport(obj, action, AssetType.ANIM_POSE))
-        # Others
-        asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_asset_class(obj)
-        if asset_class and asset_class.can_export_asset(obj):
-            TargetAssetToExport.append(AssetToExport(obj, None, asset_class.get_asset_type(obj)))
-
 
 
 

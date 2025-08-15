@@ -4,7 +4,7 @@ from . import bpl
 
 # WARNING /!\ Keep all on False for production.
 show_spline_debug_panel = False
-print_draw_debug_times = False
+print_draw_debug_times = True
 
 # ------------------------
 
