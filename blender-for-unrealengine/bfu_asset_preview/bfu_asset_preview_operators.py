@@ -38,13 +38,6 @@ class BFU_OT_ShowAssetToExport(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
 
-        obj = context.object
-        if obj:
-            if obj.type == "ARMATURE":  # type: ignore
-                animation_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_animation_asset_cache(obj)
-                animation_asset_cache.UpdateActionCache()
-                
-
         bpy.ops.object.openshowassettoexport("INVOKE_DEFAULT", asset_to_search_str=self.asset_to_search_str)
         return {'FINISHED'}
 

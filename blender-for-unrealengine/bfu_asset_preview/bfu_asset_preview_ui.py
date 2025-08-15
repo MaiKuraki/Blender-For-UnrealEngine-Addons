@@ -25,23 +25,7 @@ from .. import bpl
 from .. import bfu_debug_settings
 
 def get_asset_title_text(asset_count: int, asset_to_search: AssetToSearch) -> str:
-    if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
-        if asset_count == 0:
-            return "No exportable assets were found."
-        elif asset_count == 1:
-            return "1 asset will be exported."
-        else:
-            return f"{asset_count} assets will be exported."
-    # ----
-    elif asset_to_search.value == AssetToSearch.ANIMATION_ONLY.value:
-        if asset_count == 0:
-            return "No exportable animations were found."
-        elif asset_count == 1:
-            return "1 animation will be exported."
-        else:
-            return f"{asset_count} animations will be exported."
-    else:
-        return "Unknown asset type."
+    return asset_to_search.get_asset_title_text(asset_count)
 
 def draw_asset_preview_bar(
     layout: bpy.types.UILayout, 

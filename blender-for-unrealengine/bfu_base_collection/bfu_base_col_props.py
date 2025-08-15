@@ -85,34 +85,6 @@ class BFU_OT_UpdateCollectionButton(bpy.types.Operator):
         UpdateExportCollectionList(context.scene)
         return {'FINISHED'}
 
-class BFU_OT_ShowCollectionToExport(bpy.types.Operator):
-    bl_label = "Show collection(s)"
-    bl_idname = "object.showscenecollection"
-    bl_description = "Click to show collections to export"
-
-    def execute(self, context):
-        scene = context.scene
-        collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_collectiona_asset_cache()
-        collection_export_asset_list = collection_asset_cache.get_collection_asset_list()
-        popup_title = "Collection list"
-        if len(collection_export_asset_list) > 0:
-            popup_title = (
-                str(len(collection_export_asset_list))+' collection(s) to export found.')
-        else:
-            popup_title = 'No collection to export found.'
-
-        def draw(self, context: bpy.types.Context):
-            col = self.layout.column()
-            for collection in collection_export_asset_list:
-                row = col.row()
-                row.label(text="- "+collection.name)
-        bpy.context.window_manager.popup_menu(
-            draw,
-            title=popup_title,
-            icon='GROUP')
-        return {'FINISHED'}
-
-
 class BFU_OT_SceneCollectionExport(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="collection data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'})
     use: bpy.props.BoolProperty(name="export this collection", default=False, override={'LIBRARY_OVERRIDABLE'})
@@ -125,7 +97,6 @@ class BFU_OT_SceneCollectionExport(bpy.types.PropertyGroup):
 classes = (
     BFU_UL_CollectionExportTarget,
     BFU_OT_UpdateCollectionButton,
-    BFU_OT_ShowCollectionToExport,
     BFU_OT_SceneCollectionExport,
 )
 

@@ -29,62 +29,17 @@ from .. import bfu_anim_action
 from . import bfu_cached_assets_types
 
 
+def get_collection_asset_list(scene: bpy.types.Scene) -> List[bpy.types.Collection]:
 
+    collection_export_asset_list: List[bpy.types.Collection] = []
 
-
-
-
-my_cached_actions = bfu_cached_assets_types.CachedAction()
-
-
-class BFU_CollectionExportAssetCache(bpy.types.PropertyGroup):
-
-    def get_collection_asset_list(self):
-
-        scene: bpy.types.Scene = self.id_data
-        collection_export_asset_list: List[bpy.types.Collection] = []
-
-        for col in scene.bfu_collection_asset_list:
-            col: bpy.types.Collection
-            if col.use:
-                if col.name in bpy.data.collections:
-                    collection = bpy.data.collections[col.name]
-                    collection_export_asset_list.append(collection)
-        return collection_export_asset_list
-
-
-class BFU_AnimationExportAssetCache(bpy.types.PropertyGroup):
-
-    def UpdateActionCache(self):
-        # Force update cache export auto action list
-        return self.get_cached_export_auto_action_list(True)
-
-    def get_cached_export_auto_action_list(self, force_update_cache: bool = False)->  List[bpy.types.Action]:
-        # This will cheak if the action contains
-        # the same bones of the armature
-
-        obj: bpy.types.Object = self.id_data
-        actions: List[bpy.types.Action] = []
-
-        # Use the cache
-        if force_update_cache:
-            my_cached_actions.is_cached = False
-
-        if my_cached_actions.check_cache(obj):
-            actions = my_cached_actions.get_stored_actions()
-
-        else:
-            my_cached_actions.clear()
-
-            obj_bone_names: Set[str] = {b.name for b in obj.data.bones}
-            for action in bpy.data.actions:
-                if action.library is None:
-                    if bfu_basics.get_if_action_can_associate_str_set(action, obj_bone_names):
-                        actions.append(action)
-            # Update the cache
-            my_cached_actions.store_actions(obj, actions)
-        return actions
-
+    for col in scene.bfu_collection_asset_list:
+        col: bpy.types.Collection
+        if col.use:
+            if col.name in bpy.data.collections:
+                collection = bpy.data.collections[col.name]
+                collection_export_asset_list.append(collection)
+    return collection_export_asset_list
 
 class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
@@ -113,22 +68,6 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         events.stop_last_and_start_new_event("Search Assets")
 
         if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
-            # Search for collections
-            collection_list: List[bpy.types.Collection] = []
-            if export_filter == "default":
-                collection_asset_cache = get_collectiona_asset_cache()
-                collection_export_asset_list = collection_asset_cache.get_collection_asset_list()
-                for col_asset in collection_export_asset_list:
-                    if col_asset.name in bpy.data.collections:
-                        collection = bpy.data.collections[col_asset.name]
-                        collection_list.append(collection)
-
-            # Search for collections assets
-            for collection in collection_list:
-                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(collection)
-                if asset_class_list:
-                    for asset_class in asset_class_list:
-                        target_asset_to_export.extend(asset_class.get_asset_export_data(collection, None, search_mode=search_mode))
 
             # Search for objects
             obj_list: List[bpy.types.Object] = []
@@ -153,8 +92,32 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                 for asset_class in asset_class_list:
                     target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
 
-        events.stop_last_and_start_new_event("Search Armatures")
 
+        events.stop_last_and_start_new_event("Search Collections")
+        if asset_to_search.value in [AssetToSearch.ALL_ASSETS.value, AssetToSearch.COLLECTION_ONLY.value]:
+        
+            if scene and export_filter == "default":
+                collection_list: List[bpy.types.Collection] = []
+                events.add_sub_event("-> S1")
+                # Search for collections
+                collection_export_asset_list = get_collection_asset_list(scene)
+                for col_asset in collection_export_asset_list:
+                    if col_asset.name in bpy.data.collections:
+                        collection = bpy.data.collections[col_asset.name]
+                        collection_list.append(collection)
+
+                events.stop_last_and_start_new_event("-> S2")
+                # Search for collections assets
+                for collection in collection_list:
+                    asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(collection)
+                    if asset_class_list:
+                        for asset_class in asset_class_list:
+                            target_asset_to_export.extend(asset_class.get_asset_export_data(collection, None, search_mode=search_mode))
+
+                events.stop_last_event()
+
+
+        events.stop_last_and_start_new_event("Search Armatures")
         if asset_to_search.value in [AssetToSearch.ALL_ASSETS.value, AssetToSearch.ANIMATION_ONLY.value]:
             events.add_sub_event("-> S1")
             
@@ -223,14 +186,6 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         return target_asset_to_export
 
 
-
-def get_collectiona_asset_cache() -> BFU_CollectionExportAssetCache:
-    scene = bpy.context.scene
-    return scene.collection_asset_cache
-
-def get_animation_asset_cache(obj: bpy.types.Object) -> BFU_AnimationExportAssetCache:
-    return obj.animation_asset_cache
-
 def get_final_asset_cache() -> BFU_FinalExportAssetCache:
     scene = bpy.context.scene
     return scene.final_asset_cache
@@ -240,8 +195,6 @@ def get_final_asset_cache() -> BFU_FinalExportAssetCache:
 # -------------------------------------------------------------------
 
 classes = (
-    BFU_CollectionExportAssetCache,
-    BFU_AnimationExportAssetCache,
     BFU_FinalExportAssetCache,
 )
 
@@ -249,20 +202,6 @@ classes = (
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-
-
-
-    bpy.types.Scene.collection_asset_cache = bpy.props.PointerProperty(
-        type=BFU_CollectionExportAssetCache,
-        options={'LIBRARY_EDITABLE'},
-        override={'LIBRARY_OVERRIDABLE'},
-        )
-
-    bpy.types.Object.animation_asset_cache = bpy.props.PointerProperty(
-        type=BFU_AnimationExportAssetCache,
-        options={'LIBRARY_EDITABLE'},
-        override={'LIBRARY_OVERRIDABLE'},
-        )
     
     bpy.types.Scene.final_asset_cache = bpy.props.PointerProperty(
         type=BFU_FinalExportAssetCache,
@@ -275,8 +214,6 @@ def register():
 def unregister():
 
     del bpy.types.Scene.final_asset_cache
-    del bpy.types.Object.animation_asset_cache
-    del bpy.types.Scene.collection_asset_cache
 
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

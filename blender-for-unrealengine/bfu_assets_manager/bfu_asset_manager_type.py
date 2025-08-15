@@ -31,14 +31,42 @@ from .. import bfu_addon_prefs
 class AssetToSearch(Enum):
     ALL_ASSETS = "all_assets"  # Search for all assets.
     ANIMATION_ONLY = "animation_only"  # Search only for animation assets.
-    
+    COLLECTION_ONLY = "collection_only"  # Search only for scene collection assets.
+
     def get_friendly_name(self) -> str:
         if self.value == AssetToSearch.ALL_ASSETS.value:
             return "All Assets"
         elif self.value == AssetToSearch.ANIMATION_ONLY.value:
             return "Animation Only"
+        elif self.value == AssetToSearch.COLLECTION_ONLY.value:
+            return "Collection Only"
         else:
             return "Unknown"
+        
+    def get_asset_title_text(self, asset_count: int) -> str:
+        if self.value == AssetToSearch.ALL_ASSETS.value:
+            if asset_count == 0:
+                return "No exportable assets were found."
+            elif asset_count == 1:
+                return "1 asset will be exported."
+            else:
+                return f"{asset_count} assets will be exported."
+        elif self.value == AssetToSearch.ANIMATION_ONLY.value:
+            if asset_count == 0:
+                return "No exportable animations were found."
+            elif asset_count == 1:
+                return "1 animation will be exported."
+            else:
+                return f"{asset_count} animations will be exported."
+        elif self.value == AssetToSearch.COLLECTION_ONLY.value:
+            if asset_count == 0:
+                return "No exportable collections were found."
+            elif asset_count == 1:
+                return "1 collection will be exported."
+            else:
+                return f"{asset_count} collections will be exported."
+        else:
+            return "Unknown asset type."
 
 class AssetDataSearchMode(Enum):
     FULL = "Full" # Search for all assets data.

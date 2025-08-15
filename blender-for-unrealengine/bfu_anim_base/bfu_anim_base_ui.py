@@ -58,5 +58,5 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                 props_animation_textures.prop(obj, "bfu_export_animation_without_textures")
                 props_animation_textures.enabled = not obj.bfu_export_animation_without_materials and not obj.bfu_export_animation_without_mesh
 
-    layout.label(text='Note: The Action with only one frame is exported like Pose.')
-    bfu_asset_preview.bfu_asset_preview_ui.draw_asset_preview_bar(layout, context, asset_to_search=AssetToSearch.ANIMATION_ONLY)
+        layout.label(text='Note: The Action with only one frame is exported like Pose.')
+        bfu_asset_preview.bfu_asset_preview_ui.draw_asset_preview_bar(layout, context, asset_to_search=AssetToSearch.ANIMATION_ONLY)

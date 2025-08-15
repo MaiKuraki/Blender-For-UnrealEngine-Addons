@@ -2,7 +2,7 @@
 Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Release-Logs
 
 ### Version 4.4.1
-
+- New: New collection asset preview. ("Show Assets" button)
 - Changes: Optimized armature action export search.
     Test file:
     - Export Auto Search: from 32.0 ms to 24.0 ms

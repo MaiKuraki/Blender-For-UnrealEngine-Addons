@@ -18,10 +18,14 @@
 
 
 import bpy
-from .. import bfu_ui
-from .. import bbpl
+
+
 from . import bfu_export_procedure
+from .. import bfu_ui
 from .. import bfu_cached_assets
+from .. import bfu_asset_preview
+from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch
+from .. import bbpl
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
@@ -31,38 +35,32 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("SCENE", "GENERAL"):
 
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_collection_properties_expanded")
-        _, panel = accordion.draw(layout)
-        if accordion.is_expend():
-            collectionListProperty = panel.column()
-            collectionListProperty.template_list(
-                # type and unique id
-                "BFU_UL_CollectionExportTarget", "",
-                # pointer to the CollectionProperty
-                scene, "bfu_collection_asset_list",
-                # pointer to the active identifier
-                scene, "bfu_active_collection_asset_list",
-                maxrows=5,
-                rows=5
-            )
-            collectionListProperty.operator(
-                "object.updatecollectionlist",
-                icon='RECOVER_LAST')
+        if accordion:
+            _, panel = accordion.draw(layout)
+            if panel:
+                collectionListProperty = panel.column()
+                collectionListProperty.template_list(
+                    # type and unique id
+                    "BFU_UL_CollectionExportTarget", "",
+                    # pointer to the CollectionProperty
+                    scene, "bfu_collection_asset_list",
+                    # pointer to the active identifier
+                    scene, "bfu_active_collection_asset_list",
+                    maxrows=5,
+                    rows=5
+                )
+                collectionListProperty.operator(
+                    "object.updatecollectionlist",
+                    icon='RECOVER_LAST')
 
-            if scene.bfu_active_collection_asset_list < len(scene.bfu_collection_asset_list):
-                col_name = scene.bfu_collection_asset_list[scene.bfu_active_collection_asset_list].name
-                if col_name in bpy.data.collections:
-                    col = bpy.data.collections[col_name]
-                    col_prop = panel
-                    col_prop.prop(col, 'bfu_export_folder_name', icon='FILE_FOLDER')
-                    bfu_export_procedure.draw_col_export_procedure(panel, col)
+                if scene.bfu_active_collection_asset_list < len(scene.bfu_collection_asset_list):
+                    col_name = scene.bfu_collection_asset_list[scene.bfu_active_collection_asset_list].name
+                    if col_name in bpy.data.collections:
+                        col = bpy.data.collections[col_name]
+                        col_prop = panel
+                        col_prop.prop(col, 'bfu_export_folder_name', icon='FILE_FOLDER')
+                        bfu_export_procedure.draw_col_export_procedure(panel, col)
 
-            collectionPropertyInfo = panel.row().box().split(factor=0.75)
-            collection_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_collectiona_asset_cache()
-            collection_export_asset_list = collection_asset_cache.get_collection_asset_list()
-            collectionNum = len(collection_export_asset_list)
-            collectionFeedback = (
-                str(collectionNum) +
-                " Collection(s) will be exported.")
-            collectionPropertyInfo.label(text=collectionFeedback, icon='INFO')
-            collectionPropertyInfo.operator("object.showscenecollection")
-            panel.label(text='Note: The collection are exported like StaticMesh.')
+                panel.label(text='Note: The collection are exported like StaticMesh.')
+
+        bfu_asset_preview.bfu_asset_preview_ui.draw_asset_preview_bar(layout, context, asset_to_search=AssetToSearch.COLLECTION_ONLY)

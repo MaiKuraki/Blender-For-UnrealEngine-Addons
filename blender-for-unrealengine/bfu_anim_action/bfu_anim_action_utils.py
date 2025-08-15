@@ -59,9 +59,9 @@ def optimizated_asset_search(objects: List[bpy.types.Object]) -> List[Tuple[bpy.
 
             # Export Auto
             if action_export_enum == BFU_AnimActionExportEnum.EXPORT_AUTO:
-                events.add_sub_event(f'Export Auto "{obj.name}"')
+                events.add_sub_event(f'Export Auto "{obj.name}" Prepare')
                 obj_bone_names: Set[str] = {b.name for b in obj.data.bones}
-                events.stop_last_and_start_new_event("loop action")
+                events.stop_last_and_start_new_event(f'Export Auto "{obj.name}" Loop actions')
                 for action in bpy.data.actions:
                     if not action.library:
                         if bfu_basics.get_if_action_can_associate_str_set(action, obj_bone_names):
