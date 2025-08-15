@@ -19,6 +19,8 @@
 import bpy
 from typing import List, Any, Optional, Dict, TYPE_CHECKING
 from pathlib import Path
+from . import bfu_export_action_package
+from . import bfu_export_procedure
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_ObjectAssetClass
 from .. import bfu_utils
@@ -28,8 +30,6 @@ from .. import bfu_export_nomenclature
 from .. import bfu_base_object
 from .. import bfu_anim_action
 from .. import bfu_export_filter
-from . import bfu_export_action_package
-from . import bfu_export_procedure
 
 
 

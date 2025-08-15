@@ -20,6 +20,8 @@
 from pathlib import Path
 from typing import List, Any, Dict, Optional
 import bpy
+from . import bfu_export_procedure
+from . import bfu_export_alembic_package
 from .. import bfu_basics
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, BFU_ObjectAssetClass, AssetToExport, AssetDataSearchMode
@@ -35,9 +37,6 @@ from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
 from .. import bfu_utils
 from .. import bfu_export_filter
-from . import bfu_export_procedure
-from . import bfu_export_alembic_package
-
 
 
 class BFU_AlembicAnimation(BFU_ObjectAssetClass):

@@ -19,6 +19,8 @@
 from pathlib import Path
 from typing import List, Any, Dict, Optional
 import bpy
+from . import bfu_export_skeletal_mesh_package
+from . import bfu_export_procedure
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_ObjectAssetClass
 from .. import bfu_basics
@@ -33,9 +35,7 @@ from .. import bfu_lod
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
 from .. import bfu_base_object
-from . import bfu_export_skeletal_mesh_package
-from . import bfu_export_procedure
-
+from .. import bfu_export_filter
 
 
 
@@ -64,10 +64,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
         return AssetType.SKELETAL_MESH
 
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
-        scene = bpy.context.scene
-        return scene.bfu_use_skeletal_export  # type: ignore
+        return bfu_export_filter.bfu_export_filter_utils.get_use_skeletal_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
         dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)

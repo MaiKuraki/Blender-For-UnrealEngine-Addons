@@ -19,14 +19,14 @@
 from pathlib import Path
 from typing import Any, Optional, List
 import bpy
+from . import bfu_export_procedure
+from . import bfu_export_groom_package
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, BFU_ObjectAssetClass, AssetDataSearchMode, AssetToExport
 from .. import bfu_export_nomenclature
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_base_object
-from . import bfu_export_procedure
-from . import bfu_export_groom_package
-
+from .. import bfu_export_filter
 
 
 class BFU_Groom(BFU_ObjectAssetClass):
@@ -51,10 +51,7 @@ class BFU_Groom(BFU_ObjectAssetClass):
         return AssetType.GROOM_SIMULATION
 
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
-        scene = bpy.context.scene
-        return scene.bfu_use_groom_simulation_export  # type: ignore
+        return bfu_export_filter.bfu_export_filter_utils.get_use_groom_simulation_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
         dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)

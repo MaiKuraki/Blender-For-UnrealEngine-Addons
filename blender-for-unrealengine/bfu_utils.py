@@ -617,35 +617,9 @@ def get_desired_camera_start_end_range(obj: bpy.types.Object)-> Tuple[float, flo
         endTime = startTime+1
     return (startTime, endTime)
 
-
-
-# @TODO: @Deprecated use action_is_one_frame instead
-def GetActionType(action: bpy.types.Action):
-    # return action type
-
-    if action.frame_range.y - action.frame_range.x == 1:
-        return "Pose"
-    return "Action"
-
 def action_is_one_frame(action: bpy.types.Action) -> bool:
     # return True if action is one frame
-
-    if action.frame_range.y - action.frame_range.x == 0:
-        return True
-    return False
-
-# @TODO: @Deprecated use BFU_BaseAssetClass.get_asset_type() 
-def GetCollectionType(collection):
-    # return collection type
-    if(collection):
-        return "Collection StaticMesh"
-
-
-def GetIsAnimation(animation_type):
-    # return True if type(string) is a animation
-    if (animation_type == "NlAnim" or animation_type == "Action" or animation_type == "Pose"):
-        return True
-    return False
+    return action.frame_range.y - action.frame_range.x == 0
 
 def get_export_collection_objects(collection: bpy.types.Collection) -> List[bpy.types.Object]:
     # Found all objects that must be exported in a collection
@@ -657,7 +631,7 @@ def get_export_collection_objects(collection: bpy.types.Collection) -> List[bpy.
 
     return found_objs
 
-def draw_proxy_propertys(obj):
+def draw_proxy_propertys(obj: bpy.types.Object):
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
     # Debug option to alway show linked propertys
     if addon_prefs.show_hiden_linked_propertys:
@@ -669,7 +643,7 @@ def draw_proxy_propertys(obj):
     return True
 
 # @TODO: @Deprecated
-def GetExportAsProxy(obj):
+def GetExportAsProxy(obj: bpy.types.Object) -> bool:
     if get_obj_proxy_child(obj):
         return True
 

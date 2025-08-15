@@ -19,6 +19,8 @@
 import bpy
 from typing import List, Any, Optional, Dict
 from pathlib import Path
+from . import bfu_export_nla_package
+from . import bfu_export_procedure
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_ObjectAssetClass
 from .. import bfu_utils
@@ -27,8 +29,6 @@ from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
 from .. import bfu_base_object
 from .. import bfu_export_filter
-from . import bfu_export_nla_package
-from . import bfu_export_procedure
 
 
 

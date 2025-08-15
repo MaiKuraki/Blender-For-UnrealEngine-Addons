@@ -27,7 +27,6 @@ from .. import bfu_basics
 from .. import bfu_export_nomenclature
 from .. import bfu_addon_prefs
 
-
 class AssetToSearch(Enum):
     ALL_ASSETS = "all_assets"  # Search for all assets.
     ANIMATION_ONLY = "animation_only"  # Search only for animation assets.
