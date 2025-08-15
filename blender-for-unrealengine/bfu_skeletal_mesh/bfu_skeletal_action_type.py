@@ -17,7 +17,7 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 import bpy
-from typing import List, Any, Optional, Dict
+from typing import List, Any, Optional, Dict, TYPE_CHECKING
 from pathlib import Path
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_ObjectAssetClass
@@ -27,8 +27,7 @@ from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
 from .. import bfu_base_object
 from .. import bfu_anim_action
-from ..bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum
-from .. import bfu_debug_settings
+from .. import bfu_export_filter
 from . import bfu_export_action_package
 from . import bfu_export_procedure
 
@@ -48,16 +47,12 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
     def support_asset_type(self, data: Any, details: Any = None) -> bool:
         if not isinstance(data, bpy.types.Object):
             return False
-        if data.bfu_export_as_lod_mesh:  # type: ignore[attr-defined]
-            return False
-        if data.bfu_anim_nla_use:  # type: ignore[attr-defined]
-            return False
         if not isinstance(details, bpy.types.Action):
             return False
-        if data.bfu_export_skeletal_mesh_as_static_mesh:  # type: ignore[attr-defined]
+        if not bfu_anim_action.bfu_anim_action_utils.object_support_action_export(data):
             return False
-        if data.type == "ARMATURE":  # type: ignore[attr-defined]
-            return True # Already checked in optimizated_asset_search()
+        if isinstance(data.data, bpy.types.Armature):  # type: ignore[attr-defined]
+            return True # The rest is already checked before in bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search()
         return False
 
     def get_asset_type(self, data: Any, details: Any = None) -> AssetType:
@@ -67,15 +62,20 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
             return AssetType.ANIM_ACTION
 
     def can_export_asset_type(self) -> bool:
-        scene = bpy.context.scene
-        return scene.bfu_use_animation_export  # type: ignore[attr-defined]
-    
+        return bfu_export_filter.bfu_export_filter_utils.get_use_animation_export()
+
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
+        anim_subfolder_name: str = ""
         scene = bpy.context.scene
         if scene is not None:
-            dirpath: Path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
-            dirpath /= scene.bfu_anim_subfolder_name
-            return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
+            if TYPE_CHECKING:
+                anim_subfolder_name = ""
+            else:
+                anim_subfolder_name = scene.bfu_anim_subfolder_name  # type: ignore[attr-defined]
+
+        dirpath: Path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+        dirpath /= anim_subfolder_name
+        return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
 ####################################################################
 # Asset Package Management

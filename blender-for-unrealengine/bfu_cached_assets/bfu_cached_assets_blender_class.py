@@ -18,28 +18,16 @@
 
 
 import bpy
-from typing import List, Optional, Tuple, Set
+from typing import List, Optional, Tuple
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToExport, AssetToSearch, AssetDataSearchMode, AssetType
-from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_assets_manager
 from .. import bfu_export_control
 from .. import bfu_debug_settings
 from .. import bfu_anim_action
+from .. import bfu_base_collection
+
 from . import bfu_cached_assets_types
 
-
-def get_collection_asset_list(scene: bpy.types.Scene) -> List[bpy.types.Collection]:
-
-    collection_export_asset_list: List[bpy.types.Collection] = []
-
-    for col in scene.bfu_collection_asset_list:
-        col: bpy.types.Collection
-        if col.use:
-            if col.name in bpy.data.collections:
-                collection = bpy.data.collections[col.name]
-                collection_export_asset_list.append(collection)
-    return collection_export_asset_list
 
 class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
@@ -66,9 +54,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         target_asset_to_export: List[AssetToExport] = []
 
         events.stop_last_and_start_new_event("Search Assets")
-
         if asset_to_search.value == AssetToSearch.ALL_ASSETS.value:
 
+            events.add_sub_event("-> S1")
             # Search for objects
             obj_list: List[bpy.types.Object] = []
             if export_filter == "default":
@@ -86,11 +74,14 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                         if parent_target not in obj_list:
                             obj_list.append(parent_target)
 
+            events.stop_last_and_start_new_event("-> S2")
             # Search for objects assets
             for obj in obj_list:
                 asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(obj)
                 for asset_class in asset_class_list:
                     target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
+
+            events.stop_last_event()
 
 
         events.stop_last_and_start_new_event("Search Collections")
@@ -99,12 +90,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             if scene and export_filter == "default":
                 collection_list: List[bpy.types.Collection] = []
                 events.add_sub_event("-> S1")
+            
                 # Search for collections
-                collection_export_asset_list = get_collection_asset_list(scene)
-                for col_asset in collection_export_asset_list:
-                    if col_asset.name in bpy.data.collections:
-                        collection = bpy.data.collections[col_asset.name]
-                        collection_list.append(collection)
+                collection_list = bfu_base_collection.bfu_base_col_utils.optimized_collection_search(scene)
 
                 events.stop_last_and_start_new_event("-> S2")
                 # Search for collections assets
@@ -147,7 +135,8 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                         armature_actions_map.append((armature, armature.animation_data.action))
                 events.stop_last_event()
             else:
-                armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(armature_list)
+                if scene:
+                    armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(scene, armature_list)
 
             events.stop_last_and_start_new_event("-> S3")
 
@@ -186,9 +175,10 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         return target_asset_to_export
 
 
-def get_final_asset_cache() -> BFU_FinalExportAssetCache:
+def get_final_asset_cache() -> BFU_FinalExportAssetCache: # type: ignore
     scene = bpy.context.scene
-    return scene.final_asset_cache
+    if scene:
+        return scene.final_asset_cache # type: ignore
 
 # -------------------------------------------------------------------
 #   Register & Unregister
@@ -203,7 +193,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     
-    bpy.types.Scene.final_asset_cache = bpy.props.PointerProperty(
+    bpy.types.Scene.final_asset_cache = bpy.props.PointerProperty( # type: ignore
         type=BFU_FinalExportAssetCache,
         options={'LIBRARY_EDITABLE'},
         override={'LIBRARY_OVERRIDABLE'},
@@ -213,7 +203,7 @@ def register():
 
 def unregister():
 
-    del bpy.types.Scene.final_asset_cache
+    del bpy.types.Scene.final_asset_cache # type: ignore
 
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

@@ -17,11 +17,9 @@
 # ======================= END GPL LICENSE BLOCK =============================
 
 
-from typing import List
+from typing import List, Tuple, TYPE_CHECKING
 import bpy
 from .. import bbpl
-from .. import bfu_cached_assets
-
 
 def get_preset_values() -> List[str]:
     preset_values = [
@@ -30,7 +28,7 @@ def get_preset_values() -> List[str]:
 
 class BFU_UL_CollectionExportTarget(bpy.types.UIList):
 
-    def draw_item(self, context, layout, data, item, icon, active_data, active_property, index, flt_flag):
+    def draw_item(self, context: bpy.types.Context, layout: bpy.types.UILayout, data, item, icon, active_data, active_property, index, flt_flag):
 
         collection_is_valid = False
         if item.name in bpy.data.collections:
@@ -61,11 +59,11 @@ class BFU_OT_UpdateCollectionButton(bpy.types.Operator):
     bl_idname = "object.updatecollectionlist"
     bl_description = "Update collection list"
 
-    def execute(self, context):
-        def UpdateExportCollectionList(scene):
+    def execute(self, context: bpy.types.Context):
+        def UpdateExportCollectionList(scene: bpy.types.Scene):
             # Update the provisional collection list known by the object
 
-            def SetUseFromLast(col_list, CollectionName):
+            def SetUseFromLast(col_list: List[Tuple[str, bool]], CollectionName: str) -> bool:
                 for item in col_list:
                     if item[0] == CollectionName:
                         if item[1]:
@@ -86,8 +84,16 @@ class BFU_OT_UpdateCollectionButton(bpy.types.Operator):
         return {'FINISHED'}
 
 class BFU_OT_SceneCollectionExport(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name="collection data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'})
-    use: bpy.props.BoolProperty(name="export this collection", default=False, override={'LIBRARY_OVERRIDABLE'})
+    name: bpy.props.StringProperty(name="collection data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'}) # type: ignore
+    use: bpy.props.BoolProperty(name="export this collection", default=False, override={'LIBRARY_OVERRIDABLE'}) # type: ignore
+
+    if TYPE_CHECKING:
+        name: str
+        use: bool
+
+
+def scene_collection_asset_list(scene: bpy.types.Scene) -> List[BFU_OT_SceneCollectionExport]:
+    return scene.bfu_collection_asset_list # type: ignore
 
 
 # -------------------------------------------------------------------
@@ -105,22 +111,22 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.bfu_collection_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collection Properties")
+    bpy.types.Scene.bfu_collection_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collection Properties") # type: ignore
 
-    bpy.types.Scene.bfu_collection_asset_list = bpy.props.CollectionProperty(
+    bpy.types.Scene.bfu_collection_asset_list = bpy.props.CollectionProperty( # type: ignore
         type=BFU_OT_SceneCollectionExport,
         options={'LIBRARY_EDITABLE'},
         override={'LIBRARY_OVERRIDABLE', 'USE_INSERTION'},
         )
     
-    bpy.types.Scene.bfu_active_collection_asset_list = bpy.props.IntProperty(
+    bpy.types.Scene.bfu_active_collection_asset_list = bpy.props.IntProperty( # type: ignore
         name="Active Collection",
         description="Index of the currently active collection",
         override={'LIBRARY_OVERRIDABLE'},
         default=0
         )
     
-    bpy.types.Collection.bfu_export_folder_name = bpy.props.StringProperty(
+    bpy.types.Collection.bfu_export_folder_name = bpy.props.StringProperty( # type: ignore
         name="Sub folder name",
         description=(
             'The name of sub folder.' +
@@ -137,8 +143,8 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Collection.bfu_export_folder_name
+    del bpy.types.Collection.bfu_export_folder_name # type: ignore
 
-    del bpy.types.Scene.bfu_active_collection_asset_list
-    del bpy.types.Scene.bfu_collection_asset_list
-    del bpy.types.Scene.bfu_collection_properties_expanded
+    del bpy.types.Scene.bfu_active_collection_asset_list # type: ignore
+    del bpy.types.Scene.bfu_collection_asset_list # type: ignore
+    del bpy.types.Scene.bfu_collection_properties_expanded # type: ignore

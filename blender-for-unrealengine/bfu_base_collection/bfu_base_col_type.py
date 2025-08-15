@@ -23,6 +23,7 @@ from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_CollectionAssetClass
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
+from .. import bfu_export_filter
 from . import bfu_export_collection_as_static_mesh_package
 from . import bfu_export_procedure
 
@@ -50,13 +51,10 @@ class BFU_StaticMesh_Collection(BFU_CollectionAssetClass):
         return AssetType.COLLECTION_AS_STATIC_MESH
     
     def can_export_asset_type(self) -> bool:
-        scene = bpy.context.scene
-        if scene is None:
-            return False
-        return scene.bfu_use_static_collection_export  # type: ignore
+        return bfu_export_filter.bfu_export_filter_utils.get_use_static_collection_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
-        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_col_import_location(data)
+        dirpath: Path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_col_import_location(data)
         return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
     
 # ###################################################################

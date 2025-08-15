@@ -18,7 +18,7 @@
 
 
 import bpy
-from typing import List
+from typing import List, Set
 from .. import bpl
 from .. import bbpl
 from .. import bfu_basics
@@ -38,7 +38,7 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
     bl_idname = "object.exportforunreal"
     bl_description = "Export all assets of this scene."
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         scene = bpy.context.scene
 
         def is_ready_for_export(final_asset_list_to_export: List[AssetToExport]) -> bool:
@@ -127,7 +127,7 @@ class BFU_OT_CopyImportAssetScriptCommand(bpy.types.Operator):
     bl_idname = "object.copy_importassetscript_command"
     bl_description = "Copy Import Asset Script command"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         scene = context.scene
         bfu_basics.set_windows_clipboard(bfu_utils.get_import_asset_script_command())
         self.report(
@@ -141,7 +141,7 @@ class BFU_OT_CopyImportSequencerScriptCommand(bpy.types.Operator):
     bl_idname = "object.copy_importsequencerscript_command"
     bl_description = "Copy Import Sequencer Script command"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         scene = context.scene
         bfu_basics.set_windows_clipboard(bfu_utils.get_import_sequencer_script_command())
         self.report(

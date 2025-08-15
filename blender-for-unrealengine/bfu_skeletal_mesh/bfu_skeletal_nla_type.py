@@ -26,6 +26,7 @@ from .. import bfu_basics
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
 from .. import bfu_base_object
+from .. import bfu_export_filter
 from . import bfu_export_nla_package
 from . import bfu_export_procedure
 
@@ -58,10 +59,7 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
             
 
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
-        scene = bpy.context.scene
-        return scene.bfu_use_animation_export  # type: ignore[attr-defined]
+        return bfu_export_filter.bfu_export_filter_utils.get_use_animation_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
         dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
@@ -107,10 +105,7 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
 # ####################################################################
 
     def get_asset_export_data(self, data: bpy.types.Object, details: bpy.types.Action, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-        
-        if bpy.context is None:
-            return []
-        
+                
         asset_list: List[AssetToExport] = []
 
         # One asset per skeletal mesh.

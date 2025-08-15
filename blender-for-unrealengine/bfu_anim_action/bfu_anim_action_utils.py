@@ -21,6 +21,7 @@ import bpy
 from typing import List, Tuple, Set, Dict
 from .. import bfu_debug_settings
 from .. import bfu_basics
+from .. import bfu_export_filter
 from . import bfu_anim_action_props
 from .bfu_anim_action_props import BFU_AnimActionExportEnum
 
@@ -49,11 +50,28 @@ def find_compatible_actions(armature: bpy.types.Armature, action_bones_map: Dict
     ]
     return compatible
 
-def optimizated_asset_search(objects: List[bpy.types.Object]) -> List[Tuple[bpy.types.Object, bpy.types.Action]]:
+def support_action_export(scene: bpy.types.Scene) -> bool:
+    return bfu_export_filter.bfu_export_filter_props.scene_use_animation_export(scene)
+
+def object_support_action_export(obj: bpy.types.Object) -> bool:
+    if obj.bfu_export_as_lod_mesh:  # type: ignore[attr-defined]
+        return False
+    if obj.bfu_anim_nla_use:  # type: ignore[attr-defined]
+        return False
+    if obj.bfu_export_skeletal_mesh_as_static_mesh:  # type: ignore[attr-defined]
+        return False
+    return True
+
+def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Object]) -> List[Tuple[bpy.types.Object, bpy.types.Action]]:
+    if not support_action_export(scene):
+        return []
+
     events = bfu_debug_settings.root_events
     armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
 
     for obj in objects:
+        if not object_support_action_export(obj):
+            continue
         if isinstance(obj.data, bpy.types.Armature):
             action_export_enum = bfu_anim_action_props.get_object_anim_action_export_enum(obj)
 

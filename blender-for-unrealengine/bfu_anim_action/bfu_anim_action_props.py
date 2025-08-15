@@ -172,18 +172,18 @@ class BFU_OT_DeselectAllObjActionListButton(bpy.types.Operator):
         return {'FINISHED'}
 
 class BFU_OT_ObjExportAction(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name="Action data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'})
-    use: bpy.props.BoolProperty(name="use this action", default=False, override={'LIBRARY_OVERRIDABLE'})
+    name: bpy.props.StringProperty(name="Action data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'}) # type: ignore
+    use: bpy.props.BoolProperty(name="use this action", default=False, override={'LIBRARY_OVERRIDABLE'}) # type: ignore
 
     if TYPE_CHECKING:
         name: str
         use: bool
 
 def get_object_action_asset_list(obj: bpy.types.Object) -> List[BFU_OT_ObjExportAction]:
-    return obj.bfu_action_asset_list
+    return obj.bfu_action_asset_list #  type: ignore
 
 def get_object_prefix_name_to_export(obj: bpy.types.Object) -> str:
-    return obj.bfu_prefix_name_to_export
+    return obj.bfu_prefix_name_to_export #  type: ignore
 
 # -------------------------------------------------------------------
 #   Register & Unregister
@@ -202,22 +202,22 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.bfu_animation_action_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Actions Properties")
+    bpy.types.Scene.bfu_animation_action_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Actions Properties") # type: ignore
 
-    bpy.types.Object.bfu_action_asset_list = bpy.props.CollectionProperty(
+    bpy.types.Object.bfu_action_asset_list = bpy.props.CollectionProperty( # type: ignore
         type=BFU_OT_ObjExportAction,
         options={'LIBRARY_EDITABLE'},
         override={'LIBRARY_OVERRIDABLE', 'USE_INSERTION'},
         )
 
-    bpy.types.Object.bfu_active_action_asset_list = bpy.props.IntProperty(
+    bpy.types.Object.bfu_active_action_asset_list = bpy.props.IntProperty( # type: ignore
         name="Active Scene Action",
         description="Index of the currently active object action",
         override={'LIBRARY_OVERRIDABLE'},
         default=0
         )
     
-    bpy.types.Object.bfu_anim_action_export_enum = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_anim_action_export_enum = bpy.props.EnumProperty( # type: ignore
         name="Action to export",
         description="Export procedure for actions (Animations and poses)",
         override={'LIBRARY_OVERRIDABLE'},
@@ -225,7 +225,7 @@ def register():
         default=get_default_anim_action_export_enum()
     )
 
-    bpy.types.Object.bfu_prefix_name_to_export = bpy.props.StringProperty(
+    bpy.types.Object.bfu_prefix_name_to_export = bpy.props.StringProperty( # type: ignore
         # properties used with ""export_specific_prefix" on bfu_anim_action_export_enum
         name="Prefix name",
         description="Indicate the prefix of the actions that must be exported",
@@ -234,7 +234,7 @@ def register():
         default="Example_",
         )
 
-    bpy.types.Object.bfu_anim_action_start_end_time_enum = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_anim_action_start_end_time_enum = bpy.props.EnumProperty( # type: ignore
         name="Action Start/End Time",
         description="Set when animation starts and end",
         override={'LIBRARY_OVERRIDABLE'},
@@ -260,14 +260,14 @@ def register():
             ]
         )
 
-    bpy.types.Object.bfu_anim_action_start_frame_offset = bpy.props.IntProperty(
+    bpy.types.Object.bfu_anim_action_start_frame_offset = bpy.props.IntProperty( # type: ignore
         name="Offset at start frame",
         description="Offset for the start frame.",
         override={'LIBRARY_OVERRIDABLE'},
         default=0
     )
 
-    bpy.types.Object.bfu_anim_action_end_frame_offset = bpy.props.IntProperty(
+    bpy.types.Object.bfu_anim_action_end_frame_offset = bpy.props.IntProperty( # type: ignore
         name="Offset at end frame",
         description=(
             "Offset for the end frame. +1" +
@@ -279,14 +279,14 @@ def register():
     )
 
 
-    bpy.types.Object.bfu_anim_action_custom_start_frame = bpy.props.IntProperty(
+    bpy.types.Object.bfu_anim_action_custom_start_frame = bpy.props.IntProperty( # type: ignore
         name="Custom start time",
         description="Set when animation start",
         override={'LIBRARY_OVERRIDABLE'},
         default=0
         )
 
-    bpy.types.Object.bfu_anim_action_custom_end_frame = bpy.props.IntProperty(
+    bpy.types.Object.bfu_anim_action_custom_end_frame = bpy.props.IntProperty( # type: ignore
         name="Custom end time",
         description="Set when animation end",
         override={'LIBRARY_OVERRIDABLE'},
@@ -294,7 +294,7 @@ def register():
         )
     
 
-    bpy.types.Object.bfu_anim_naming_type = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_anim_naming_type = bpy.props.EnumProperty( # type: ignore
         name="Naming type",
         override={'LIBRARY_OVERRIDABLE'},
         items=[
@@ -311,7 +311,7 @@ def register():
         default='action_name'
         )
 
-    bpy.types.Object.bfu_anim_naming_custom = bpy.props.StringProperty(
+    bpy.types.Object.bfu_anim_naming_custom = bpy.props.StringProperty( # type: ignore
         name="Export name",
         override={'LIBRARY_OVERRIDABLE'},
         default='MyCustomName'
@@ -321,17 +321,17 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Object.bfu_anim_naming_custom
-    del bpy.types.Object.bfu_anim_naming_type
+    del bpy.types.Object.bfu_anim_naming_custom # type: ignore
+    del bpy.types.Object.bfu_anim_naming_type # type: ignore
 
-    del bpy.types.Object.bfu_anim_action_custom_end_frame
-    del bpy.types.Object.bfu_anim_action_custom_start_frame
-    del bpy.types.Object.bfu_anim_action_end_frame_offset
-    del bpy.types.Object.bfu_anim_action_start_frame_offset
-    del bpy.types.Object.bfu_anim_action_start_end_time_enum
+    del bpy.types.Object.bfu_anim_action_custom_end_frame # type: ignore
+    del bpy.types.Object.bfu_anim_action_custom_start_frame # type: ignore
+    del bpy.types.Object.bfu_anim_action_end_frame_offset # type: ignore
+    del bpy.types.Object.bfu_anim_action_start_frame_offset # type: ignore
+    del bpy.types.Object.bfu_anim_action_start_end_time_enum # type: ignore
 
-    del bpy.types.Object.bfu_prefix_name_to_export
-    del bpy.types.Object.bfu_anim_action_export_enum
-    del bpy.types.Object.bfu_active_action_asset_list
-    del bpy.types.Object.bfu_action_asset_list
-    del bpy.types.Scene.bfu_animation_action_properties_expanded
+    del bpy.types.Object.bfu_prefix_name_to_export # type: ignore
+    del bpy.types.Object.bfu_anim_action_export_enum # type: ignore
+    del bpy.types.Object.bfu_active_action_asset_list # type: ignore
+    del bpy.types.Object.bfu_action_asset_list # type: ignore
+    del bpy.types.Scene.bfu_animation_action_properties_expanded # type: ignore
