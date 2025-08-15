@@ -127,7 +127,7 @@ class BFU_Spline(BFU_ObjectAssetClass):
 
 def register():
     my_asset_class = BFU_Spline()
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class)
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class, "Object")
 
 def unregister():
     pass

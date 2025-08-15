@@ -34,7 +34,7 @@ from . import bfu_export_procedure
 
 
 
-class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
+class BFU_SkeletalActionAnimation(BFU_ObjectAssetClass):
     def __init__(self):
         super().__init__()
         self.use_materials = True
@@ -175,8 +175,8 @@ class BFU_SkeletalAnimation(BFU_ObjectAssetClass):
 # --------------------------------------------
 
 def register():
-    my_asset_class = BFU_SkeletalAnimation()
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class)
+    my_asset_class = BFU_SkeletalActionAnimation()
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class, "ArmatureActions")
 
 def unregister():
     pass

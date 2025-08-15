@@ -34,6 +34,7 @@ from .. import bfu_lod
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_nomenclature
 from .. import bfu_utils
+from .. import bfu_export_filter
 from . import bfu_export_procedure
 from . import bfu_export_alembic_package
 
@@ -62,10 +63,7 @@ class BFU_AlembicAnimation(BFU_ObjectAssetClass):
         return AssetType.ANIM_ALEMBIC
     
     def can_export_asset_type(self) -> bool:
-        if bpy.context is None:
-            return False
-        scene = bpy.context.scene
-        return scene.bfu_use_alembic_export  # type: ignore
+        return bfu_export_filter.bfu_export_filter_utils.get_use_alembic_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
         dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
@@ -108,10 +106,7 @@ class BFU_AlembicAnimation(BFU_ObjectAssetClass):
 # # Asset Construction
 # ####################################################################
 
-    def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-        if bpy.context is None:
-            return []
-        
+    def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:       
         asset_list: List[AssetToExport] = []
 
         # One asset per alembic animation pack
@@ -154,7 +149,7 @@ class BFU_AlembicAnimation(BFU_ObjectAssetClass):
 
 def register():
     my_asset_class = BFU_AlembicAnimation()
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class)
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class, "Object")
 
 def unregister():
     pass

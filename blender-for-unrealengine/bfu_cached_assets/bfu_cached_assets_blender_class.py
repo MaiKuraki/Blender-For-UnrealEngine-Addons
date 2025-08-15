@@ -83,7 +83,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             events.add_sub_event("Create object assets class")
             # Search for objects assets
             for obj in obj_list:
-                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(obj)
+                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_custom_type_supported_asset_class("Object", obj)
                 for asset_class in asset_class_list:
                     target_asset_to_export.extend(asset_class.get_asset_export_data(obj, None, search_mode=search_mode))
             events.stop_last_event()
@@ -99,10 +99,10 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                 # Search for collections
                 collection_list = bfu_base_collection.bfu_base_col_utils.optimized_collection_search(scene)
 
-                events.stop_last_and_start_new_event("-> S2")
+                events.stop_last_and_start_new_event("Create collection assets class")
                 # Search for collections assets
                 for collection in collection_list:
-                    asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(collection)
+                    asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_custom_type_supported_asset_class("Scene", collection)
                     if asset_class_list:
                         for asset_class in asset_class_list:
                             target_asset_to_export.extend(asset_class.get_asset_export_data(collection, None, search_mode=search_mode))
@@ -154,14 +154,16 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                     else:
                         armature_actions_map = cached_action_manager.get_cache()
 
-            events.stop_last_and_start_new_event("-> S3")
-
+            
             # Search for actions assets
-            for armature, action in armature_actions_map:
-                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_all_supported_asset_class(armature, action)
-                for asset_class in asset_class_list:
-                    target_asset_to_export.extend(asset_class.get_asset_export_data(armature, action, search_mode=search_mode))
-
+            events.stop_last_and_start_new_event("Create actions assets class")
+            for asset in bfu_assets_manager.bfu_asset_manager_registred_assets.get_registred_asset_class_by_type("ArmatureActions"):
+                for armature, action in armature_actions_map:
+                    # No need to check asset type with 
+                    # `if asset.support_asset_type(armature, action):`
+                    # Because same values is already checked in the previous step
+                    target_asset_to_export.extend(asset.get_asset_export_data(armature, action, search_mode=search_mode))
+                    pass
             events.stop_last_event()
 
         events.stop_last_and_start_new_event("Search Other Assets")

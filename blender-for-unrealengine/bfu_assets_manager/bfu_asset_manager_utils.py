@@ -30,8 +30,17 @@ def get_all_supported_asset_class(data: Any, details: Any = None) -> List[bfu_as
 
     supported_classes: List[bfu_asset_manager_type.BFU_BaseAssetClass] = []
     for asset in bfu_asset_manager_registred_assets.get_registred_asset_class():
-        asset: bfu_asset_manager_type.BFU_BaseAssetClass
         if asset.support_asset_type(data, details):
+            pass
+            if asset.can_export_asset(data):
+                supported_classes.append(asset)
+    return supported_classes
+
+def get_custom_type_supported_asset_class(custom_type: str, data: Any, details: Any = None) -> List[bfu_asset_manager_type.BFU_BaseAssetClass]:
+    supported_classes: List[bfu_asset_manager_type.BFU_BaseAssetClass] = []
+    for asset in bfu_asset_manager_registred_assets.get_registred_asset_class_by_type(custom_type):
+        if asset.support_asset_type(data, details):
+            pass
             if asset.can_export_asset(data):
                 supported_classes.append(asset)
     return supported_classes

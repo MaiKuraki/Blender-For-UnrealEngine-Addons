@@ -116,7 +116,7 @@ class BFU_StaticMesh_Collection(BFU_CollectionAssetClass):
 
 def register():
     my_asset_class = BFU_StaticMesh_Collection()
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class)
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class, "Scene")
 
 def unregister():
     pass

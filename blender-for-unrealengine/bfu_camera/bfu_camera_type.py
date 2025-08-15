@@ -128,7 +128,7 @@ class BFU_Camera(BFU_ObjectAssetClass):
 
 def register():
     my_asset_class = BFU_Camera()
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class)
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class, "Object")
 
 def unregister():
     pass
