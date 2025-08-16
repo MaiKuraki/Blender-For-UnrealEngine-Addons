@@ -28,17 +28,16 @@ from typing import Optional, List, Union
 from .. import utils
 
 
-def create_safe_bone(arm, bone_name, context_id=None) -> Optional[bpy.types.EditBone]:
+def create_safe_bone(armature: bpy.types.Object, bone_name: str, collection_name: str = "") -> Optional[bpy.types.EditBone]:
     """
     Create a bone in the armature.
     Blender 4.0 -> context_id is the bone collection name.
     Blender 3.6 and older -> context_id is the bone layer index.
     """
-
-    if bpy.context is None:
+    if not isinstance(armature.data, bpy.types.Armature):
         return None
 
-    if bone_name in arm.data.edit_bones:
+    if bone_name in armature.data.edit_bones:
         print("Bone already exists! : " + bone_name)
         raise TypeError("Bone already exists! : " + bone_name)
 
@@ -47,15 +46,16 @@ def create_safe_bone(arm, bone_name, context_id=None) -> Optional[bpy.types.Edit
         print("Name length is bigger than Blender character limit! ("+str(name_length)+"/63) : " + bone_name)
         raise TypeError("Name length is bigger than Blender character limit! ("+str(name_length)+"/63) : " + bone_name)
 
-    bone = arm.data.edit_bones.new(bone_name)
+    bone = armature.data.edit_bones.new(bone_name)
     bone.tail = bone.head + mathutils.Vector((0, 0, 1))
 
-    if context_id:
+    if collection_name:
         if bpy.app.version >= (4, 0, 0):
-            add_bone_to_collection(arm, bone_name, context_id)
+            add_bone_to_collection(armature, bone_name, collection_name)
         else:
+            layer_index = int(collection_name)
             change_current_layer(0, bpy.context.object.data)  # type: ignore
-            change_current_layer(context_id, bone)
+            change_current_layer(layer_index, bone)
 
     return bone
 
@@ -132,23 +132,23 @@ def no_num(name):
     return name
 
 if bpy.app.version >= (4, 0, 0):
-    def add_bone_to_collection(arm, bone_name, collection_name) -> bpy.types.BoneCollection:
+    def add_bone_to_collection(armature: bpy.types.Object, bone_name: str, collection_name: str) -> bpy.types.BoneCollection:
         #Add bone to collection and create if not exist
 
         if bpy.app.version >= (4, 1, 0):
             # Need to use collections_all for include all collections childs.
-            if collection_name in arm.data.collections_all:
-                col = arm.data.collections_all[collection_name]
+            if collection_name in armature.data.collections_all:
+                col = armature.data.collections_all[collection_name]
             else:
-                col = arm.data.collections.new(name=collection_name)
+                col = armature.data.collections.new(name=collection_name)
         else:
-            if collection_name in arm.data.collections:
-                col = arm.data.collections[collection_name]
+            if collection_name in armature.data.collections:
+                col = armature.data.collections[collection_name]
             else:
-                col = arm.data.collections.new(name=collection_name)
+                col = armature.data.collections.new(name=collection_name)
 
 
-        bone = arm.data.edit_bones[bone_name]
+        bone = armature.data.edit_bones[bone_name]
         col.assign(bone)
         return col
 

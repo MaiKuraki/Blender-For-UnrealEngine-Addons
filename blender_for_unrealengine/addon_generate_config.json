@@ -7,9 +7,9 @@
         "tagline": "Allows to batch export and import in Unreal Engine",
         "maintainer": "Loux Xavier (BleuRaven) xavierloux.loux@gmail.com",
 
-        "website_url": "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/",
-        "report_issue_url": "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/issues",
-        "documentation_url": "https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki",
+        "website_url": "https://github.com/xavier150/unrealengine_assets_exporter-Addons/",
+        "report_issue_url": "https://github.com/xavier150/unrealengine_assets_exporter-Addons/issues",
+        "documentation_url": "https://github.com/xavier150/unrealengine_assets_exporter-Addons/wiki",
         "support": "COMMUNITY",
 
         "type": "add-on",
@@ -36,7 +36,7 @@
             "generate_method": "EXTENTION_COMMAND",
             "auto_install_range": [[4,5,0], "LATEST"],
             "naming": "{Name}_{Version}-blender_4.5.zip",
-            "module": "blender-for-unrealengine", 
+            "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
                 "fbxio/",
@@ -53,7 +53,7 @@
             "generate_method": "EXTENTION_COMMAND",
             "auto_install_range": [[4,4,0], [4,4,3]],
             "naming": "{Name}_{Version}-blender_4.4.zip",
-            "module": "blender-for-unrealengine", 
+            "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
                 "fbxio/",
@@ -70,7 +70,7 @@
             "generate_method": "EXTENTION_COMMAND",
             "auto_install_range": [[4,3,0], [4,3,2]],
             "naming": "{Name}_{Version}-blender_4.3.zip",
-            "module": "blender-for-unrealengine", 
+            "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
                 "fbxio/",
@@ -87,7 +87,7 @@
             "generate_method": "EXTENTION_COMMAND",
             "auto_install_range": [[4,2,0], [4,2,3]],
             "naming": "{Name}_{Version}-blender_4.2.zip",
-            "module": "blender-for-unrealengine", 
+            "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
                 "fbxio/",
@@ -104,7 +104,7 @@
             "generate_method": "SIMPLE_ZIP",
             "auto_install_range": [[2,90,0], [4,1,1]],
             "naming": "{Name}_{Version}-blender_2.9-4.1.zip",
-            "module": "blender-for-unrealengine", 
+            "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
                 "fbxio/",
@@ -129,7 +129,7 @@
             "generate_method": "SIMPLE_ZIP",
             "auto_install_range": [[2,80,0], [2,83,20]],
             "naming": "{Name}_{Version}-blender_2.8.zip",
-            "module": "blender-for-unrealengine", 
+            "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
                 "fbxio/",
