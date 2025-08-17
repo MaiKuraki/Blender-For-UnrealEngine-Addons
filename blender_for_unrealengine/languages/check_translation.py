@@ -1,3 +1,70 @@
+# SPDX-FileCopyrightText: 2018-2025 Xavier Loux (BleuRaven)
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# ----------------------------------------------
+#  Blender For UnrealEngine
+#  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
+# ----------------------------------------------
+
+import bpy
+
+class skeleton_member_bones():
+    def __init__(self, name: str, bones: list[str]):
+        self.name = name
+        self.bones = bones
+
+    def get_name(self):
+        return self.name
+
+    def get_bones(self):
+        return self.bones
+
+class skeleton_data():
+    def __init__(self, armature: bpy.types.Object):
+        self.members = {}
+        self.armature = armature
+
+    def add_member(self, name: str, bones: list[str]):
+        self.members[name] = skeleton_member_bones(name, bones)
+
+    def get_armature(self) -> bpy.types.Object:
+        return self.armature
+
+    def get_members(self) -> list[skeleton_member_bones]:
+        return self.members
+    
+    def get_selected_body_members(self) -> list[skeleton_member_bones]:
+        result_members = []
+        if self.armature:
+            selected_bones = bpy.context.selected_pose_bones 
+            if selected_bones:
+                for bone in selected_bones:
+                    for member_key in self.members:
+                        member = self.members[member_key]
+                        member: skeleton_member_bones
+                        if member not in result_members:
+                            if bone.name in member.get_bones():
+                                result_members.append(member)
+        return result_members
+
+
+
+def get_active_armature():
+    selected_object = bpy.context.object  # Obtenir l'objet sélectionné
+    if selected_object:
+        if selected_object.type == "ARMATURE":
+            return selected_object
+
+def get_active_skeleton_data() -> skeleton_data:
+    armature = get_active_armature()
+    if armature:
+        my_skeleton_data = get_skeleton_data(armature)
+        return my_skeleton_data
+    return None
+
+def get_skeleton_data(armature: bpy.types.Object) -> skeleton_data:
+
 import json
 from pathlib import Path
 from typing import Dict, List, Tuple

@@ -1,3 +1,12 @@
+# SPDX-FileCopyrightText: 2023-2025 Xavier Loux (BleuRaven)
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# ----------------------------------------------
+#  BPL -> BleuRaven Python Library
+#  https://github.com/xavier150/BPL
+# ----------------------------------------------
+
 from . import edit_files
 from typing import Tuple
 from pathlib import Path

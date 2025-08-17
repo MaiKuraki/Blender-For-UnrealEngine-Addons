@@ -1,3 +1,12 @@
+# SPDX-FileCopyrightText: 2018-2025 Xavier Loux (BleuRaven)
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# ----------------------------------------------
+#  Blender For UnrealEngine
+#  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
+# ----------------------------------------------
+
 # This script was generated with the addons Unreal Engine Assets Exporter.
 # This script should be run in Unreal Engine to import into Unreal Engine 4 and 5 assets.
 # The assets are exported from from Unreal Engine Assets Exporter. More detail here. https://github.com/xavier150/Blender-For-UnrealEngine-Addons

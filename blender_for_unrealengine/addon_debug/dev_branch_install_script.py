@@ -1,3 +1,12 @@
+# SPDX-FileCopyrightText: 2018-2025 Xavier Loux (BleuRaven)
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# ----------------------------------------------
+#  Blender For UnrealEngine
+#  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
+# ----------------------------------------------
+
 # Run this script in Blender to generate and install the addon Blender-For-UnrealEngine.
 # Ensure the paths in `addon_directories` point to the correct addon directories.
 # For more details: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Download-And-Installation-From-Dev-Branch
