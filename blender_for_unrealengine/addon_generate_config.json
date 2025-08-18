@@ -85,7 +85,7 @@
         },
         "unrealengine_assets_exporter_4.2": {   
             "generate_method": "EXTENTION_COMMAND",
-            "auto_install_range": [[4,2,0], [4,2,3]],
+            "auto_install_range": [[4,2,0], [4,2,9]],
             "naming": "{Name}_{Version}-blender_4.2.zip",
             "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
