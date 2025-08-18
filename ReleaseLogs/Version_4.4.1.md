@@ -1,6 +1,9 @@
 # Unreal Engine Assets Exporter - Release Log
 Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Release-Logs
 
+Please note: I changed the work folder name so when installing the addon, be sure to uninstall the previous version first. 
+If not you will have both versions installed, conflicts may occur.
+
 ### Version 4.4.1
 - New: New collection asset preview. ("Show Assets" button)
 - New: New asset cache management system for actions.
