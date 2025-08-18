@@ -234,11 +234,9 @@ try:
             bfu_nanite.register()
             bfu_assets_references.register()
             bfu_custom_property.register()
-            # Order is important for UI panels
             bfu_ui_panel_object.register()
             bfu_ui_panel_tools.register()
             bfu_ui_panel_export.register()
-            # ----
             bfu_addon_parts.register()
             bfu_export_nomenclature.register()
             bfu_export_filter.register()
@@ -258,7 +256,7 @@ try:
 
     def unregister():
         try:
-
+            # Unregister in reverse order of register()
             bfu_cached_assets.unregister()
             bfu_backward_compatibility.unregister()
             bfu_ui.unregister()
@@ -283,13 +281,13 @@ try:
             bfu_collision.unregister()
             bfu_spline.unregister()
             bfu_camera.unregister()
+            bfu_groom.unregister()
             bfu_anim_nla_adv.unregister()
             bfu_anim_nla.unregister()
             bfu_anim_action_adv.unregister()
             bfu_anim_action.unregister()
             bfu_anim_base.unregister()
             bfu_alembic_animation.unregister()
-            bfu_groom.unregister()
             bfu_modular_skeletal_mesh.unregister()
             bfu_skeletal_mesh.unregister()
             bfu_static_mesh.unregister()
