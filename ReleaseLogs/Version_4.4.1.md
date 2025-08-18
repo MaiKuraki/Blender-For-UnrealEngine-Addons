@@ -19,3 +19,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: AxisPropertys in FBX export are not visible in UI.
 - Fixed: Can't access collection properties in the UI if no active object.
 - Fixed: "Calculate all surface area" produce script error.
+- Fixed: FBX export produces script error on Blender 2.8 (Backwards compatibility issues).

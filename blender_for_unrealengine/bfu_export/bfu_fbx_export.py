@@ -85,12 +85,10 @@ def export_scene_fbx_with_custom_fbx_io(
         'check_existing': check_existing,
         'filter_glob': filter_glob,
         'use_selection': use_selection,
-        'use_visible': use_visible,
         'use_active_collection': use_active_collection,
         'global_scale': global_scale,
         'apply_unit_scale': apply_unit_scale,
         'apply_scale_options': apply_scale_options,
-        'use_space_transform': use_space_transform,
         'bake_space_transform': bake_space_transform,
         'object_types': object_types,
         'use_mesh_modifiers': use_mesh_modifiers,
@@ -99,7 +97,6 @@ def export_scene_fbx_with_custom_fbx_io(
         'use_subsurf': use_subsurf,
         'use_mesh_edges': use_mesh_edges,
         'use_tspace': use_tspace,
-        'use_triangles': use_triangles,
         'use_custom_props': use_custom_props,
         'add_leaf_bones': add_leaf_bones,
         'primary_bone_axis': primary_bone_axis,
@@ -131,11 +128,16 @@ def export_scene_fbx_with_custom_fbx_io(
     params['use_ue_mannequin_bone_alignment'] = use_ue_mannequin_bone_alignment
     params['disable_free_scale_animation'] = disable_free_scale_animation
 
-    # Add 'colors_type' parameter if Blender version is 3.4 or above
+    if blender_version >= (2, 90, 0):
+        params['use_visible'] = use_visible
+        params['use_space_transform'] = use_space_transform
+
+    if blender_version >= (3, 2, 0):
+        params['use_triangles'] = use_triangles
+
     if blender_version >= (3, 4, 0):
         params['colors_type'] = colors_type
 
-    # Add 'prioritize_active_color' parameter if Blender version is 3.4 or above
     if blender_version >= (3, 5, 0):
         params['prioritize_active_color'] = prioritize_active_color
 
@@ -202,12 +204,10 @@ def export_scene_fbx(
         'check_existing': check_existing,
         'filter_glob': filter_glob,
         'use_selection': use_selection,
-        'use_visible': use_visible,
         'use_active_collection': use_active_collection,
         'global_scale': global_scale,
         'apply_unit_scale': apply_unit_scale,
         'apply_scale_options': apply_scale_options,
-        'use_space_transform': use_space_transform,
         'bake_space_transform': bake_space_transform,
         'object_types': object_types,
         'use_mesh_modifiers': use_mesh_modifiers,
@@ -216,7 +216,6 @@ def export_scene_fbx(
         'use_subsurf': use_subsurf,
         'use_mesh_edges': use_mesh_edges,
         'use_tspace': use_tspace,
-        'use_triangles': use_triangles,
         'use_custom_props': use_custom_props,
         'add_leaf_bones': add_leaf_bones,
         'primary_bone_axis': primary_bone_axis,
@@ -238,13 +237,17 @@ def export_scene_fbx(
         'axis_forward': axis_forward,
         'axis_up': axis_up,
     }
+    
+    if blender_version >= (2, 90, 0):
+        params['use_visible'] = use_visible
+        params['use_space_transform'] = use_space_transform
 
+    if blender_version >= (3, 2, 0):
+        params['use_triangles'] = use_triangles
 
-    # Add 'colors_type' parameter if Blender version is 3.4 or above
     if blender_version >= (3, 4, 0):
         params['colors_type'] = colors_type
 
-    # Add 'prioritize_active_color' parameter if Blender version is 3.4 or above
     if blender_version >= (3, 5, 0):
         params['prioritize_active_color'] = prioritize_active_color
 
