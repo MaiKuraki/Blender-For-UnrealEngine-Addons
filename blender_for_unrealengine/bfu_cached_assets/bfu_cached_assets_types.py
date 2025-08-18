@@ -66,6 +66,7 @@ class CachedActionManager():
         self.cached_scene_details: CachedActionObjectInfo = CachedActionObjectInfo()
         self.cached_object_count: int = 0
         self.cached_object_details: List[CachedActionArmatureInfo] = []
+        self.cached_total_action_count: int = 0
         
         self.armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
 
