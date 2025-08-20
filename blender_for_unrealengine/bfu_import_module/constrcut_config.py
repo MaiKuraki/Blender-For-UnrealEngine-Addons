@@ -14,5 +14,3 @@
 #   And FbxSkeletalMeshImportData, FbxStaticMeshImportData in older versions.
 
 
-# DEBUG
-force_use_interchange = "Auto" # "Auto" by default. You can use "Auto", "Interchange" or "FBX" for debug.

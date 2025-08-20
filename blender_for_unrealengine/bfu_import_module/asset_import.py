@@ -126,6 +126,7 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
     itask.get_task().save = False
     itask.get_task().replace_existing = True
     task_option = import_module_tasks_helper.init_options_data(asset_type, file_type)
+    print("Task options:", task_option)
     itask.set_task_option(task_option)
 
 
@@ -345,6 +346,15 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
     import_module_utils.print_debug_step("Process Post treatment")
     if asset_type.is_skeletal_animation():
         bfu_import_animations.bfu_import_animations_utils.apply_post_import_assets_changes(itask, asset_data, file_type)
+        animation = itask.get_imported_anim_sequence()
+        if animation:
+            # Preview mesh
+            if origin_skeletal_mesh:
+                import_module_post_treatment.set_sequence_preview_skeletal_mesh(animation, origin_skeletal_mesh)
+
+        else:
+            fail_reason = 'Error: animation not found after import!'
+            return fail_reason, None
 
     if asset_type == ExportAssetType.STATIC_MESH:
 
@@ -446,9 +456,6 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
                 # NEED UNREAL ENGINE IMPLEMENTATION IN PYTHON API.
                 # skeleton.add_socket(new_socket)
 
-    # Preview mesh
-    if asset_type.is_skeletal_animation():
-        import_module_post_treatment.set_sequence_preview_skeletal_mesh(itask.get_imported_anim_sequence(), origin_skeletal_mesh)
 
     import_module_utils.print_debug_step("Process per-modules apply asset settings")
     # Vertex color

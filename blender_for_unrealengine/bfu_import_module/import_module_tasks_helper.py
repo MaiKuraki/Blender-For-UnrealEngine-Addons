@@ -12,7 +12,7 @@ from typing import Union
 import unreal
 from . import import_module_unreal_utils
 from .asset_types import ExportAssetType, AssetFileTypeEnum
-from . import constrcut_config
+from . import config
 
 
 if hasattr(unreal, 'InterchangeGenericAssetsPipeline'):
@@ -76,7 +76,7 @@ if hasattr(unreal, 'InterchangeGenericAssetsPipeline'):
         """Initializes task options based on asset type and interchange usage."""
         
         # For FBX file it better to not use interchange before UE 5.5.
-        if constrcut_config.force_use_interchange:
+        if config.force_use_interchange:
             use_interchange = True
         elif filetype.value == AssetFileTypeEnum.FBX.value and import_module_unreal_utils.get_unreal_version() < (5,5,0):
             use_interchange = False

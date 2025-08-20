@@ -33,7 +33,7 @@ class ImportTask():
         assetname = import_module_unreal_utils.clean_filename_for_unreal(filename_without_ext)
         return destination_path+"/"+assetname+"."+assetname
 
-    def set_task_option(self, new_task_option):
+    def set_task_option(self, new_task_option: Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]):
         self.task_option = new_task_option
 
     def get_task(self) -> unreal.AssetImportTask:
