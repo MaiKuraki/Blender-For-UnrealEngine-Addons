@@ -9,7 +9,7 @@
 
 
 import bpy
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from .. import bfu_export_filter
 from .. import bfu_anim_action
 from ..bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum
@@ -67,8 +67,9 @@ class CachedActionManager():
         self.cached_object_count: int = 0
         self.cached_object_details: List[CachedActionArmatureInfo] = []
         self.cached_total_action_count: int = 0
-        
-        self.armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
+
+        # Optional typing because may loose StructRNA
+        self.armature_actions_map: List[Tuple[Optional[bpy.types.Object], Optional[bpy.types.Action]]] = []
 
     def get_need_update_cache(self, scene: bpy.types.Scene, objects: List[bpy.types.Object]) -> bool:
         if self.cached_object_count != len(objects):
@@ -84,6 +85,12 @@ class CachedActionManager():
 
         obj_names = [o.name for o in objects]
         for items in self.armature_actions_map:
+            if items[0] is None:
+                print("CachedActionManager: Need update cache, because cached armature is None")
+                return True
+            if items[1] is None:
+                print("CachedActionManager: Need update cache, because cached action is None")
+                return True
             if items[0].name not in obj_names:
                 print(f"CachedActionManager: Need update cache, because cached armature '{items[0].name}' is not in tested objects")
                 return True
@@ -109,9 +116,11 @@ class CachedActionManager():
             self.cached_object_details.append(armature_info)
 
         # Save Cached Armature Actions Map
-        self.armature_actions_map = new_armature_actions_map
+        self.armature_actions_map.clear()
+        for item in new_armature_actions_map:
+            self.armature_actions_map.append(item)
 
-    def get_cache(self) -> List[Tuple[bpy.types.Object, bpy.types.Action]]:
+    def get_cache(self) -> List[Tuple[Optional[bpy.types.Object], Optional[bpy.types.Action]]]:
         return self.armature_actions_map
 
 cached_action_manager = CachedActionManager()

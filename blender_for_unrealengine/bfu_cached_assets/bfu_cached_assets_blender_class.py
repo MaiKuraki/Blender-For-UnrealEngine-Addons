@@ -143,7 +143,8 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                         armature_actions_map = bfu_anim_action.bfu_anim_action_utils.optimizated_asset_search(scene, armature_list)
                         cached_action_manager.set_cache(scene, armature_list, armature_actions_map)
                     else:
-                        armature_actions_map = cached_action_manager.get_cache()
+                        # Ignore typing error because value alredy check in cached_action_manager.get_need_update_cache()
+                        armature_actions_map = cached_action_manager.get_cache() # type: ignore
 
             
             # Search for actions assets
