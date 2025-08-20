@@ -7,16 +7,13 @@
 #  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
 # ----------------------------------------------
 
+from typing import Dict, Any
 import unreal
 from .. import import_module_tasks_class
 from .. import import_module_utils
-from .. import constrcut_utils
 from ..asset_types import ExportAssetType
 
-
-support_interchange = constrcut_utils.include_interchange_functions()
-
-def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: dict, asset_additional_data: dict) -> None:
+def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_data: Dict[str, Any], asset_additional_data: Dict[str, Any]) -> None:
     import_module_utils.print_debug_step("Set Nanite import settings.")
 
     asset_type = ExportAssetType.get_asset_type_from_string(asset_data.get("asset_type"))
@@ -49,7 +46,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
                     #itask.get_static_mesh_import_data().set_editor_property('build_nanite', build_nanite)
 
 
-def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_additional_data: dict) -> None:
+def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_additional_data: Dict[str, Any]) -> None:
     import_module_utils.print_debug_step("Set Nanite post import settings.")
 
     # Check   
@@ -62,12 +59,8 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_addi
             apply_one_asset_settings(itask, asset, asset_additional_data)
 
 
-def apply_one_asset_settings(itask: import_module_tasks_class.ImportTask, asset: unreal.Object, asset_additional_data: dict) -> None:
+def apply_one_asset_settings(itask: import_module_tasks_class.ImportTask, asset: unreal.Object, asset_additional_data: Dict[str, Any]) -> None:
     """Applies vertex color settings to an already imported asset."""
-
-    # Check   
-    if asset is None:
-        return
     
     # Apply asset Nanite
     if "build_nanite" in asset_additional_data:

@@ -8,10 +8,13 @@
 # ----------------------------------------------
 
 import os
-from typing import List, Optional, Union, TYPE_CHECKING
+from typing import List, Optional, Union, TYPE_CHECKING, TypeVar
 import unreal
 from . import import_module_unreal_utils
 from . import constrcut_utils
+
+# Type variable for Unreal Engine objects
+T = TypeVar('T', bound=unreal.Object)
 
 
 should_use_interchange = constrcut_utils.include_interchange_functions()
@@ -94,40 +97,42 @@ class ImportTask():
             # unreal.InterchangeGenericAnimationPipeline
             return self.task_option.get_editor_property('animation_pipeline')
 
+    def get_imported_object_paths(self) -> List[str]:
+        return self.task.imported_object_paths
+
     def get_imported_assets(self) -> List[unreal.Object]:
         assets: List[unreal.Object] = []
-        for path in self.task.imported_object_paths:
+        for path in self.get_imported_object_paths():
             search_asset = import_module_unreal_utils.load_asset(path)
             if search_asset:
                 assets.append(search_asset)
         return assets
 
-    def get_imported_assets_of_class(self, search_class: type) -> List[unreal.Object]:
-        assets: List[unreal.Object] = []
-        for path in self.task.imported_object_paths:
-            search_asset = import_module_unreal_utils.load_asset(path)
-            if search_asset:
-                if isinstance(search_asset, search_class):
-                    assets.append(search_asset)
+    def get_imported_assets_of_class(self, search_class: type[T]) -> List[T]:
+        assets: List[T] = []
+        for path in self.get_imported_object_paths():
+            search_asset: Optional[unreal.Object] = import_module_unreal_utils.load_asset(path)
+            if search_asset and isinstance(search_asset, search_class):  # type: ignore
+                assets.append(search_asset)  # Maintenant Pylance comprend que c'est de type T
         return assets
 
-    def get_imported_asset_of_class(self, search_class: type) -> unreal.Object:
-        for path in self.task.imported_object_paths:
-            search_asset = import_module_unreal_utils.load_asset(path)
-            if search_asset:
-                if isinstance(search_asset, search_class):
-                    return search_asset
+    def get_imported_asset_of_class(self, search_class: type[T]) -> Optional[T]:
+        for path in self.get_imported_object_paths():
+            search_asset: Optional[unreal.Object] = import_module_unreal_utils.load_asset(path)
+            if search_asset and isinstance(search_asset, search_class):  # type: ignore
+                return search_asset  # Maintenant Pylance comprend que c'est de type T
+        return None
 
-    def get_imported_static_mesh(self) -> unreal.StaticMesh:
+    def get_imported_static_mesh(self) -> Optional[unreal.StaticMesh]:
         return self.get_imported_asset_of_class(unreal.StaticMesh)
 
-    def get_imported_skeleton(self) -> unreal.Skeleton:
+    def get_imported_skeleton(self) -> Optional[unreal.Skeleton]:
         return self.get_imported_asset_of_class(unreal.Skeleton)
 
-    def get_imported_skeletal_mesh(self) -> unreal.SkeletalMesh:
+    def get_imported_skeletal_mesh(self) -> Optional[unreal.SkeletalMesh]:
         return self.get_imported_asset_of_class(unreal.SkeletalMesh)
 
-    def get_imported_anim_sequence(self) -> unreal.AnimSequence:
+    def get_imported_anim_sequence(self) -> Optional[unreal.AnimSequence]:
         return self.get_imported_asset_of_class(unreal.AnimSequence)
 
     def get_imported_anim_sequences(self) -> List[unreal.AnimSequence]:
