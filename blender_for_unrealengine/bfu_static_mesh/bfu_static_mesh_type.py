@@ -83,7 +83,7 @@ class BFU_StaticMesh(BFU_ObjectAssetClass):
     def get_export_file_path(self, data: Any, details: Any = None) -> str:
         if bpy.context:
             scene = bpy.context.scene
-            return scene.bfu_export_static_file_path  # type: ignore[attr-defined]
+            return scene.bfu_export_static_mesh_file_path  # type: ignore[attr-defined]
         return ""
 
     def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:

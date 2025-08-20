@@ -65,8 +65,9 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     prepare_scene_for_export()
 
     if addon_prefs.revertExportPath:
-        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_static_file_path)).resolve())  # type: ignore
-        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_skeletal_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_static_mesh_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_skeletal_mesh_file_path)).resolve())  # type: ignore
+        bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_skeletal_animation_file_path)).resolve())  # type: ignore
         bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_alembic_file_path)).resolve())  # type: ignore
         bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_groom_file_path)).resolve())  # type: ignore
         bfu_basics.RemoveFolderTree(Path(bpy.path.abspath(scene.bfu_export_camera_file_path)).resolve())  # type: ignore

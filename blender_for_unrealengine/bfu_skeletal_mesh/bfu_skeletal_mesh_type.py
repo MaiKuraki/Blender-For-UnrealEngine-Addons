@@ -73,7 +73,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
     def get_export_file_path(self, data: Any, details: Any = None) -> str:
         if bpy.context:
             scene = bpy.context.scene
-            return scene.bfu_export_skeletal_file_path  # type: ignore[attr-defined]
+            return scene.bfu_export_skeletal_mesh_file_path  # type: ignore[attr-defined]
         return ""
 
     def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
@@ -143,8 +143,6 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
 
-        if bpy.context is None:
-            return []
         scene = bpy.context.scene
         asset_list: List[AssetToExport] = []
         
@@ -192,8 +190,9 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
         # Export specified parts of the modular skeletal mesh
         elif bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.modular_mode_is_specified_parts(data):
             export_filter = scene.bfu_export_selection_filter  # type: ignore[attr-defined]
+            active_part: int = -1
             if export_filter == "only_object_and_active":
-                active_part: int = data.bfu_modular_skeletal_specified_parts_meshs_template.active_template_property  # type: ignore[attr-defined]
+                active_part = data.bfu_modular_skeletal_specified_parts_meshs_template.active_template_property  # type: ignore[attr-defined]
 
             template = bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_modular_skeletal_specified_parts_meshs_template(data)
             for x, part in enumerate(template.get_template_collection()):

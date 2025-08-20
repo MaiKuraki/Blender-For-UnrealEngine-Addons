@@ -36,8 +36,9 @@ def get_preset_values() -> List[str]:
         'scene.bfu_unreal_import_location',
 
         # File path
-        'scene.bfu_export_static_file_path',
-        'scene.bfu_export_skeletal_file_path',
+        'scene.bfu_export_static_mesh_file_path',
+        'scene.bfu_export_skeletal_mesh_file_path',
+        'scene.bfu_export_skeletal_animation_file_path',
         'scene.bfu_export_alembic_file_path',
         'scene.bfu_export_groom_file_path',
         'scene.bfu_export_camera_file_path',
@@ -155,20 +156,29 @@ def register():
             return set()
 
     # File path
-    bpy.types.Scene.bfu_export_static_file_path = bpy.props.StringProperty(
-        name="StaticMesh Export Path",
-        description="Choose a directory to export StaticMesh(s)",
+    bpy.types.Scene.bfu_export_static_mesh_file_path = bpy.props.StringProperty(
+        name="Static Mesh Export Path",
+        description="Choose a directory to export Static Mesh(s)",
         maxlen=512,
         default=blender_relpath("ExportedAssets", "StaticMesh"),
         subtype='DIR_PATH',
         options=export_property_options()
     )
 
-    bpy.types.Scene.bfu_export_skeletal_file_path = bpy.props.StringProperty(
-        name="SkeletalMesh Export Path",
-        description="Choose a directory to export SkeletalMesh(s)",
+    bpy.types.Scene.bfu_export_skeletal_mesh_file_path = bpy.props.StringProperty(
+        name="Skeletal Mesh Export Path",
+        description="Choose a directory to export Skeletal Mesh(s)",
         maxlen=512,
         default=blender_relpath("ExportedAssets", "SkeletalMesh"),
+        subtype='DIR_PATH',
+        options=export_property_options()
+    )
+
+    bpy.types.Scene.bfu_export_skeletal_animation_file_path = bpy.props.StringProperty(
+        name="Skeletal Animation Export Path",
+        description="Choose a directory to export Skeletal Animation(s)",
+        maxlen=512,
+        default=blender_relpath("ExportedAssets", "SkeletalAnimation"),
         subtype='DIR_PATH',
         options=export_property_options()
     )
@@ -250,8 +260,9 @@ def unregister():
     del bpy.types.Scene.bfu_export_camera_file_path
     del bpy.types.Scene.bfu_export_groom_file_path
     del bpy.types.Scene.bfu_export_alembic_file_path
-    del bpy.types.Scene.bfu_export_skeletal_file_path
-    del bpy.types.Scene.bfu_export_static_file_path
+    del bpy.types.Scene.bfu_export_skeletal_animation_file_path
+    del bpy.types.Scene.bfu_export_skeletal_mesh_file_path
+    del bpy.types.Scene.bfu_export_static_mesh_file_path
 
     del bpy.types.Scene.bfu_unreal_import_location
     del bpy.types.Scene.bfu_unreal_import_module
