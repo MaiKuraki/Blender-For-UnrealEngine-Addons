@@ -11,13 +11,9 @@ import os
 from typing import List, Optional, Union, TYPE_CHECKING, TypeVar
 import unreal
 from . import import_module_unreal_utils
-from . import constrcut_utils
 
 # Type variable for Unreal Engine objects
 T = TypeVar('T', bound=unreal.Object)
-
-
-should_use_interchange = constrcut_utils.include_interchange_functions()
 
 class ImportTask():
 
@@ -68,7 +64,7 @@ class ImportTask():
 
 
 
-    if should_use_interchange:
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline'):
         def get_igap(self) -> unreal.InterchangeGenericAssetsPipeline:
             # unreal.InterchangeGenericAssetsPipeline
             return self.task_option

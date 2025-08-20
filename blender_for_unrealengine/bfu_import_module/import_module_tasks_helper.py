@@ -11,13 +11,11 @@
 from typing import Union
 import unreal
 from . import import_module_unreal_utils
-from . import constrcut_utils
 from .asset_types import ExportAssetType, AssetFileTypeEnum
+from . import constrcut_config
 
 
-support_interchange: bool = constrcut_utils.include_interchange_functions()
-
-if support_interchange:
+if hasattr(unreal, 'InterchangeGenericAssetsPipeline'):
     def task_options_default_preset(use_interchange: bool = True) -> Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]:
         """Returns default task options preset based on interchange usage and Unreal version."""
         if use_interchange:
@@ -73,12 +71,14 @@ if import_module_unreal_utils.alembic_importer_active():
         options = unreal.AbcImportSettings()
         return options
 
-if support_interchange:
+if hasattr(unreal, 'InterchangeGenericAssetsPipeline'):
     def init_options_data(asset_type: ExportAssetType, filetype: AssetFileTypeEnum):
         """Initializes task options based on asset type and interchange usage."""
         
         # For FBX file it better to not use interchange before UE 5.5.
-        if filetype.value == AssetFileTypeEnum.FBX.value and import_module_unreal_utils.get_unreal_version() < (5,5,0):
+        if constrcut_config.force_use_interchange:
+            use_interchange = True
+        elif filetype.value == AssetFileTypeEnum.FBX.value and import_module_unreal_utils.get_unreal_version() < (5,5,0):
             use_interchange = False
         else:
             use_interchange = True

@@ -12,11 +12,9 @@ from typing import Optional, Union, Dict, Any, List
 import unreal
 from .. import import_module_tasks_class
 from .. import import_module_utils
-from .. import constrcut_utils
 from ..asset_types import ExportAssetType
 
 
-support_interchange = constrcut_utils.include_interchange_functions()
 
 def get_vertex_override_color(asset_additional_data: Dict[str, Any]) -> Optional[unreal.LinearColor]:
     """Retrieves the vertex override color from the asset data, if available."""
@@ -34,7 +32,7 @@ def get_vertex_override_color(asset_additional_data: Dict[str, Any]) -> Optional
 
     return None
 
-if support_interchange:
+if hasattr(unreal, 'InterchangeVertexColorImportOption'):
     def get_interchange_vertex_color_import_option(asset_additional_data: Dict[str, Any]) -> Optional[unreal.InterchangeVertexColorImportOption]:
         """Retrieves the vertex color import option based on the asset data and pipeline."""
 
