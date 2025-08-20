@@ -9,7 +9,7 @@
 
 
 import bpy
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, TypeGuard
 from .. import bfu_export_filter
 from .. import bfu_anim_action
 from ..bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum
@@ -61,6 +61,30 @@ class CachedActionArmatureInfo():
             return False
         return True
 
+def check_object_is_valid(obj: Optional[bpy.types.Object]) -> TypeGuard[bpy.types.Object]:
+    if obj is None:
+        return False
+
+    # Blender API doesn't let access to is_valid() function...
+    # So I need to use try/except 
+    try:
+        _ = obj.name
+        return True
+    except ReferenceError:
+        return False
+
+def check_action_is_valid(action: Optional[bpy.types.Action]) -> TypeGuard[bpy.types.Action]:
+    if action is None:
+        return False
+
+    # Blender API doesn't let access to is_valid() function...
+    # So I need to use try/except
+    try:
+        _ = action.name
+        return True
+    except ReferenceError:
+        return False
+
 class CachedActionManager():
     def __init__(self):
         self.cached_scene_details: CachedActionObjectInfo = CachedActionObjectInfo()
@@ -85,11 +109,11 @@ class CachedActionManager():
 
         obj_names = [o.name for o in objects]
         for items in self.armature_actions_map:
-            if items[0] is None:
-                print("CachedActionManager: Need update cache, because cached armature is None")
+            if not check_object_is_valid(items[0]):
+                print("CachedActionManager: Need update cache, because cached armature is invalid")
                 return True
-            if items[1] is None:
-                print("CachedActionManager: Need update cache, because cached action is None")
+            if not check_action_is_valid(items[1]):
+                print("CachedActionManager: Need update cache, because cached action is invalid")
                 return True
             if items[0].name not in obj_names:
                 print(f"CachedActionManager: Need update cache, because cached armature '{items[0].name}' is not in tested objects")
