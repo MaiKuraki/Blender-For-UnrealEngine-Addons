@@ -17,7 +17,7 @@ def draw_ui_custom_property(layout: bpy.types.UILayout, obj: bpy.types.Object):
     else:
         export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
 
-    if export_type == "FBX":
+    if export_type.value == "FBX":
         layout.prop(obj, "bfu_fbx_export_with_custom_props")
         custom_props_layout = layout.column()
         custom_props_layout.enabled = obj.bfu_fbx_export_with_custom_props

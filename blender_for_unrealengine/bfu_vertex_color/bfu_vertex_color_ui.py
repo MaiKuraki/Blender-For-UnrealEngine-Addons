@@ -76,7 +76,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
             else:
                 export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
 
-            if export_type == "FBX":
+            if export_type.value == "FBX":
                 if blender_version >= (3, 4, 0):
                     bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_type')
                             
