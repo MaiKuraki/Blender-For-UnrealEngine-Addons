@@ -9,13 +9,14 @@
 
 
 import bpy
+from . import bfu_vertex_color_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_static_mesh
 from .. import bfu_skeletal_mesh
 from .. import bfu_export_control
 from .. import bfu_addon_prefs
-from . import bfu_vertex_color_utils
+from ..bfu_skeletal_mesh.bfu_export_procedure import BFU_FileTypeEnum
 
 
 
@@ -72,11 +73,11 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
             blender_version = bpy.app.version
 
             if bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj):
-                export_type = bfu_skeletal_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
+                export_type: BFU_FileTypeEnum = bfu_skeletal_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
             else:
-                export_type = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
+                export_type: BFU_FileTypeEnum = bfu_static_mesh.bfu_export_procedure.get_obj_export_file_type(obj)
 
-            if export_type.value == "FBX":
+            if export_type.value == BFU_FileTypeEnum.FBX.value:
                 if blender_version >= (3, 4, 0):
                     bfu_vertex_color_settings.prop(obj, 'bfu_vertex_color_type')
                             

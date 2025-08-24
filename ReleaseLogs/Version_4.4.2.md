@@ -7,3 +7,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Changed: Renamed `bfu_export_skeletal_file_path` to `bfu_export_skeletal_mesh_file_path` for clarity
 - Fixed: Cached action system may reference and use removed StructRNA. Add checks to avoid script fails.
 - Fixed: Old Interchange check function produce script errors at import.
+- Fixed: Some UI elements not being displayed correctly in the menu. (Thanks drpsyko101!)

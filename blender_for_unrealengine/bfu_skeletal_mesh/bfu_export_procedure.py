@@ -61,6 +61,7 @@ def get_export_file_type(procedure: BFU_SkeletonExportProcedure) -> BFU_FileType
         return BFU_FileTypeEnum.FBX
     elif procedure.value == BFU_SkeletonExportProcedure.STANDARD_GLTF.value:
         return BFU_FileTypeEnum.GLTF
+    return BFU_FileTypeEnum.UNKNOWN
 
 def is_fbx_file_export(obj: bpy.types.Object) -> bool:
     return get_obj_export_file_type(obj).value == BFU_FileTypeEnum.FBX.value
