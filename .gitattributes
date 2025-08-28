@@ -1,0 +1,14 @@
+# Forcer LF pour le code source
+*.py text eol=lf
+*.sh text eol=lf
+
+# Forcer LF pour les fichiers de config
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+
+# Garder binaire tel quel (pas de conversion)
+*.png binary
+*.jpg binary
+*.fbx binary
+*.blend binary
