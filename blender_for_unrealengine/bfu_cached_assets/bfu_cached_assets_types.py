@@ -9,7 +9,17 @@
 
 
 import bpy
-from typing import List, Tuple, Optional, TypeGuard
+from typing import List, Tuple, Optional, TYPE_CHECKING
+if TYPE_CHECKING or bpy.app.version >= (3, 1, 0):
+    # TypeGuard was added in Python 3.10 (In Blender 3.1)
+    from typing import TypeGuard
+else:
+    class _FakeTypeGuard:
+        def __class_getitem__(cls, item):
+            return bool
+    TypeGuard = _FakeTypeGuard
+
+
 from .. import bfu_export_filter
 from .. import bfu_anim_action
 from ..bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum
