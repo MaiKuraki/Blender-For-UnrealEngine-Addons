@@ -376,8 +376,8 @@ class BFU_BaseAssetClass(ABC):
         return "<Unknown>"
 
     def get_asset_folder_path(self, data: Any, details: Any = None) -> Path:
-        # Add subfolder path if provided
-        if self.asset_folder_name: 
+        # Add asset folder path if provided
+        if self.asset_folder_name:
             return Path(self.asset_folder_name)
         return Path()
 
@@ -389,16 +389,13 @@ class BFU_BaseAssetClass(ABC):
         else:
             dirpath = Path(export_file_path)
         
-        # Add asset folder path
-        dirpath /= Path(bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_export_folder(data))
-        
-        # Add subfolder path if provided
+        # Add subfolder path if provided         
         asset_folder_name = self.get_asset_folder_path(data, details)
         if asset_folder_name:
             dirpath /= asset_folder_name
 
         # Add extra path if provided
-        if extra_path: 
+        if extra_path:
             dirpath /= extra_path
 
         return dirpath
