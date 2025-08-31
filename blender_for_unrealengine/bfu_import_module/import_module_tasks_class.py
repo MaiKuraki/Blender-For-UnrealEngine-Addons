@@ -8,7 +8,7 @@
 # ----------------------------------------------
 
 import os
-from typing import List, Optional, Union, TYPE_CHECKING, TypeVar
+from typing import List, Optional, Union, TYPE_CHECKING, TypeVar, Type
 import unreal
 from . import import_module_unreal_utils
 
@@ -19,7 +19,10 @@ class ImportTask():
 
     def __init__(self) -> None:
         self.task: unreal.AssetImportTask = unreal.AssetImportTask() 
-        self.task_option: Optional[Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]] = None  # Type hint for task_option, can be FbxImportUI or InterchangeGenericAssetsPipeline
+        if hasattr(unreal, 'InterchangeGenericAssetsPipeline'):
+            self.task_option: Optional[Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]] = None  # Type hint for task_option, can be FbxImportUI or InterchangeGenericAssetsPipeline
+        else:
+            self.task_option: Optional[unreal.FbxImportUI] = None
 
     def get_preview_import_refs(self) -> str:
         if TYPE_CHECKING:
@@ -33,8 +36,12 @@ class ImportTask():
         assetname = import_module_unreal_utils.clean_filename_for_unreal(filename_without_ext)
         return destination_path+"/"+assetname+"."+assetname
 
-    def set_task_option(self, new_task_option: Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]):
-        self.task_option = new_task_option
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline'):
+        def set_task_option(self, new_task_option: Union[unreal.FbxImportUI, unreal.InterchangeGenericAssetsPipeline]):
+            self.task_option = new_task_option
+    else:
+        def set_task_option(self, new_task_option: unreal.FbxImportUI):
+            self.task_option = new_task_option
 
     def get_task(self) -> unreal.AssetImportTask:
         return self.task
@@ -104,7 +111,7 @@ class ImportTask():
                 assets.append(search_asset)
         return assets
 
-    def get_imported_assets_of_class(self, search_class: type[T]) -> List[T]:
+    def get_imported_assets_of_class(self, search_class: Type[T]) -> List[T]:
         assets: List[T] = []
         for path in self.get_imported_object_paths():
             search_asset: Optional[unreal.Object] = import_module_unreal_utils.load_asset(path)
@@ -112,7 +119,7 @@ class ImportTask():
                 assets.append(search_asset)  # Maintenant Pylance comprend que c'est de type T
         return assets
 
-    def get_imported_asset_of_class(self, search_class: type[T]) -> Optional[T]:
+    def get_imported_asset_of_class(self, search_class: Type[T]) -> Optional[T]:
         for path in self.get_imported_object_paths():
             search_asset: Optional[unreal.Object] = import_module_unreal_utils.load_asset(path)
             if search_asset and isinstance(search_asset, search_class):  # type: ignore

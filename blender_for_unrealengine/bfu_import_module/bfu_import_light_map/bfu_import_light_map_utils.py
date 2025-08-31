@@ -21,7 +21,7 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
         # Only apply settings for StaticMesh and SkeletalMesh
         return
 
-    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         if asset_type == ExportAssetType.STATIC_MESH:
             if "generate_light_map_uvs" in asset_additional_data:
                 itask.get_igap_mesh().set_editor_property('generate_lightmap_u_vs', asset_additional_data["generate_light_map_uvs"])
@@ -50,7 +50,7 @@ def apply_asset_settings(itask: import_module_tasks_class.ImportTask, asset_addi
     asset_import_data = static_mesh.get_editor_property('asset_import_data')
     if "generate_light_map_uvs" in asset_additional_data:
         generate_light_map_uvs: bool = asset_additional_data["generate_light_map_uvs"]
-        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             mesh_pipeline = asset_import_data.get_pipelines()[0].get_editor_property('mesh_pipeline')
             mesh_pipeline.set_editor_property('generate_lightmap_u_vs', generate_light_map_uvs)  # Import data
             unreal.EditorStaticMeshLibrary.set_generate_lightmap_uv(static_mesh, generate_light_map_uvs)  # Build settings at lod

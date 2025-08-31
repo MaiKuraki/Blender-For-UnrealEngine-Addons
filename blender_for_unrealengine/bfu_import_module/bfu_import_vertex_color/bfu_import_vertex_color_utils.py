@@ -78,12 +78,12 @@ def apply_import_settings(itask: import_module_tasks_class.ImportTask, asset_dat
         return
 
     vertex_override_color = get_vertex_override_color(asset_additional_data)
-    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         vertex_color_import_option = get_interchange_vertex_color_import_option(asset_additional_data)
     else:
         vertex_color_import_option = get_vertex_color_import_option(asset_additional_data)
 
-    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         itask.get_igap_common_mesh().set_editor_property('vertex_color_import_option', vertex_color_import_option)
         if vertex_override_color:
             itask.get_igap_common_mesh().set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())
@@ -121,7 +121,7 @@ def apply_one_asset_settings(itask: import_module_tasks_class.ImportTask, asset:
     asset_import_data = asset.get_editor_property('asset_import_data')
     asset_import_data: Union[unreal.FbxStaticMeshImportData, unreal.FbxSkeletalMeshImportData, unreal.InterchangeAssetImportData]
     
-    if isinstance(asset_import_data, unreal.InterchangeAssetImportData):
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(asset_import_data, unreal.InterchangeAssetImportData):
         common_meshes_properties = asset_import_data.get_pipelines()[0].get_editor_property('common_meshes_properties')
         if vertex_override_color:
             common_meshes_properties.set_editor_property('vertex_override_color', vertex_override_color.to_rgbe())

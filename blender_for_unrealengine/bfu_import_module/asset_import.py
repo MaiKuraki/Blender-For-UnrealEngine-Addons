@@ -9,7 +9,7 @@
 
 
 import os.path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from pathlib import Path
 import unreal
 from . import bpl
@@ -121,7 +121,10 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
         itask.set_filename(file_name)
         print("Target file:", file_name)
 
-    itask.get_task().destination_path = "/" + os.path.normpath(asset_data["asset_import_path"])
+    destination_path: str = "/" + os.path.normpath(asset_data["asset_import_path"])
+    # For Unreal Engine 4.27 need replace separation on windows. @TODO Same on linux?
+    destination_path = destination_path.replace("\\", "/")
+    itask.get_task().destination_path = destination_path
     itask.get_task().automated = config.automated_import_tasks
     itask.get_task().save = False
     itask.get_task().replace_existing = True
@@ -152,7 +155,7 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
 
     import_module_utils.print_debug_step("Process transform and curve")
     # Import transform and curve
-    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         animation_pipeline = itask.get_igap_animation()
         if "do_not_import_curve_with_zero" in asset_data:
             animation_pipeline.set_editor_property('do_not_import_curve_with_zero', asset_data["do_not_import_curve_with_zero"]) 
@@ -205,7 +208,7 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
    
         import_module_utils.print_debug_step("Set Asset Type")
         # Set Asset Type
-        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             if asset_type == ExportAssetType.STATIC_MESH:
                 itask.get_igap_common_mesh().set_editor_property('force_all_mesh_as_type', unreal.InterchangeForceMeshType.IFMT_STATIC_MESH)
             if asset_type == ExportAssetType.SKELETAL_MESH:
@@ -225,7 +228,7 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
         
         import_module_utils.print_debug_step("Set Material Use")
         # Set Material Use
-        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             if asset_type.is_skeletal_animation():
                 itask.get_igap_material().set_editor_property('import_materials', False)
             else:
@@ -238,12 +241,12 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
         
         import_module_utils.print_debug_step("Set Texture Type")
         # Set Texture Use
-        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             itask.get_igap_texture().set_editor_property('import_textures', False)
         else:
             itask.get_fbx_import_ui().set_editor_property('import_textures', False)
 
-        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             if asset_type.is_skeletal_animation():
                 itask.get_igap_animation().set_editor_property('import_animations', True)
                 bfu_import_animations.bfu_import_animations_utils.set_animation_sample_rate(itask, asset_additional_data, asset_type, file_type)
@@ -284,7 +287,7 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
         # Nanite
         bfu_import_nanite.bfu_import_nanite_utils.apply_import_settings(itask, asset_data, asset_additional_data)
 
-        if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+        if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
             itask.get_igap_mesh().set_editor_property('combine_static_meshes', True)
             itask.get_igap_mesh().set_editor_property('combine_skeletal_meshes', True)
             # @TODO auto_generate_collision Removed with InterchangeGenericAssetsPipeline? 
@@ -397,7 +400,7 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
                 for path in itask.task.imported_object_paths:
                     print(" -", path)
 
-    if isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
+    if hasattr(unreal, 'InterchangeGenericAssetsPipeline') and isinstance(itask.task_option, unreal.InterchangeGenericAssetsPipeline):
         if asset_type == ExportAssetType.STATIC_MESH:
             itask.get_igap_common_mesh().set_editor_property('recompute_normals', False)
             itask.get_igap_common_mesh().set_editor_property('recompute_tangents', False)
