@@ -8,9 +8,11 @@
 # ----------------------------------------------
 
 import unreal
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TYPE_CHECKING
 from .. import import_module_unreal_utils
 from .. import import_module_tasks_class
+from .. import import_module_utils
+from .. import bpl
 from ..asset_types import ExportAssetType, AssetFileTypeEnum
 
 def set_animation_sample_rate(itask: import_module_tasks_class.ImportTask, asset_additional_data: Dict[str, Any], asset_type: ExportAssetType, filetype: AssetFileTypeEnum) -> None:
@@ -89,7 +91,7 @@ def cleanup_imported_assets(anim_sequences: List[unreal.AnimSequence], desired_a
                     unreal.EditorAssetLibrary.delete_asset(anim_seq.get_path_name())
 
 def apply_interchange_post_import(itask: import_module_tasks_class.ImportTask, asset_data: Dict[str, Any], filetype: AssetFileTypeEnum) -> None:
-
+    import_module_utils.print_debug_step("Interchange Animation Post Import")
     if filetype.value == AssetFileTypeEnum.FBX.value:
         # When Import FBX animation using the Interchange it create "Anim_0_Root" and "Root_MorphAnim_0". 
         # I'm not sure if that a bug... So remove I "Root_MorphAnim_0" or other animations and I rename "Anim_0_Root".
@@ -105,6 +107,7 @@ def apply_interchange_post_import(itask: import_module_tasks_class.ImportTask, a
 
 
 def apply_fbxui_post_import(itask: import_module_tasks_class.ImportTask, asset_data: Dict[str, Any]) -> None:
+    import_module_utils.print_debug_step("FBX Animation Post Import")
     """Applies post-import changes for FBX pipeline."""
     # When Import FBX animation using FbxImportUI it create a skeletal mesh and the animation at this side. 
     # I'm not sure if that a bug too... So remove the extra mesh
@@ -114,15 +117,30 @@ def apply_fbxui_post_import(itask: import_module_tasks_class.ImportTask, asset_d
         skeleta_mesh_assset = itask.get_imported_skeletal_mesh()
         if skeleta_mesh_assset:
             # If Imported as Skeletal Mesh Search the real Anim Sequence
-            path = skeleta_mesh_assset.get_path_name()
-            base_name = path.split('.')[0]
-            anim_asset_name = f"{base_name}_anim.{base_name.split('/')[-1]}_anim"
-            desired_anim_path = f"{base_name}.{base_name.split('/')[-1]}"
-            animAsset = import_module_unreal_utils.load_asset(anim_asset_name)
-            if animAsset is not None:
-                # Remove the imported skeletal mesh and rename te anim sequence with his correct name.
-                unreal.EditorAssetLibrary.delete_asset(path)
-                unreal.EditorAssetLibrary.rename_asset(anim_asset_name, desired_anim_path)
+            if TYPE_CHECKING:
+                skeletal_mesh_path: str = ""
             else:
-                fail_reason = f"animAsset {asset_data['asset_name']} not found after import: {anim_asset_name}"
-                return fail_reason, None
+                # get_path_name() not visible in the API ???
+                skeletal_mesh_path: str = skeleta_mesh_assset.get_path_name()
+            base_name: str = skeletal_mesh_path.split('.')[0]
+
+            desired_anim_path = f"{base_name}.{base_name.split('/')[-1]}"
+            # Depending Unreal Engine verison the anim sequence name can change.
+            # It can be <BaseName>_anim.<BaseName>_anim or <BaseName>_Anim.<BaseName>_Anim
+            search_names: List[str] = []
+            search_names.append(f"{base_name}_anim.{base_name.split('/')[-1]}_anim")
+            search_names.append(f"{base_name}_Anim.{base_name.split('/')[-1]}_Anim")
+
+            for anim_asset_name in search_names:
+                anim_asset = import_module_unreal_utils.load_asset(anim_asset_name)
+                if anim_asset is not None:
+                    # Better to use get_path_name() than anim_asset_name to be sure to have the correct path.
+                    anim_asset_path = anim_asset.get_path_name()
+                    # Remove the imported skeletal mesh and rename te anim sequence with his correct name.
+                    unreal.EditorAssetLibrary.delete_asset(skeletal_mesh_path)
+                    print(f"Renaming asset {anim_asset_path} to {desired_anim_path}")
+                    unreal.EditorAssetLibrary.rename_asset(anim_asset_path, desired_anim_path)
+                    return
+            
+            fail_reason = f"animAsset {asset_data['asset_name']} not found after import: {skeletal_mesh_path}"
+            print(bpl.color_set.red(fail_reason))
