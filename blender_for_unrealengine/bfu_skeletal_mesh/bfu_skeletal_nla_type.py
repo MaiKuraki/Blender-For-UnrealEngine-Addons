@@ -74,6 +74,14 @@ class BFU_SkeletalNonLinearAnimation(BFU_ObjectAssetClass):
     def get_package_file_type(self, data: bpy.types.Object, details: Any = None) -> BFU_FileTypeEnum:
         return bfu_export_procedure.get_obj_export_file_type(data)
 
+    def get_package_file_name(self, data: bpy.types.Object, details: Any = None, desired_name: str = "", without_extension: bool = False) -> str:
+        return super().get_package_file_name(
+            data,
+            details,
+            desired_name=data.bfu_anim_nla_export_name,
+            without_extension=without_extension,
+        )
+
     def get_asset_folder_path(self, data: bpy.types.Object, details: Any = None) -> Path:
         # Add skeletal sub folder path
         if bpy.context:

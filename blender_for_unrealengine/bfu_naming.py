@@ -33,9 +33,6 @@ def get_collection_file_name(collection: bpy.types.Collection, desired_name: str
 
 def get_nonlinear_animation_file_name(obj: bpy.types.Object, fileType: str = ".fbx") -> str:
     # Generate action file name
-    
-    if bpy.context is None:
-        return ""
 
     scene = bpy.context.scene
 
