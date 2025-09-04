@@ -6,3 +6,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: Remove all use of InterchangeGenericAssetsPipeline in Unreal Engine 4.27
 - Fixed: Ensure import destination paths are correctly formatted in Unreal Engine 4.27
 - Fixed: After import FBX animation using FbxImportUI, removing the extra skeletal mesh and renaming animation may fail because different naming in UE versions.
+- Fixed: Non Linear Animation (NLA) assets were not visible in the animation preview bar.

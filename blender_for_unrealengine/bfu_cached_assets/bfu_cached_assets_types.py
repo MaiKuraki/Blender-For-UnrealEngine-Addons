@@ -23,6 +23,7 @@ else:
 from .. import bfu_export_filter
 from .. import bfu_anim_action
 from ..bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum
+from .. import bfu_debug_settings
 
 class CachedActionObjectInfo():
     def __init__(self) -> None:
@@ -106,6 +107,9 @@ class CachedActionManager():
         self.armature_actions_map: List[Tuple[Optional[bpy.types.Object], Optional[bpy.types.Action]]] = []
 
     def get_need_update_cache(self, scene: bpy.types.Scene, objects: List[bpy.types.Object]) -> bool:
+        if bfu_debug_settings.DISABLE_ASSET_SEARCH_CACHING:
+            return True
+
         if self.cached_object_count != len(objects):
             print(f"CachedActionManager: Need update cache, because object count changed: {self.cached_object_count} != {len(objects)}")
             return True

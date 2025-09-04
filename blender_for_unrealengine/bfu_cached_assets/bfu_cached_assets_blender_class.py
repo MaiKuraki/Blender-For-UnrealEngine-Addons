@@ -123,6 +123,13 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
 
             events.stop_last_and_start_new_event("-> S2")
 
+            # Search for armature animation assets
+            for armature in armature_list:
+                asset_class_list = bfu_assets_manager.bfu_asset_manager_utils.get_custom_type_supported_asset_class("ArmatureAnimation", armature)
+                for asset_class in asset_class_list:
+                    target_asset_to_export.extend(asset_class.get_asset_export_data(armature, None, search_mode=search_mode))
+            
+            events.stop_last_and_start_new_event("-> S3")
             armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
             if export_filter == "only_object_and_active":
                 events.add_sub_event("Active Search")
@@ -146,7 +153,6 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                         # Ignore typing error because value alredy check in cached_action_manager.get_need_update_cache()
                         armature_actions_map = cached_action_manager.get_cache() # type: ignore
 
-            
             # Search for actions assets
             events.stop_last_and_start_new_event("Create actions assets class")
             for asset in bfu_assets_manager.bfu_asset_manager_registred_assets.get_registred_asset_class_by_type("ArmatureActions"):
@@ -155,7 +161,6 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
                     # `if asset.support_asset_type(armature, action):`
                     # Because same values is already checked in the previous step
                     target_asset_to_export.extend(asset.get_asset_export_data(armature, action, search_mode=search_mode))
-                    pass
             events.stop_last_event()
 
         events.stop_last_and_start_new_event("Search Other Assets")

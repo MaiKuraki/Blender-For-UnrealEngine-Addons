@@ -140,7 +140,7 @@ class BFU_SkeletalNonLinearAnimation(BFU_ObjectAssetClass):
 
 def register():
     my_asset_class = BFU_SkeletalNonLinearAnimation()
-    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class, "Object")
+    bfu_assets_manager.bfu_asset_manager_registred_assets.register_asset_class(my_asset_class, "ArmatureAnimation")
 
 def unregister():
     pass
