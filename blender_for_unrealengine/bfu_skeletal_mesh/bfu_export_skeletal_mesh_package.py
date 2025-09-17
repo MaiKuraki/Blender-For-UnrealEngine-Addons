@@ -125,6 +125,7 @@ def export_as_skeletal_mesh(
         bfu_export.bfu_export_utils.CorrectExtremUVAtExport(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportTransform(selected_obj)
         bfu_export.bfu_export_utils.SetSocketsExportName(selected_obj)
+    bfu_export.bfu_export_utils.RemoveMaterialsOnCollisionMeshes(bpy.context.selected_objects)
 
     bfu_utils.apply_export_transform(active, "Object")  # Apply export transform before rescale
 
