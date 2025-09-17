@@ -9,8 +9,8 @@
 
 
 from ...bfu_check_types import bfu_checker
-from .... import bfu_utils
 from ....bfu_cached_assets.bfu_cached_assets_blender_class import AssetToExport
+from .... import bfu_collision
 
 class BFU_Checker_UVMaps(bfu_checker):
 
@@ -22,7 +22,7 @@ class BFU_Checker_UVMaps(bfu_checker):
     def run_asset_check(self, asset: AssetToExport):
         for obj in self.get_meshes_to_check(asset):
             if obj.data:
-                if not bfu_utils.check_is_collision(obj):
+                if not bfu_collision.bfu_collision_utils.is_a_collision(obj):
                     if len(obj.data.uv_layers) < 1:  # type: ignore
                         my_po_error = self.add_potential_error()
                         my_po_error.name = obj.name

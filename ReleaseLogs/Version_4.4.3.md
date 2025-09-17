@@ -8,3 +8,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: After import FBX animation using FbxImportUI, removing the extra skeletal mesh and renaming animation may fail because different naming in UE versions.
 - Fixed: Non Linear Animation (NLA) assets were not visible in the animation preview bar.
 - Fixed: NLA export name was wrong and used the object name instead of the NLA name.
+- Fixed: When using Unreal Interchange Pipeline (5.6), importing a static mesh with collision may also adds the Blender collision material as a new slot. Removing materials at the export fix the issue.

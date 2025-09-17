@@ -465,35 +465,6 @@ class ModifiersDataScale():
                         modifiers.append(mod)
         return modifiers
 
-
-def get_all_collision_obj() -> List[bpy.types.Object]:
-    # Get any object that can be understood
-    # as a collision or a socket by unreal
-
-    if bpy.context is None:
-        return []
-
-    colObjs = [obj for obj in bpy.context.scene.objects if (
-        fnmatch.fnmatchcase(obj.name, "UBX*") or
-        fnmatch.fnmatchcase(obj.name, "UCP*") or
-        fnmatch.fnmatchcase(obj.name, "USP*") or
-        fnmatch.fnmatchcase(obj.name, "UCX*"))]
-    return colObjs
-
-def check_is_collision(target: bpy.types.Object) -> bool:
-    # Return true if obj is a collision
-
-    if bpy.context is None:
-        return False
-
-    for obj in bpy.context.scene.objects:
-        if (fnmatch.fnmatchcase(obj.name, "UBX*") or
-            fnmatch.fnmatchcase(obj.name, "UCP*") or
-            fnmatch.fnmatchcase(obj.name, "USP*") or
-            fnmatch.fnmatchcase(obj.name, "UCX*")):
-            return True
-    return False
-
 def lerp_quaternion(q1: mathutils.Quaternion, q2: mathutils.Quaternion, alpha: float) -> mathutils.Quaternion:
     # Manual LERP because Blender lacks direct Quaternion.lerp()
     result = mathutils.Quaternion((

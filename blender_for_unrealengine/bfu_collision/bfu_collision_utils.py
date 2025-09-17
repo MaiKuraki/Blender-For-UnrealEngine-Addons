@@ -33,13 +33,13 @@ def is_a_collision(obj: bpy.types.Object) -> bool:
 
     return False
 
-def get_all_collision_objs(objs_list=None):
+def get_all_scene_collision_objs() -> list[bpy.types.Object]:
     # Get any collision objects from bpy.context.scene.objects or list if valid.
 
-    if objs_list is not None:
-        objs = objs_list
-    else:
-        objs = bpy.context.scene.objects
+    scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+    objs = scene.objects
 
     collision_objs = [obj for obj in objs if (
         fnmatch.fnmatchcase(obj.name, "UBX*") or
@@ -55,7 +55,7 @@ def fix_export_type_on_collision(list=None):
     if list is not None:
         objs = list
     else:
-        objs = get_all_collision_objs()
+        objs = get_all_scene_collision_objs()
 
     fixed_collisions = 0
     for obj in objs:
@@ -69,7 +69,7 @@ def fix_name_on_collision(list=None):
     if list is not None:
         objs = list
     else:
-        objs = get_all_collision_objs()
+        objs = get_all_scene_collision_objs()
 
     fixed_collision_names = 0
     for obj in objs:

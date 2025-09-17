@@ -15,6 +15,7 @@ from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_static_mesh
 from .. import bfu_export_control
+from .. import bfu_collision
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
@@ -43,7 +44,7 @@ def GetExportRealSurfaceArea(obj: bpy.types.Object) -> float:
 
     for selectObj in bpy.context.selected_objects:
         # Remove collision box
-        if bfu_utils.check_is_collision(selectObj):
+        if bfu_collision.bfu_collision_utils.is_a_collision(selectObj):
             bfu_utils.clean_delete_objects([selectObj])
 
     if bpy.context.view_layer.objects.active is None:

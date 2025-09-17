@@ -23,7 +23,7 @@ from .. import bfu_skeletal_mesh
 from .. import bfu_socket
 from .. import bfu_export_logs
 from .. import bfu_addon_prefs
-from .. import bfu_skeletal_mesh
+from .. import bfu_collision
 
 # @TODO: Move this to a config file.
 dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
@@ -423,6 +423,13 @@ def reset_sockets_transform(obj: bpy.types.Object):
             socket.rotation_euler = socket["BFU_PreviousSocketRotationEuler"]
             del socket["BFU_PreviousSocketRotationEuler"]
 
+# Collisions
+def RemoveMaterialsOnCollisionMeshes(objs: List[bpy.types.Object]):
+    # Remove materials on collision meshes
+    for obj in objs:
+        if isinstance(obj.data, bpy.types.Mesh):
+            if bfu_collision.bfu_collision_utils.is_a_collision(obj):
+                obj.data.materials.clear()
 
 # Main asset
 
