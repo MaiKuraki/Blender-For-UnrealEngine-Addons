@@ -14,6 +14,7 @@ from .. import bfu_unreal_utils
 from .. import bfu_export_control
 from .. import bfu_addon_prefs
 
+name_for_collision_material = "UE_Collision"
 
 def is_a_collision(obj: bpy.types.Object) -> bool:
     '''
@@ -175,9 +176,9 @@ def unreal_engine_sub_objs_set(SubType):
 def CreateCollisionMaterial():
     addon_prefs = bfu_addon_prefs.get_addon_prefs()
 
-    mat = bpy.data.materials.get("UE4Collision")
+    mat = bpy.data.materials.get(name_for_collision_material)
     if mat is None:
-        mat = bpy.data.materials.new(name="UE4Collision")
+        mat = bpy.data.materials.new(name=name_for_collision_material)
 
     mat.diffuse_color = addon_prefs.collisionColor
     mat.use_nodes = False
