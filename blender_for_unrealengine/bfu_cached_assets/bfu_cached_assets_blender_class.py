@@ -16,6 +16,7 @@ from .. import bfu_export_control
 from .. import bfu_debug_settings
 from .. import bfu_anim_action
 from .. import bfu_base_collection
+from .. import bfu_export_filter
 from . import bfu_cached_assets_types
 
 
@@ -134,8 +135,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             if export_filter == "only_object_and_active":
                 events.add_sub_event("Active Search")
                 for armature in armature_list:
-                    if armature.animation_data and armature.animation_data.action:
-                        armature_actions_map.append((armature, armature.animation_data.action))
+                    if bfu_export_filter.bfu_export_filter_props.scene_use_animation_export(scene):
+                        if armature.animation_data and armature.animation_data.action:
+                            armature_actions_map.append((armature, armature.animation_data.action))
                 events.stop_last_event()
             else:
                 cached_action_manager = bfu_cached_assets_types.cached_action_manager
