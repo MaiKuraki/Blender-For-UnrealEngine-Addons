@@ -124,6 +124,11 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
     destination_path: str = "/" + os.path.normpath(asset_data["asset_import_path"])
     # For Unreal Engine 4.27 need replace separation on windows. @TODO Same on linux?
     destination_path = destination_path.replace("\\", "/")
+    package_root = '/' + destination_path.split('/')[1] + '/'
+    if unreal.EditorAssetLibrary.does_directory_exist(package_root) == False:
+        fail_reason = f"Import failed because the destination path {destination_path} is not a valid package path for the current project."
+        import_module_utils.print_debug_step(fail_reason)
+        return fail_reason, None
     itask.get_task().destination_path = destination_path
     itask.get_task().automated = config.automated_import_tasks
     itask.get_task().save = False
@@ -340,7 +345,8 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
     import_module_utils.print_debug_step("Import asset done!")
     
     if len(itask.get_imported_assets()) == 0:
-        fail_reason = 'Error zero imported object for: ' + asset_data["asset_name"]
+        fail_reason = 'Import failed: Zero imported object for: ' + asset_data["asset_name"]
+        import_module_utils.print_debug_step(fail_reason)
         return fail_reason, None
     
 
@@ -356,7 +362,8 @@ def import_task(asset_data: Dict[str, Any]) -> (str, Optional[List[unreal.AssetD
                 import_module_post_treatment.set_sequence_preview_skeletal_mesh(animation, origin_skeletal_mesh)
 
         else:
-            fail_reason = 'Error: animation not found after import!'
+            fail_reason = 'Import failed: animation not found after import!'
+            import_module_utils.print_debug_step(fail_reason)
             return fail_reason, None
 
     if asset_type == ExportAssetType.STATIC_MESH:
