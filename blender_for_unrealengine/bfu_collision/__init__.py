@@ -10,11 +10,14 @@
 import bpy
 import importlib
 
+from . import bfu_collision_operator
 from . import bfu_collision_props
 from . import bfu_collision_types
 from . import bfu_collision_ui
 from . import bfu_collision_utils
 
+if "bfu_collision_operator" in locals():
+    importlib.reload(bfu_collision_operator)
 if "bfu_collision_types" in locals():
     importlib.reload(bfu_collision_types)
 if "bfu_collision_props" in locals():
@@ -32,6 +35,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    bfu_collision_operator.register()
     bfu_collision_types.register()
     bfu_collision_props.register()
 
@@ -41,3 +45,4 @@ def unregister():
 
     bfu_collision_props.unregister()
     bfu_collision_types.unregister()
+    bfu_collision_operator.unregister()

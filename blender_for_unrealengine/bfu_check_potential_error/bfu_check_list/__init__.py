@@ -47,7 +47,7 @@ for module_name in module_names:
         if inspect.isclass(obj) and obj.__module__ == module.__name__ and obj not in all_classes
     ])
 
-def run_all_check():
+def run_all_check()-> Dict[str, str]:
     # Clear existing potential errors before starting the checks
     bfu_check_utils.clear_potential_errors()
 
@@ -59,12 +59,13 @@ def run_all_check():
         and (hasattr(cls, "run_asset_check") or hasattr(cls, "run_scene_check"))
     ]
 
-    total = len(checker_classes)
+    total: int = len(checker_classes)
 
     bpl.advprint.print_simple_title("Run check potential issues.")
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
     final_asset_list_to_export = final_asset_cache.get_final_asset_list(AssetToSearch.ALL_ASSETS, AssetDataSearchMode.FULL, force_cache_update=True)
-    print(checker_classes)
+
+    check_info: Dict[str, str] = {}
 
     for index, my_check_cls in enumerate(checker_classes, start=1):
         counter = bpl.utils.CounterTimer()
@@ -93,3 +94,7 @@ def run_all_check():
             issue_result = bpl.color_set.green("no issues")
 
         print(f"{check_name} finished in: {counter.get_str_time()} with {issue_result}\n")
+
+
+    check_info["Total Check(s)"] = str(total) + " For more details, see console log."
+    return check_info

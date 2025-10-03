@@ -11,48 +11,64 @@ import os
 import bpy
 from . import bfu_utils
 
-def get_predicted_skeleton_name(obj):
+def get_predicted_skeleton_name(obj: bpy.types.Object) -> str:
     # Get the predicted skeleton name in Unreal Engine
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+
     return scene.bfu_skeleton_prefix_export_name + bfu_utils.clean_filename_for_unreal(obj.name) + "_Skeleton"
 
-def get_predicted_skeleton_path(obj):
+def get_predicted_skeleton_path(obj: bpy.types.Object) -> str:
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+
     ref_path = os.path.join("/" + scene.bfu_unreal_import_module + "/", scene.bfu_unreal_import_location, obj.bfu_export_folder_name)
     ref_path = ref_path.replace('\\', '/')
     return ref_path
 
-def get_predicted_skeleton_ref(obj):
+def get_predicted_skeleton_ref(obj: bpy.types.Object) -> str:
     name = get_predicted_skeleton_name(obj)
     path = get_predicted_skeleton_path(obj)
     ref_path = os.path.join(path, f"{name}.{name}")
     ref_path = ref_path.replace('\\', '/')
     return f"/Script/Engine.Skeleton'{ref_path}'"
 
-def get_predicted_skeletal_mesh_name(obj):
+def get_predicted_skeletal_mesh_name(obj: bpy.types.Object) -> str:
     # Get the predicted SkeletalMesh name in Unreal Engine
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+    
     return scene.bfu_skeletal_mesh_prefix_export_name + bfu_utils.clean_filename_for_unreal(obj.name)
 
-def get_predicted_skeletal_mesh_path(obj):
+def get_predicted_skeletal_mesh_path(obj: bpy.types.Object) -> str:
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+
     ref_path = os.path.join("/" + scene.bfu_unreal_import_module + "/", scene.bfu_unreal_import_location, obj.bfu_export_folder_name)
     ref_path = ref_path.replace('\\', '/')
     return ref_path
 
-def get_predicted_skeletal_mesh_ref(obj):
+def get_predicted_skeletal_mesh_ref(obj: bpy.types.Object) -> str:
     name = get_predicted_skeletal_mesh_name(obj)
     path = get_predicted_skeletal_mesh_path(obj)
     ref_path = os.path.join(path, f"{name}.{name}")
     ref_path = ref_path.replace('\\', '/')
     return f"/Script/Engine.SkeletalMesh'{ref_path}'"
 
-def generate_name_for_unreal_engine(desired_name, current_name = ""):
+def generate_name_for_unreal_engine(desired_name: str, current_name: str = "") -> str:
     # Generate a new name with suffix number
+
+    scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
 
     clean_desired_name = desired_name
 
-    def is_valid_name(tested_name):
+    def is_valid_name(tested_name: str) -> bool:
         tested_name_without_start = tested_name[len(clean_desired_name):]
         parts = tested_name_without_start.split("_")
 
@@ -65,7 +81,7 @@ def generate_name_for_unreal_engine(desired_name, current_name = ""):
             return True
 
         # Ensure no existing object uses this name
-        for obj in bpy.context.scene.objects:
+        for obj in scene.objects:
             if tested_name == obj.name:
                 return False
 

@@ -9,7 +9,7 @@
 
 
 import bpy
-from typing import List, Optional
+from typing import List, Dict, Set, Any
 from .. import bbpl
 from . import bfu_check_list
 from . import bfu_check_utils
@@ -20,16 +20,19 @@ class BFU_OT_CheckPotentialErrorPopup(bpy.types.Operator):
     bl_description = "Check potential issues on assets to export."
     text = "none"
 
-    def execute(self, context: bpy.types.Context):
-        fix_info = bfu_check_utils.process_general_fix()
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
         invoke_info = ""
-        for x, fix_info_key in enumerate(fix_info):
-            fix_info_data = fix_info[fix_info_key]
-            invoke_info += fix_info_key + ": " + str(fix_info_data) 
-            if x < len(fix_info)-1:
+
+        fix_info: Dict[str, str] = bfu_check_utils.process_general_fix()
+        check_info: Dict[str, str] = bfu_check_list.run_all_check()
+
+        all_info: Dict[str, str] = {**fix_info, **check_info}
+        for x, all_info_key in enumerate(all_info):
+            all_info_data = all_info[all_info_key]
+            invoke_info += all_info_key + ": " + str(all_info_data)
+            if x < len(all_info)-1:
                 invoke_info += "\n"
 
-        bfu_check_list.run_all_check()
         bpy.ops.object.openpotentialerror("INVOKE_DEFAULT", invoke_info=invoke_info)  # type: ignore
         return {'FINISHED'}
 
@@ -45,7 +48,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_description = "Correct target error"
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context: bpy.types.Context):
+        def execute(self, context: bpy.types.Context) -> Set[Any]:
             result = bfu_check_utils.try_to_correct_potential_issues(self.error_index)  # type: ignore
             self.report({'INFO'}, result)
             return {'FINISHED'}
@@ -56,7 +59,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_description = "Select target Object."
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context: bpy.types.Context):
+        def execute(self, context: bpy.types.Context) -> Set[Any]:
             bfu_check_utils.select_potential_issue_object(self.error_index)  # type: ignore
             return {'FINISHED'}
 
@@ -66,7 +69,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_description = "Select target Vertex."
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context: bpy.types.Context):
+        def execute(self, context: bpy.types.Context) -> Set[Any]:
             bfu_check_utils.select_potential_issue_vertices(self.error_index)  # type: ignore
             return {'FINISHED'}
 
@@ -76,12 +79,12 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_description = "Select target Pose Bone."
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
-        def execute(self, context: bpy.types.Context):
+        def execute(self, context: bpy.types.Context) -> Set[Any]:
             bfu_check_utils.select_potential_issue_pose_bone(self.error_index)  # type: ignore
             return {'FINISHED'}
 
 
-    def execute(self, context: bpy.types.Context):
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
         return {'FINISHED'}
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):

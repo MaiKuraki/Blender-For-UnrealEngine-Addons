@@ -1036,14 +1036,14 @@ class ActionCurveScale():
 
 
 
-def ValidFilenameForUnreal(filename):
+def ValidFilenameForUnreal(filename: str) -> str:
     # valid file name for unreal assets
     extension = os.path.splitext(filename)[1]
     newfilename = bfu_basics.valid_file_name(os.path.splitext(filename)[0])
     return (''.join(c for c in newfilename if c != ".")+extension)
 
 
-def clean_filename_for_unreal(filename):
+def clean_filename_for_unreal(filename: str) -> str:
     # Normalizes string, removes non-alpha characters
     # Asset name in Unreal use
 
