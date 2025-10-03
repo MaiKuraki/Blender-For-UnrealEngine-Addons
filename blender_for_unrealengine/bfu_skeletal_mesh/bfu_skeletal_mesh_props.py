@@ -23,6 +23,12 @@ def get_preset_values() -> List[str]:
     ]
     return preset_values
 
+def get_object_export_deform_only(obj: bpy.types.Object) -> bool:
+    if obj:
+        return obj.bfu_export_deform_only # type: ignore
+    return False
+
+
 # -------------------------------------------------------------------
 #   Register & Unregister
 # -------------------------------------------------------------------

@@ -45,8 +45,8 @@ def process_general_fix()-> Dict[str, str]:
     fixed_collisions = bfu_collision.bfu_collision_utils.fix_scene_collision_export_type()
     fixed_collision_names = bfu_collision.bfu_collision_utils.fix_scene_collision_names()
     fixed_collision_materials = bfu_collision.bfu_collision_utils.fix_scene_collision_materials()
-    fixed_sockets = bfu_socket.bfu_socket_utils.fix_export_type_on_socket()
-    fixed_socket_names = bfu_socket.bfu_socket_utils.fix_name_on_socket()
+    fixed_sockets = bfu_socket.bfu_socket_utils.fix_scene_socket_export_type()
+    fixed_socket_names = bfu_socket.bfu_socket_utils.fix_scene_socket_names()
 
     fix_info: Dict[str, str] = {
         "Fixed Collision(s)": str(fixed_collisions + fixed_collision_names + fixed_collision_materials),

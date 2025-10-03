@@ -5,7 +5,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - New: Better log feedback when import fails.
 - Changed: Materials on collision meshes now use the name "UE_Collision" (Before "UE4Collision").
 - Changed: Check Potential Issues now also fix collision materials on collision meshes.
-- Changed: Optimized the function that applies the collisions.
+- Changed: Optimized the function that applies the collisions and sockets.
 - Fixed: For static meshes and collections assets the export path doubled the subfolder.
 - Fixed: Remove all use of InterchangeGenericAssetsPipeline in Unreal Engine 4.27
 - Fixed: Ensure import destination paths are correctly formatted in Unreal Engine 4.27

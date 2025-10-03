@@ -231,7 +231,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
         additional_data: Dict[str, Any] = {}
         # Sockets
         if data:
-            additional_data['Sockets'] = bfu_socket.bfu_socket_utils.get_skeletal_mesh_sockets(data)
+            additional_data['Sockets'] = bfu_socket.bfu_socket_utils.get_skeletal_mesh_socket_data(data)
 
 
         additional_data.update(bfu_lod.bfu_lod_utils.get_lod_additional_data(data, AssetType.STATIC_MESH))

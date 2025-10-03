@@ -30,9 +30,8 @@ def is_a_collision(obj: bpy.types.Object) -> bool:
             return True
     return False
 
-def get_all_scene_collision_objs() -> list[bpy.types.Object]:
-    # Get any collision objects from bpy.context.scene.objects or list if valid.
-
+def get_all_scene_collision_objs() -> List[bpy.types.Object]:
+    # Get any collision objects from bpy.context.scene.objects or List if valid.
     scene = bpy.context.scene
     if scene is None:
         raise ValueError("No active scene found!")
@@ -53,7 +52,7 @@ def fix_scene_collision_export_type() -> int:
     objs = get_all_scene_collision_objs()
     return fix_collision_export_type(objs)
 
-def fix_collision_export_type(obj_list: list[bpy.types.Object]) -> int:
+def fix_collision_export_type(obj_list: List[bpy.types.Object]) -> int:
     # Corrects bad properties
     fixed_collisions = 0
     for obj in obj_list:
@@ -64,15 +63,14 @@ def fix_collision_export_type(obj_list: list[bpy.types.Object]) -> int:
 
 def fix_scene_collision_names() -> int:
     # Updates hierarchy names
-    objs = get_all_scene_collision_objs()
+    objs: List[bpy.types.Object] = get_all_scene_collision_objs()
     return fix_collision_names(objs)
 
-def fix_collision_names(obj_list: list[bpy.types.Object]) -> int:
+def fix_collision_names(obj_list: List[bpy.types.Object]) -> int:
     # Updates hierarchy names
     fixed_collision_names = 0
     
     for obj in obj_list:
-        # Trouve le type de collision correspondant
         for member in CollisionShapeType:
             if obj.name.startswith(member.get_unreal_engine_prefix()):
                 update_length = update_collision_names(member, [obj])
@@ -85,7 +83,7 @@ def fix_scene_collision_materials() -> int:
     objs = get_all_scene_collision_objs()
     return fix_collision_materials(objs)
 
-def fix_collision_materials(obj_list: list[bpy.types.Object]) -> int:
+def fix_collision_materials(obj_list: List[bpy.types.Object]) -> int:
     fixed_collision_materials: int = 0
 
     # Force material update
@@ -99,7 +97,7 @@ def fix_collision_materials(obj_list: list[bpy.types.Object]) -> int:
 
 
 
-def update_collision_names(collision_shape: CollisionShapeType, obj_list: list[bpy.types.Object]) -> int:
+def update_collision_names(collision_shape: CollisionShapeType, obj_list: List[bpy.types.Object]) -> int:
     # Update collision names for Unreal Engine.
 
     update_length: int = 0
@@ -118,16 +116,14 @@ def update_collision_names(collision_shape: CollisionShapeType, obj_list: list[b
                         update_length += 1
     return update_length
 
-
-
 def convert_to_unrealengine_collision(
     collision_owner: bpy.types.Object, 
     objs_to_convert: List[bpy.types.Object], 
     collision_shape: CollisionShapeType
 ) -> List[bpy.types.Object]:
-    # Convert objects to Unreal Engine sub objects Collisions Shapes
+    # Convert objects to Unreal Engine Collisions Shapes
     
-    def sdselect_all_expect_active():
+    def deselect_all_except_active() -> None:
         for obj in bpy.context.selected_objects:
             if obj != bpy.context.active_object:
                 obj.select_set(False)
@@ -136,7 +132,7 @@ def convert_to_unrealengine_collision(
     converted_objs: List[bpy.types.Object] = []
 
     for obj in objs_to_convert:
-        sdselect_all_expect_active()
+        deselect_all_except_active()
         obj.select_set(True)
         if obj != collision_owner:
 
@@ -150,20 +146,25 @@ def convert_to_unrealengine_collision(
 
                 prefix_name: str = collision_shape.get_unreal_engine_prefix()
 
-                obj.name = bfu_unreal_utils.generate_name_for_unreal_engine(prefix_name+collision_owner.name, obj.name)
+                if is_a_collision(obj):
+                    # Update the name if needed
+                    obj.name = bfu_unreal_utils.generate_name_for_unreal_engine(obj.name, obj.name)
+                else:
+                    # Set a new name using the owner name as reference
+                    obj.name = bfu_unreal_utils.generate_name_for_unreal_engine(prefix_name+collision_owner.name, obj.name)
                 obj.show_wire = True
                 obj.show_transparent = True
                 bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
                 converted_objs.append(obj)
 
-    sdselect_all_expect_active()
+    deselect_all_except_active()
     for obj in objs_to_convert:
         obj.select_set(True)  # Resets previous selected object
     return converted_objs
 
 
 def convert_select_to_unrealengine_collision(collision_shape: CollisionShapeType) -> List[bpy.types.Object]:
-    # Convert selected objects to Unreal Engine sub objects Collisions Shapes
+    # Convert selected objects to Unreal Engine Collisions Shapes
 
     collision_owner = bpy.context.active_object
     objs_to_convert = bpy.context.selected_objects
@@ -256,7 +257,7 @@ def get_current_visibility_state() -> bool:
     return False
 
 def apply_collision_material_to_objects(obj_list: List[bpy.types.Object]) -> None:
-    # Apply the collision material to a list of objects
+    # Apply the collision material to a List of objects
     mat = get_or_create_collision_material()
     for obj in obj_list:
         if isinstance(obj.data, bpy.types.Mesh):

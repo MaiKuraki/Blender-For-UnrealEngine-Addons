@@ -21,6 +21,24 @@ def get_preset_values() -> List[str]:
         ]
     return preset_values
 
+def get_scene_object_collision_properties_expanded(scene: bpy.types.Scene) -> bool:
+    return scene.bfu_object_collision_properties_expanded.is_expend() # type: ignore
+
+def get_scene_tools_collision_properties_expanded(scene: bpy.types.Scene) -> bool:
+    return scene.bfu_tools_collision_properties_expanded.is_expend() # type: ignore
+
+def get_object_create_physics_asset(obj: bpy.types.Object) -> bool:
+    return obj.bfu_create_physics_asset # type: ignore
+
+def get_object_auto_generate_collision(obj: bpy.types.Object) -> bool:
+    return obj.bfu_auto_generate_collision # type: ignore
+
+def get_object_collision_trace_flag(obj: bpy.types.Object) -> str:
+    return obj.bfu_collision_trace_flag # type: ignore
+
+def get_object_enable_skeletal_mesh_per_poly_collision(obj: bpy.types.Object) -> bool:
+    return obj.bfu_enable_skeletal_mesh_per_poly_collision # type: ignore
+
 # -------------------------------------------------------------------
 #   Register & Unregister
 # -------------------------------------------------------------------
@@ -33,13 +51,13 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.bfu_object_collision_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collision")
-    bpy.types.Scene.bfu_tools_collision_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collision")
+    bpy.types.Scene.bfu_object_collision_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collision") # type: ignore
+    bpy.types.Scene.bfu_tools_collision_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collision") # type: ignore
 
     # ImportUI
     # https://api.unrealengine.com/INT/API/Editor/UnrealEd/Factories/UFbxImportUI/index.html
 
-    bpy.types.Object.bfu_create_physics_asset = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_create_physics_asset = bpy.props.BoolProperty( # type: ignore
         name="Create PhysicsAsset",
         description="If checked, create a PhysicsAsset when is imported",
         override={'LIBRARY_OVERRIDABLE'},
@@ -47,7 +65,7 @@ def register():
         )
 
 
-    bpy.types.Object.bfu_auto_generate_collision = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_auto_generate_collision = bpy.props.BoolProperty( # type: ignore
         name="Auto Generate Collision",
         description=(
             "If checked, collision will automatically be generated" +
@@ -58,7 +76,7 @@ def register():
         )
 
 
-    bpy.types.Object.bfu_collision_trace_flag = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_collision_trace_flag = bpy.props.EnumProperty( # type: ignore
         name="Collision Complexity",
         description="Collision Trace Flag",
         override={'LIBRARY_OVERRIDABLE'},
@@ -97,7 +115,7 @@ def register():
             ]
         )
 
-    bpy.types.Object.bfu_enable_skeletal_mesh_per_poly_collision = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_enable_skeletal_mesh_per_poly_collision = bpy.props.BoolProperty( # type: ignore
         name="Enable Per-Poly Collision",
         description="Enable per-polygon collision for Skeletal Mesh",
         default=False
@@ -107,11 +125,11 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Object.bfu_enable_skeletal_mesh_per_poly_collision
+    del bpy.types.Object.bfu_enable_skeletal_mesh_per_poly_collision # type: ignore
 
-    del bpy.types.Object.bfu_collision_trace_flag
-    del bpy.types.Object.bfu_auto_generate_collision
-    del bpy.types.Object.bfu_create_physics_asset
+    del bpy.types.Object.bfu_collision_trace_flag # type: ignore
+    del bpy.types.Object.bfu_auto_generate_collision # type: ignore
+    del bpy.types.Object.bfu_create_physics_asset # type: ignore
 
-    del bpy.types.Scene.bfu_tools_collision_properties_expanded
-    del bpy.types.Scene.bfu_object_collision_properties_expanded
+    del bpy.types.Scene.bfu_tools_collision_properties_expanded # type: ignore
+    del bpy.types.Scene.bfu_object_collision_properties_expanded # type: ignore
