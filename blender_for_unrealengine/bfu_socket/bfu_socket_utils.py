@@ -86,25 +86,45 @@ def get_skeletal_mesh_socket_data(obj: bpy.types.Object) -> List[Dict[str, Any]]
         bml: mathutils.Matrix = b.matrix_local  # Bone
         am: mathutils.Matrix = socket_parent.matrix_world  # Armature
         em: mathutils.Matrix = socket.matrix_world  # Socket
-        RelativeMatrix = (bml.inverted() @ am.inverted() @ em)
         
-        if bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj).value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
+        
+        object_export_procedure: BFU_SkeletonExportProcedure = bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj)
+
+        # Calculate relative matrix depending on the export procedure
+        if object_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_GLTF.value:
+            RelativeMatrix = (bml.inverted() @ am.inverted() @ em)
+            RelativeMatrix = mathutils.Matrix.Rotation(math.radians(90), 4, 'X') @ RelativeMatrix
+        elif object_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_FBX.value:
+            RelativeMatrix = (bml.inverted() @ am.inverted() @ em)
+        elif object_export_procedure.value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
+            RelativeMatrix = (bml.inverted() @ am.inverted() @ em)
             RelativeMatrix = mathutils.Matrix.Rotation(math.radians(90), 4, 'Y') @ RelativeMatrix
             RelativeMatrix = mathutils.Matrix.Rotation(math.radians(-90), 4, 'Z') @ RelativeMatrix
+        else:
+            raise ValueError("Unknown export procedure")
+        
+        # Decompose matrix
         t = RelativeMatrix.to_translation()
         r = RelativeMatrix.to_euler()
         s = socket.scale*addon_prefs.skeletalSocketsImportedSize
 
-        # Convet to array for Json and convert value for Unreal
-        if bfu_skeletal_mesh.bfu_export_procedure.get_object_export_procedure(obj).value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
-            array_location = [t[0], t[1]*-1, t[2]]
-            array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]
+        # Convert to array for Json and apply final change of axis
+        if object_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_GLTF.value:
+            array_location: List[float] = [t[0]*100, t[1]*-100, t[2]*100]
+            array_rotation: List[float] = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]
+            array_scale: List[float] = [s[0], s[1], s[2]]
+        elif object_export_procedure.value == BFU_SkeletonExportProcedure.STANDARD_FBX.value:
+            array_location: List[float] = [t[0], t[1]*-1, t[2]]
+            array_rotation: List[float] = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]
+            array_scale: List[float] = [s[0], s[1], s[2]]
+        elif object_export_procedure.value == BFU_SkeletonExportProcedure.CUSTOM_FBX_EXPORT.value:
+            array_location: List[float] = [t[0], t[1]*-1, t[2]]
+            array_rotation: List[float] = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]
             array_scale = [s[0], s[1], s[2]]
-
         else:
-            array_location = [t[0], t[1]*-1, t[2]]
-            array_rotation = [math.degrees(r[0]), math.degrees(r[1])*-1, math.degrees(r[2])*-1]
-            array_scale = [s[0], s[1], s[2]]
+            raise ValueError("Unknown export procedure")
+
+
 
         MySocket: Dict[str, Any] = {}
         MySocket["SocketName"] = set_sockets_export_name(socket)
