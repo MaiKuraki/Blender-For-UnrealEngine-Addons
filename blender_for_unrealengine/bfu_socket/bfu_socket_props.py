@@ -21,7 +21,7 @@ class BFU_OT_ConvertToStaticSocketButton(bpy.types.Operator):
         " ready for export (StaticMesh)")
 
     def execute(self, context):
-        ConvertedObj = bfu_socket_utils.Ue4SubObj_set("ST_Socket")
+        ConvertedObj = bfu_socket_utils.convert_to_unrealengine_socket("ST_Socket")
         if len(ConvertedObj) > 0:
             self.report({'INFO'}, str(len(ConvertedObj)) + " object(s) of the selection have be converted to UE Socket. (Static)")
         else:
@@ -36,7 +36,7 @@ class BFU_OT_ConvertToSkeletalSocketButton(bpy.types.Operator):
         " to Unreal sockets ready for export (SkeletalMesh)")
 
     def execute(self, context):
-        ConvertedObj = bfu_socket_utils.Ue4SubObj_set("SKM_Socket")
+        ConvertedObj = bfu_socket_utils.convert_to_unrealengine_socket("SKM_Socket")
         if len(ConvertedObj) > 0:
             self.report({'INFO'}, str(len(ConvertedObj)) + " object(s) of the selection have be converted to UE Socket. (Skeletal)")
         else:

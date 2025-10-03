@@ -194,7 +194,7 @@ def update_socket_names(SubType, objList):
                                 update_length += 1
     return update_length
 
-def Ue4SubObj_set(SubType):
+def convert_to_unrealengine_socket(SubType):
     # Convect obj to Unreal Engine Socket
 
     def DeselectAllWithoutActive():

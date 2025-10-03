@@ -28,7 +28,7 @@ class BFU_OT_ConvertToCollisionButtonBox(bpy.types.Operator):
                 {'INFO'},
                 str(len(converted_obj)) +
                 " object(s) of the selection have be" +
-                " converted to UE4 Box collisions.")
+                " converted to Unreal Engine Box collisions.")
         else:
             self.report(
                 {'WARNING'},
@@ -50,7 +50,7 @@ class BFU_OT_ConvertToCollisionButtonCapsule(bpy.types.Operator):
                 {'INFO'},
                 str(len(ConvertedObj)) +
                 " object(s) of the selection have be converted" +
-                " to UE4 Capsule collisions.")
+                " to Unreal Engine Capsule collisions.")
         else:
             self.report(
                 {'WARNING'},
@@ -72,7 +72,7 @@ class BFU_OT_ConvertToCollisionButtonSphere(bpy.types.Operator):
                 {'INFO'},
                 str(len(ConvertedObj)) +
                 " object(s) of the selection have" +
-                " be converted to UE4 Sphere collisions.")
+                " be converted to Unreal Engine Sphere collisions.")
         else:
             self.report(
                 {'WARNING'},
@@ -94,7 +94,7 @@ class BFU_OT_ConvertToCollisionButtonConvex(bpy.types.Operator):
                 {'INFO'},
                 str(len(ConvertedObj)) +
                 " object(s) of the selection have be" +
-                " converted to UE4 Convex Shape collisions.")
+                " converted to Unreal Engine Convex Shape collisions.")
         else:
             self.report(
                 {'WARNING'},

@@ -31,7 +31,7 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
 
     skeleton_root_bone_name: bpy.props.StringProperty(  # type: ignore
         name=bpy.app.translations.pgettext("Skeleton root bone name", "interface.skeleton_root_bone_name_name"),
-        description=bpy.app.translations.pgettext("Name of the armature when exported. This is used to change the root bone name. If egal \"Armature\" Ue4 will remove the Armature root bone.", "tooltips.skeleton_root_bone_name_desc"),
+        description=bpy.app.translations.pgettext("Name of the armature when exported. This is used to change the root bone name. If equal \"Armature\" Unreal Engine will remove the Armature root bone.", "tooltips.skeleton_root_bone_name_desc"),
         default="ArmatureRoot",
         )
 

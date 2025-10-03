@@ -682,7 +682,7 @@ def RemoveSocketFromSelectForProxyArmature():
     select = bbpl.save_data.select_save.UserSelectSave()
     select.save_current_select()
     # With skeletal mesh the socket must be not exported,
-    # ue4 read it like a bone
+    # Unreal Engine read it like a bone
     sockets = []
     for obj in bpy.context.selected_objects:
         if fnmatch.fnmatchcase(obj.name, "SOCKET*"):
