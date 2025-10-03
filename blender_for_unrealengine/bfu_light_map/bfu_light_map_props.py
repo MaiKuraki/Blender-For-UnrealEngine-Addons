@@ -30,6 +30,7 @@ class BFU_OT_ComputLightMap(bpy.types.Operator):
     bl_label = "Calculate surface area"
     bl_idname = "object.comput_lightmap"
     bl_description = "Click to calculate the surface of the object"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         obj = context.object
@@ -46,6 +47,7 @@ class BFU_OT_ComputAllLightMap(bpy.types.Operator):
     bl_description = (
         "Click to calculate the surface of the all object in the scene"
         )
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context):
         scene = context.scene

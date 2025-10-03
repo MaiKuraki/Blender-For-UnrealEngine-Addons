@@ -144,6 +144,7 @@ class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
     bl_label = "Select All"
     bl_idname = "object.selectallobjactionlist"
     bl_description = "Select all action list"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context):
         if bpy.context.object.bfu_action_asset_list:
@@ -155,6 +156,7 @@ class BFU_OT_DeselectAllObjActionListButton(bpy.types.Operator):
     bl_label = "Deselect All"
     bl_idname = "object.deselectallobjactionlist"
     bl_description = "Deselect all action list"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context):
         if bpy.context.object.bfu_action_asset_list:

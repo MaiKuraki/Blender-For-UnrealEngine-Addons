@@ -17,9 +17,8 @@ from .bfu_socket_types import SocketType
 class BFU_OT_ConvertToStaticSocketButton(bpy.types.Operator):
     bl_label = "Convert to StaticMesh socket"
     bl_idname = "object.converttostaticsocket"
-    bl_description = (
-        "Convert selected Empty(s) to Unreal sockets" +
-        " ready for export (StaticMesh)")
+    bl_description = ("Convert selected Empty(s) to Unreal sockets ready for export (StaticMesh)")
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         ConvertedObj = bfu_socket_utils.convert_select_to_unrealengine_socket(SocketType.STATIC_SOCKET)
@@ -32,9 +31,8 @@ class BFU_OT_ConvertToStaticSocketButton(bpy.types.Operator):
 class BFU_OT_ConvertToSkeletalSocketButton(bpy.types.Operator):
     bl_label = "Convert to SkeletalMesh socket"
     bl_idname = "object.converttoskeletalsocket"
-    bl_description = (
-        "Convert selected Empty(s)" +
-        " to Unreal sockets ready for export (SkeletalMesh)")
+    bl_description = ("Convert selected Empty(s) to Unreal sockets ready for export (SkeletalMesh)")
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         ConvertedObj = bfu_socket_utils.convert_select_to_unrealengine_socket(SocketType.SKELETAL_SOCKET)

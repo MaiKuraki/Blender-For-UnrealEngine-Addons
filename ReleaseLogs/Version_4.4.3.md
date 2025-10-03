@@ -15,3 +15,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: When using Unreal Interchange Pipeline (5.6), importing a static mesh with collision may also adds the Blender collision material as a new slot. Removing materials at the export fix the issue.
 - Fixed: When search filter is set to "Only Object and Active", Action is always exported even if "Use Actions Export" is disabled.
 - Fixed: Skeletal mesh sockets position are wrong when copied from an armature with glTF export procedure.
+- Fixed: Undo after set a collision or socket may crash Blender.

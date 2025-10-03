@@ -46,6 +46,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_label = "Fix it !"
         bl_idname = "object.fixit_objet"
         bl_description = "Correct target error"
+        bl_options = {'REGISTER', 'UNDO'}
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
         def execute(self, context: bpy.types.Context) -> Set[Any]:
@@ -57,6 +58,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_label = "Select(Object)"
         bl_idname = "object.select_error_objet"
         bl_description = "Select target Object."
+        bl_options = {'REGISTER', 'UNDO'}
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
         def execute(self, context: bpy.types.Context) -> Set[Any]:
@@ -67,6 +69,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_label = "Select(Vertex)"
         bl_idname = "object.select_error_vertex"
         bl_description = "Select target Vertex."
+        bl_options = {'REGISTER', 'UNDO'}
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
         def execute(self, context: bpy.types.Context) -> Set[Any]:
@@ -77,6 +80,7 @@ class BFU_OT_OpenPotentialErrorPopup(bpy.types.Operator):
         bl_label = "Select(PoseBone)"
         bl_idname = "object.select_error_posebone"
         bl_description = "Select target Pose Bone."
+        bl_options = {'REGISTER', 'UNDO'}
         error_index: bpy.props.IntProperty(default=-1)  # type: ignore
 
         def execute(self, context: bpy.types.Context) -> Set[Any]:

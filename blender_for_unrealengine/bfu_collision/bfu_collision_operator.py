@@ -15,11 +15,12 @@ from .bfu_collision_types import CollisionShapeType
 
 
 class BFU_OT_ConvertToCollisionButtonBox(bpy.types.Operator):
-    bl_label = "Convert to box (UBX)"
+    bl_label = "Convert to Box (UBX)"
     bl_idname = "object.converttoboxcollision"
     bl_description = (
         "Convert selected mesh(es) to Unreal" +
         " collision ready for export (Boxes type)")
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         converted_obj = bfu_collision_utils.convert_select_to_unrealengine_collision(CollisionShapeType.BOX)
@@ -37,11 +38,12 @@ class BFU_OT_ConvertToCollisionButtonBox(bpy.types.Operator):
         return {'FINISHED'}
 
 class BFU_OT_ConvertToCollisionButtonCapsule(bpy.types.Operator):
-    bl_label = "Convert to capsule (UCP)"
+    bl_label = "Convert to Capsule (UCP)"
     bl_idname = "object.converttocapsulecollision"
     bl_description = (
         "Convert selected mesh(es) to Unreal collision" +
         " ready for export (Capsules type)")
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         ConvertedObj = bfu_collision_utils.convert_select_to_unrealengine_collision(CollisionShapeType.CAPSULE)
@@ -59,11 +61,12 @@ class BFU_OT_ConvertToCollisionButtonCapsule(bpy.types.Operator):
         return {'FINISHED'}
 
 class BFU_OT_ConvertToCollisionButtonSphere(bpy.types.Operator):
-    bl_label = "Convert to sphere (USP)"
+    bl_label = "Convert to Sphere (USP)"
     bl_idname = "object.converttospherecollision"
     bl_description = (
         "Convert selected mesh(es)" +
         " to Unreal collision ready for export (Spheres type)")
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         ConvertedObj = bfu_collision_utils.convert_select_to_unrealengine_collision(CollisionShapeType.SPHERE)
@@ -81,11 +84,12 @@ class BFU_OT_ConvertToCollisionButtonSphere(bpy.types.Operator):
         return {'FINISHED'}
 
 class BFU_OT_ConvertToCollisionButtonConvex(bpy.types.Operator):
-    bl_label = "Convert to convex shape (UCX)"
+    bl_label = "Convert to Convex Shape (UCX)"
     bl_idname = "object.converttoconvexcollision"
     bl_description = (
         "Convert selected mesh(es) to Unreal" +
         " collision ready for export (Convex shapes type)")
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         ConvertedObj = bfu_collision_utils.convert_select_to_unrealengine_collision(CollisionShapeType.CONVEX)
