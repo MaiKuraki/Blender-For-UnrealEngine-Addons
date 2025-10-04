@@ -8,12 +8,14 @@
 # ----------------------------------------------
 
 import bpy
-from typing import List
+from typing import List, Optional
 from .bfu_collision_types import CollisionShapeType
-from .. import bfu_basics
+from . import bfu_collision_mesh_shape
+from . import bfu_collision_props
 from .. import bfu_unreal_utils
 from .. import bfu_export_control
 from .. import bfu_addon_prefs
+from .. import bbpl
 
 
 name_for_collision_material = "UE_Collision"
@@ -116,13 +118,74 @@ def update_collision_names(collision_shape: CollisionShapeType, obj_list: List[b
                         update_length += 1
     return update_length
 
+def create_unrealengine_collision_from_selection(collision_shape: CollisionShapeType, selected_the_new_objects: bool = True) -> List[bpy.types.Object]:
+    # Create Unreal Engine Collisions Shapes from selected objects
+    object_names: List[str] = [obj.name for obj in bpy.context.selected_objects]
+    new_collision_objects: List[bpy.types.Object] = []
+    new_collision_object_names: List[str] = create_unrealengine_collision(collision_shape, object_names)
+    for name in new_collision_object_names:
+        obj = bpy.data.objects.get(name)
+        if obj is not None:
+            new_collision_objects.append(obj)
+
+    if len(new_collision_objects) == 0:
+        print("No valid mesh object found in selection.")
+        return []
+    else:
+        if selected_the_new_objects:
+            bbpl.utils.select_specific_object_list(new_collision_objects[0], new_collision_objects)
+
+    return new_collision_objects
+
+def create_unrealengine_collision(collision_shape: CollisionShapeType, object_names: List[str]) -> List[str]:
+    # Create Unreal Engine Collisions Shapes from object names
+
+    # Better to use name to avoid rna loosed reference
+    new_collision_object_names: List[str] = []
+    for obj_name in object_names:
+        obj = bpy.data.objects.get(obj_name)
+        if obj is not None and isinstance(obj.data, bpy.types.Mesh):
+            # Create a new object
+            new_obj = bpy.data.objects.new(name=obj.name + "_ColTemp", object_data=obj.data.copy())
+            new_obj.parent = obj
+            new_obj.matrix_world = obj.matrix_world.copy()
+            new_obj.data = obj.data.copy()
+            obj.users_collection[0].objects.link(new_obj) # Link in the same collection as the original object
+            convert_to_unrealengine_collision(obj, [new_obj], collision_shape)
+            new_collision_object_names.append(new_obj.name)
+
+    return new_collision_object_names
+
+
+def convert_select_to_unrealengine_collision(collision_shape: CollisionShapeType) -> List[bpy.types.Object]:
+    # Convert selected objects to Unreal Engine Collisions Shapes
+
+    collision_owner: Optional[bpy.types.Object] = bpy.context.active_object
+    objs_to_convert: List[bpy.types.Object] = bpy.context.selected_objects
+    if collision_owner is None:
+        print("No active object found!")
+        return []
+    if len(objs_to_convert) < 2:
+        print("Please select two objects. (Active object is the owner of the collision)")
+        return []
+
+    return convert_to_unrealengine_collision(collision_owner, objs_to_convert, collision_shape)
+
 def convert_to_unrealengine_collision(
     collision_owner: bpy.types.Object, 
     objs_to_convert: List[bpy.types.Object], 
-    collision_shape: CollisionShapeType
+    collision_shape: CollisionShapeType,
+    apply_collision_shape_on_mesh: bool = True
 ) -> List[bpy.types.Object]:
     # Convert objects to Unreal Engine Collisions Shapes
     
+
+    scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("No active scene found!")
+    
+    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+
     def deselect_all_except_active() -> None:
         for obj in bpy.context.selected_objects:
             if obj != bpy.context.active_object:
@@ -137,10 +200,17 @@ def convert_to_unrealengine_collision(
         if obj != collision_owner:
 
             if isinstance(obj.data, bpy.types.Mesh):
-                if collision_shape.value == CollisionShapeType.BOX.value:
-                    bfu_basics.convert_to_box_shape(obj)
-                else:
-                    bfu_basics.convert_to_convex_hull_shape(obj)
+
+                if apply_collision_shape_on_mesh:
+                    keep_original: bool = bfu_collision_props.get_scene_keep_original_geometry(scene)
+                    use_world_space: bool = bfu_collision_props.get_scene_use_world_space_for_collision(scene)
+                    if collision_shape.value == CollisionShapeType.BOX.value:
+                        # BOX collision shape need a strict Box shape
+                        bfu_collision_mesh_shape.convert_to_box_shape(obj, use_world_space=use_world_space, keep_original=keep_original)
+                    else:
+                        bfu_collision_mesh_shape.convert_to_convex_hull_shape(obj, keep_original=keep_original)
+
+
                 obj.modifiers.clear()
                 apply_collision_material_to_object(obj)
 
@@ -154,7 +224,14 @@ def convert_to_unrealengine_collision(
                     obj.name = bfu_unreal_utils.generate_name_for_unreal_engine(prefix_name+collision_owner.name, obj.name)
                 obj.show_wire = True
                 obj.show_transparent = True
-                bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
+                obj.display.show_shadows = False
+                obj.display_type = 'SOLID'
+                obj.color = addon_prefs.collisionColor
+
+
+                saved_matrix = obj.matrix_world.copy()
+                obj.parent = collision_owner
+                obj.matrix_world = saved_matrix
                 converted_objs.append(obj)
 
     deselect_all_except_active()
@@ -162,20 +239,6 @@ def convert_to_unrealengine_collision(
         obj.select_set(True)  # Resets previous selected object
     return converted_objs
 
-
-def convert_select_to_unrealengine_collision(collision_shape: CollisionShapeType) -> List[bpy.types.Object]:
-    # Convert selected objects to Unreal Engine Collisions Shapes
-
-    collision_owner = bpy.context.active_object
-    objs_to_convert = bpy.context.selected_objects
-    if collision_owner is None:
-        print("No active object found!")
-        return []
-    if len(objs_to_convert) < 2:
-        print("Please select two objects. (Active object is the owner of the collision)")
-        return []
-
-    return convert_to_unrealengine_collision(collision_owner, objs_to_convert, collision_shape)
 
 def get_or_create_collision_material() -> bpy.types.Material:
     mat = bpy.data.materials.get(name_for_collision_material)

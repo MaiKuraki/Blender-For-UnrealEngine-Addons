@@ -3,9 +3,13 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 
 ### Version 4.4.3
 - New: Better log feedback when import fails.
+- New: New buttons in collision panel create collision from selected objects and not just convert.
+- New: New option to use world space for collision shapes.
+- New: New option to keep original geometry when creating collision shapes.
 - Changed: Materials on collision meshes now use the name "UE_Collision" (Before "UE4Collision").
 - Changed: Check Potential Issues now also fix collision materials on collision meshes.
 - Changed: Optimized the function that applies the collisions and sockets.
+- Changed: New box collision algorithm that create a better fitting box.
 - Fixed: For static meshes and collections assets the export path doubled the subfolder.
 - Fixed: Remove all use of InterchangeGenericAssetsPipeline in Unreal Engine 4.27
 - Fixed: Ensure import destination paths are correctly formatted in Unreal Engine 4.27
