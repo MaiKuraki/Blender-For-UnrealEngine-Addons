@@ -96,7 +96,9 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
             convert_static_collision_buttons.operator("object.converttospherecollision", icon='MESH_UVSPHERE')
 
             # Draw button toggle visibility panel
-            panel.operator("object.toggle_collision_visibility", text="Toggle Collision Visibility", icon='HIDE_OFF')
+            sub_tool_panel = panel.column()
+            sub_tool_panel.operator("object.toggle_collision_visibility", text="Toggle Collision Visibility", icon='HIDE_OFF')
+            sub_tool_panel.operator("object.select_collision_from_current_selection", text="Select Collision from Current Selection", icon='RESTRICT_SELECT_OFF')
 
 
 def draw_how_create_collision_from_selection(layout: bpy.types.UILayout, context: bpy.types.Context) -> None:

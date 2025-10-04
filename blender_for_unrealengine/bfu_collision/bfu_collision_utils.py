@@ -348,7 +348,7 @@ def check_need_apply_collision_material(obj: bpy.types.Object) -> bool:
             return True
     return False
 
-def toggle_collision_visibility():
+def toggle_collision_visibility() -> None:
     scene = bpy.context.scene
     if scene is None:
         raise ValueError("No active scene found!")
@@ -360,3 +360,30 @@ def toggle_collision_visibility():
         if isinstance(obj.data, bpy.types.Mesh):
             if obj.name.startswith(tuple(prefix_list)):
                 obj.hide_viewport = new_visibility
+
+def select_collision_from_current_selection() -> None:
+    # Select all collision objects related to the current selection
+    selected_objs: List[bpy.types.Object] = bpy.context.selected_objects
+    if not selected_objs:
+        print("No objects selected.")
+        return
+
+    collision_objs_to_select: List[bpy.types.Object] = []
+    prefix_list: List[str] = CollisionShapeType.get_prefix_list()
+
+    for obj in selected_objs:
+        # Check if the object itself is a collision object
+        if obj.name.startswith(tuple(prefix_list)):
+            collision_objs_to_select.append(obj)
+        
+        # Check children for collision objects
+        for child in obj.children_recursive:
+            if child.name.startswith(tuple(prefix_list)):
+                collision_objs_to_select.append(child)
+
+    # Select the found collision objects
+    bpy.ops.object.select_all(action='DESELECT')
+    for col_obj in collision_objs_to_select:
+        col_obj.select_set(True)
+
+    bbpl.utils.select_specific_object_list(collision_objs_to_select[0], collision_objs_to_select)

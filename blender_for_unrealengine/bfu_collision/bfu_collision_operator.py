@@ -140,6 +140,14 @@ class BFU_OT_ToggleCollisionVisibility(bpy.types.Operator):
         bfu_collision_utils.toggle_collision_visibility()
         return {'FINISHED'}
 
+class BFU_OT_SelectCollisionFromCurrentSelection(bpy.types.Operator):
+    bl_label = "Select Collision from Current Selection"
+    bl_idname = "object.select_collision_from_current_selection"
+    bl_description = "Select all collision objects related to the current selection"
+
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
+        bfu_collision_utils.select_collision_from_current_selection()
+        return {'FINISHED'}
 
 # -------------------------------------------------------------------
 #   Register & Unregister
@@ -156,6 +164,7 @@ classes = (
     BFU_OT_ConvertToCollisionButtonSphere,
     BFU_OT_ConvertToCollisionButtonConvex,
 
+    BFU_OT_SelectCollisionFromCurrentSelection,
     BFU_OT_ToggleCollisionVisibility,
 )
 

@@ -6,6 +6,7 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - New: New buttons in collision panel create collision from selected objects and not just convert.
 - New: New option to use world space for collision shapes.
 - New: New option to keep original geometry when creating collision shapes.
+- New: New button to select all collision objects from a selection.
 - Changed: Materials on collision meshes now use the name "UE_Collision" (Before "UE4Collision").
 - Changed: Check Potential Issues now also fix collision materials on collision meshes.
 - Changed: Optimized the function that applies the collisions and sockets.
