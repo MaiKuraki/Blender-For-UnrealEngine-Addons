@@ -17,7 +17,7 @@ from .. import bfu_skeletal_mesh
 from .. import bfu_export_control
 from .. import bfu_addon_prefs
 from .. import bfu_lod
-
+from ..bbpl.blender_layout import layout_doc_button
 
 
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
@@ -72,11 +72,17 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
         if accordion.is_expend() and panel:
 
             # Check draw collision settings
+            layout_doc_button.add_doc_page_operator(
+                layout=panel, 
+                url="https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/Collisions#create-collisions-in-blender",
+                text="About creating collisions in Blender"
+            )
+
             setting_panel = panel.column()
             setting_panel.prop(scene, "bfu_keep_original_geometry_for_collision")
             setting_panel.prop(scene, "bfu_use_world_space_for_collision")
             setting_panel.prop(scene, "bfu_use_fast_bounding_box_approximation")  # New option for fast/slow MVBB
-            
+
             # Draw create new collider panel
             draw_how_create_collision_from_selection(panel, context)
             create_buttons_ui = panel.row().split(factor=0.80)
