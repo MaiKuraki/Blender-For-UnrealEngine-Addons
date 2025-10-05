@@ -8,7 +8,7 @@
 # ----------------------------------------------
 
 import bpy
-from typing import Any, Set
+from typing import Any, Set, List
 from . import bfu_collision_utils
 from .bfu_collision_types import CollisionShapeType
 
@@ -146,7 +146,11 @@ class BFU_OT_SelectCollisionFromCurrentSelection(bpy.types.Operator):
     bl_description = "Select all collision objects related to the current selection"
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
-        bfu_collision_utils.select_collision_from_current_selection()
+        new_selected_objects: List[bpy.types.Object] = bfu_collision_utils.select_collision_from_current_selection()
+        if len(new_selected_objects) > 0:
+            self.report({'INFO'}, f"{len(new_selected_objects)} collision object(s) related to the current selection have been selected.")
+        else:
+            self.report({'WARNING'}, "No collision objects found related to the current selection.")
         return {'FINISHED'}
 
 # -------------------------------------------------------------------

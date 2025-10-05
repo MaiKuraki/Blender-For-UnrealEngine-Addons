@@ -362,12 +362,12 @@ def toggle_collision_visibility() -> None:
             if obj.name.startswith(tuple(prefix_list)):
                 obj.hide_viewport = new_visibility
 
-def select_collision_from_current_selection() -> None:
+def select_collision_from_current_selection() -> List[bpy.types.Object]:
     # Select all collision objects related to the current selection
     selected_objs: List[bpy.types.Object] = bpy.context.selected_objects
     if not selected_objs:
         print("No objects selected.")
-        return
+        return []
 
     collision_objs_to_select: List[bpy.types.Object] = []
     prefix_list: List[str] = CollisionShapeType.get_prefix_list()
@@ -383,8 +383,7 @@ def select_collision_from_current_selection() -> None:
                 collision_objs_to_select.append(child)
 
     # Select the found collision objects
-    bpy.ops.object.select_all(action='DESELECT')
-    for col_obj in collision_objs_to_select:
-        col_obj.select_set(True)
-
-    bbpl.utils.select_specific_object_list(collision_objs_to_select[0], collision_objs_to_select)
+    if len(collision_objs_to_select) > 0:
+        return bbpl.utils.select_specific_object_list(collision_objs_to_select[0], collision_objs_to_select)
+    else:
+        return []
