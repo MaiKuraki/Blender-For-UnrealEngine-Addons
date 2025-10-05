@@ -72,9 +72,10 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
         if accordion.is_expend() and panel:
 
             # Check draw collision settings
-            setting_panel = panel.row()
-            setting_panel.prop(scene, "bfu_keep_original_geometry", icon='MOD_PHYSICS')
-            setting_panel.prop(scene, "bfu_use_world_space_for_collision", icon='WORLD')
+            setting_panel = panel.column()
+            setting_panel.prop(scene, "bfu_keep_original_geometry_for_collision")
+            setting_panel.prop(scene, "bfu_use_world_space_for_collision")
+            setting_panel.prop(scene, "bfu_use_fast_bounding_box_approximation")  # New option for fast/slow MVBB
             
             # Draw create new collider panel
             draw_how_create_collision_from_selection(panel, context)

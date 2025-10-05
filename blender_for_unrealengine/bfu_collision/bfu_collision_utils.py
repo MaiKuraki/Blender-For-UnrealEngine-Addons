@@ -204,9 +204,10 @@ def convert_to_unrealengine_collision(
                 if apply_collision_shape_on_mesh:
                     keep_original: bool = bfu_collision_props.get_scene_keep_original_geometry(scene)
                     use_world_space: bool = bfu_collision_props.get_scene_use_world_space_for_collision(scene)
+                    use_pca_approximation: bool = bfu_collision_props.get_scene_use_fast_bounding_box_approximation(scene)
                     if collision_shape.value == CollisionShapeType.BOX.value:
                         # BOX collision shape need a strict Box shape
-                        bfu_collision_mesh_shape.convert_to_box_shape(obj, use_world_space=use_world_space, keep_original=keep_original)
+                        bfu_collision_mesh_shape.convert_to_box_shape(obj, use_world_space=use_world_space, use_pca_approximation=use_pca_approximation, keep_original=keep_original)
                     else:
                         bfu_collision_mesh_shape.convert_to_convex_hull_shape(obj, keep_original=keep_original)
 

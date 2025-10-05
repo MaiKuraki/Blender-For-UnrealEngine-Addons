@@ -39,7 +39,7 @@ def apply_mvbb(
         join_bmeshes(target_bm, [new_bm])
 
 
-def convert_to_box_shape(obj: bpy.types.Object, use_world_space: bool = True, keep_original: bool = False) -> None:
+def convert_to_box_shape(obj: bpy.types.Object, use_world_space: bool = True, use_pca_approximation: bool = True, keep_original: bool = False) -> None:
     # Convert obj to Box Shape.
     # keep_original: If True, keep the original mesh vertices and replace them with the box corners.
     # Unreal don't detect the shape as an box if it not perfectly a box.
@@ -65,11 +65,11 @@ def convert_to_box_shape(obj: bpy.types.Object, use_world_space: bool = True, ke
 
     # === Compute MVBB in world space ===
     if keep_original:
-        apply_mvbb(src_bm, src_bm)
+        apply_mvbb(src_bm, src_bm, use_pca_approximation)
         bm = src_bm
     else:
         bm = bmesh.new()
-        apply_mvbb(src_bm, bm)
+        apply_mvbb(src_bm, bm, use_pca_approximation)
 
     if use_world_space and inv_world_matrix:
         # === Transform back to local space ===

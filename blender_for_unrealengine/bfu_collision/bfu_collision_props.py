@@ -28,10 +28,13 @@ def get_scene_tools_collision_properties_expanded(scene: bpy.types.Scene) -> boo
     return scene.bfu_tools_collision_properties_expanded.is_expend() # type: ignore
 
 def get_scene_keep_original_geometry(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_keep_original_geometry # type: ignore
+    return scene.bfu_keep_original_geometry_for_collision # type: ignore
 
 def get_scene_use_world_space_for_collision(scene: bpy.types.Scene) -> bool:
     return scene.bfu_use_world_space_for_collision # type: ignore
+
+def get_scene_use_fast_bounding_box_approximation(scene: bpy.types.Scene) -> bool:
+    return scene.bfu_use_fast_bounding_box_approximation # type: ignore
 
 def get_object_create_physics_asset(obj: bpy.types.Object) -> bool:
     return obj.bfu_create_physics_asset # type: ignore
@@ -60,7 +63,7 @@ def register():
     bpy.types.Scene.bfu_object_collision_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collision") # type: ignore
     bpy.types.Scene.bfu_tools_collision_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Collision") # type: ignore
 
-    bpy.types.Scene.bfu_keep_original_geometry = bpy.props.BoolProperty( # type: ignore
+    bpy.types.Scene.bfu_keep_original_geometry_for_collision = bpy.props.BoolProperty( # type: ignore
         name="Keep Original Geometry",
         description="If checked, keep the original mesh vertices and replace them with the collider shape.",
         default=False
@@ -70,6 +73,14 @@ def register():
         name="Use World Space for Collision",
         description="If checked, use world space for collision calculations.",
         default=False
+    )
+
+    bpy.types.Scene.bfu_use_fast_bounding_box_approximation = bpy.props.BoolProperty( # type: ignore
+        name="Use Fast Bounding Box Approximation",
+        description="If checked, use a fast bounding box approximation (PCA) for collision calculations. "
+                    "If unchecked, use a more accurate but slower method (True MVBB). "
+                    r"Warning /!\ True MVBB is extremely slow on high-poly meshes. 4000 faces -> around 90s",
+        default=True
     )
 
     # ImportUI
@@ -149,7 +160,8 @@ def unregister():
     del bpy.types.Object.bfu_auto_generate_collision # type: ignore
     del bpy.types.Object.bfu_create_physics_asset # type: ignore
 
+    del bpy.types.Scene.bfu_use_fast_bounding_box_approximation # type: ignore
     del bpy.types.Scene.bfu_use_world_space_for_collision # type: ignore
-    del bpy.types.Scene.bfu_keep_original_geometry # type: ignore
+    del bpy.types.Scene.bfu_keep_original_geometry_for_collision # type: ignore
     del bpy.types.Scene.bfu_tools_collision_properties_expanded # type: ignore
     del bpy.types.Scene.bfu_object_collision_properties_expanded # type: ignore
