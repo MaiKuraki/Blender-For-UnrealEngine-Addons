@@ -16,6 +16,7 @@ from . import bfu_collision_types
 from . import bfu_collision_ui
 from . import bfu_collision_utils
 from . import bfu_collision_mesh_shape
+from . import shape_algorithms
 
 if "bfu_collision_operator" in locals():
     importlib.reload(bfu_collision_operator)
@@ -29,6 +30,8 @@ if "bfu_collision_utils" in locals():
     importlib.reload(bfu_collision_utils)
 if "bfu_collision_mesh_shape" in locals():
     importlib.reload(bfu_collision_mesh_shape)
+if "shape_algorithms" in locals():
+    importlib.reload(shape_algorithms)
 
 classes = (
 )

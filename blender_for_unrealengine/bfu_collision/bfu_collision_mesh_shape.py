@@ -8,75 +8,36 @@
 # ----------------------------------------------
 
 import bpy
-import numpy
 import bmesh
 import mathutils
-from typing import Any, List, Optional
+from typing import List, Optional
+from . import shape_algorithms
 
+def join_bmeshes(target_bm: bmesh.types.BMesh, other_bm: List[bmesh.types.BMesh]) -> None:
+    for src_bm in other_bm:
+        # Join src_bm into target_bm
+        vert_map = {}
+        for v in src_bm.verts:
+            new_vert = target_bm.verts.new(v.co)
+            vert_map[v] = new_vert
+        target_bm.verts.ensure_lookup_table()
 
+        for face in src_bm.faces:
+            target_bm.faces.new([vert_map[v] for v in face.verts])  # type: ignore
 
-def calculate_mvbb(coords: numpy.ndarray[Any, numpy.dtype[numpy.float64]]) -> numpy.ndarray[Any, numpy.dtype[numpy.float64]]:
-    # Calculate the minimum-volume bounding box (MVBB) for the given object.
-    # This is a placeholder implementation and should be replaced with actual MVBB calculation logic.
-    
-    # Center data
-    mean = coords.mean(axis=0)
-    coords_centered = coords - mean
+def apply_mvbb(
+    src_bm: bmesh.types.BMesh, 
+    target_bm: bmesh.types.BMesh, 
+    use_pca_approximation: bool = True
+) -> None:
 
-    # PCA (use transpose so covariance is 3x3)
-    cov = numpy.cov(coords_centered.T) # type: ignore
-    _, eigvecs = numpy.linalg.eigh(cov) # type: ignore
-    
-    # Rotation matrix (principal axes)
-    rot = eigvecs.T  # shape (3,3)
+    if use_pca_approximation:
+        new_bm = shape_algorithms.pca_mvbb.get_mvbb_bmesh(src_bm)
+        join_bmeshes(target_bm, [new_bm])
+    else:
+        new_bm = shape_algorithms.true_mvbb.get_mvbb_bmesh(src_bm)
+        join_bmeshes(target_bm, [new_bm])
 
-    # Rotate points into PCA frame
-    coords_rot = coords_centered @ rot.T  # shape (N,3)
-
-    # Bounding box in PCA frame
-    mins = coords_rot.min(axis=0)
-    maxs = coords_rot.max(axis=0)
-
-    # Bounding box in PCA space
-    mins = coords_rot.min(axis=0)
-    maxs = coords_rot.max(axis=0)
-
-    # 8 corners in PCA space
-    corners: numpy.ndarray[Any, numpy.dtype[numpy.float64]] = numpy.array([
-        [x, y, z]
-        for x in [mins[0], maxs[0]]
-        for y in [mins[1], maxs[1]]
-        for z in [mins[2], maxs[2]]
-    ])
-
-    # Back to original space
-    corners_world = corners @ rot + mean
-    return corners_world
-
-def apply_mvbb(src_bm: bmesh.types.BMesh, target_bm: bmesh.types.BMesh) -> None:
-
-    # Calculate the minimum-volume bounding box (MVBB) and add its faces to the target BMesh.
-    coords: numpy.ndarray[Any, numpy.dtype[numpy.float64]] = numpy.array([v.co for v in src_bm.verts])
-    corners_world: numpy.ndarray[Any, numpy.dtype[numpy.float64]] = calculate_mvbb(coords)
-    
-    # Create verts at corners
-    verts = [target_bm.verts.new(corner) for corner in corners_world] # type: ignore
-    target_bm.verts.ensure_lookup_table()
-
-    # Define faces by indices of verts (each face = quad)
-    faces_idx = [
-        (0,2,3,1),  # bottom
-        (4,5,7,6),  # top
-        (0,1,5,4),  # front
-        (2,6,7,3),  # back
-        (0,4,6,2),  # left
-        (1,3,7,5),  # right
-    ]
-
-    new_bound_faces: List[bmesh.types.BMFace] = []
-    for f in faces_idx:
-        new_bound_faces.append(target_bm.faces.new([verts[i] for i in f]))
-    bmesh.ops.recalc_face_normals(target_bm, faces=new_bound_faces)  # type: ignore
 
 def convert_to_box_shape(obj: bpy.types.Object, use_world_space: bool = True, keep_original: bool = False) -> None:
     # Convert obj to Box Shape.
@@ -114,6 +75,7 @@ def convert_to_box_shape(obj: bpy.types.Object, use_world_space: bool = True, ke
         # === Transform back to local space ===
         for v in bm.verts:
             v.co = inv_world_matrix @ v.co
+        pass
 
     # Write back to mesh
     bm.to_mesh(mesh)

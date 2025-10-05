@@ -69,7 +69,7 @@ def register():
     bpy.types.Scene.bfu_use_world_space_for_collision = bpy.props.BoolProperty( # type: ignore
         name="Use World Space for Collision",
         description="If checked, use world space for collision calculations.",
-        default=True
+        default=False
     )
 
     # ImportUI
