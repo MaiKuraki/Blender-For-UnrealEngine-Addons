@@ -21,6 +21,7 @@ def add_blender_version(version: Tuple[int, int, int], path: Path) -> BlenderVer
     return details
 
 # Use default installation paths on Windows, adjust it for Linux or MacOS
+add_blender_version((4, 5, 0), Path("C:/Program Files/Blender Foundation/Blender 4.5/blender.exe"))
 add_blender_version((4, 4, 0), Path("C:/Program Files/Blender Foundation/Blender 4.4/blender.exe"))
 add_blender_version((4, 3, 0), Path("C:/Program Files/Blender Foundation/Blender 4.3/blender.exe"))
 add_blender_version((4, 2, 0), Path("C:/Program Files/Blender Foundation/Blender 4.2/blender.exe"))
