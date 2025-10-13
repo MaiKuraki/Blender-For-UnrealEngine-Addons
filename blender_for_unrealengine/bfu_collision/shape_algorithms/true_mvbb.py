@@ -20,13 +20,13 @@ import bmesh
 from typing import Any, Optional
 from ... import bpl
 
-# Compatibility fix for Python 3.7 - numpy type annotations
+# Compatibility fix for older Python versions - numpy type annotations
 import sys
-if sys.version_info >= (3, 8):
-    # Python 3.8+ supports subscriptable numpy types natively
+if sys.version_info >= (3, 10):
+    # Python 3.10+ supports subscriptable numpy types natively
     pass
 else:
-    # Python 3.7 simple monkey patch - avoid metaclass conflicts
+    # Python simple monkey patch - avoid metaclass conflicts
     _original_ndarray = np.ndarray
     _original_dtype = np.dtype
     
