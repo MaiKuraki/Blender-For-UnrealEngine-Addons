@@ -36,12 +36,14 @@ elif blender_version >= (3, 2, 0):
     from . import io_scene_fbx_3_2 as current_fbxio 
 elif blender_version >= (3, 1, 0):
     from . import io_scene_fbx_3_1 as current_fbxio 
-elif blender_version >= (2, 93, 0):
+elif blender_version >= (2, 90, 0):
     from . import io_scene_fbx_2_93 as current_fbxio 
-elif blender_version >= (2, 83, 0):
+elif blender_version >= (2, 80, 0):
     from . import io_scene_fbx_2_83 as current_fbxio 
 else:
     print('ERROR, no fbx exporter found for this version of Blender!') 
+    # Fallback to the last known version
+    from . import io_scene_fbx_2_83 as current_fbxio 
 
 if "current_fbxio" in locals():
     importlib.reload(current_fbxio)
