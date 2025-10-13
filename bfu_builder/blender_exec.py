@@ -1,10 +1,13 @@
+import os
 import subprocess
 from . import bpl
 from .config import BlenderVersionDetails
 from pathlib import Path
 
 
-def test_blender_installation(blender_detail: BlenderVersionDetails) -> bool:
+def test_blender_installation(
+    blender_detail: BlenderVersionDetails
+) -> bool:
     blender_executable_path = blender_detail.path
     if not blender_executable_path.exists():
         print(f"Blender executable not found at {blender_executable_path}")
@@ -28,9 +31,16 @@ def test_blender_installation(blender_detail: BlenderVersionDetails) -> bool:
         '--addon_path', str(addon_path)  # Pass addon_path as a named argument
     ]
     
+    # Copy current environment and add our variable
+    env = os.environ.copy()
+    if blender_detail.fix_allocation_functions_replacement:
+        # Disable TBB malloc replacement to avoid issues with Blender 4.2+
+        # Details: https://projects.blender.org/blender/blender/issues/126109
+        env["TBB_MALLOC_DISABLE_REPLACEMENT"] = "1"
+        env["TBBMALLOC_PROXY_ENABLE"] = "0"
 
     try:
-        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        result = subprocess.run(command, capture_output=True, text=True, check=True, env=env)
         print("Blender script executed successfully")
         print("STDOUT:", result.stdout)
         if result.stderr:

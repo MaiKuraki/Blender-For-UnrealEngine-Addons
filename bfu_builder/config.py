@@ -7,6 +7,9 @@ class BlenderVersionDetails:
         self.version: Tuple[int, int, int] = version
         self.path:Path = Path()
 
+        # Disable TBB malloc replacement to avoid issues with Blender 4.2+ More details: https://projects.blender.org/blender/blender/issues/126109
+        self.fix_allocation_functions_replacement: bool = False
+
 
 blender_version_and_path: List[BlenderVersionDetails] = []
 
@@ -14,6 +17,7 @@ def add_blender_version(version: Tuple[int, int, int], path: Path) -> BlenderVer
     details = BlenderVersionDetails(version)
     details.path = path
     blender_version_and_path.append(details)
+    details.fix_allocation_functions_replacement = version == (4, 2, 0)
     return details
 
 # Use default installation paths on Windows, adjust it for Linux or MacOS
