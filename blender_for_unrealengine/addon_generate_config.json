@@ -100,10 +100,10 @@
             ],
             "blender_version_min": [4,2,0]
         },
-        "unrealengine_assets_exporter_2.9": {
+        "unrealengine_assets_exporter_2.91": {
             "generate_method": "SIMPLE_ZIP",
-            "auto_install_range": [[2,90,0], [4,1,1]],
-            "naming": "{Name}_{Version}-blender_2.9-4.1.zip",
+            "auto_install_range": [[2,91,0], [4,1,1]],
+            "naming": "{Name}_{Version}-blender_2.91-4.1.zip",
             "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
@@ -125,10 +125,10 @@
             ],
             "blender_version_min": [2,90,0]
         },
-        "unrealengine_assets_exporter_2.8": {
+        "unrealengine_assets_exporter_2.80": {
             "generate_method": "SIMPLE_ZIP",
-            "auto_install_range": [[2,80,0], [2,83,20]],
-            "naming": "{Name}_{Version}-blender_2.8.zip",
+            "auto_install_range": [[2,80,0], [2,90,1]],
+            "naming": "{Name}_{Version}-blender_2.80.zip",
             "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",
             "exclude_paths": [
