@@ -8,11 +8,18 @@
 # ----------------------------------------------
 
 import bpy
-from typing import Dict, Any, TYPE_CHECKING, Literal
+from typing import Dict, Any, TYPE_CHECKING
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
 
-# Literal["EXPORT", "PLACEHOLDER", "NONE"]: Can't use Literal in Blender 2.8 that still use Python 3.7
-# May use enum class in the future instead of string?
+try:
+    from typing import Literal
+except ImportError:
+    # Can't use Literal in Blender 2.8 that still use Python 3.7
+    # Dummy class for Literal typing in Python versions < 3.8
+    class Literal:
+        def __class_getitem__(cls, item):
+            return str
+
 def get_gltf_export_materials(obj: bpy.types.Object, is_animation: bool = False) -> Literal["EXPORT", "PLACEHOLDER", "VIEWPORT", "NONE"]:
     if is_animation:
         if obj.bfu_export_animation_without_mesh:
@@ -25,8 +32,6 @@ def get_gltf_export_materials(obj: bpy.types.Object, is_animation: bool = False)
     else:
         return "PLACEHOLDER"
 
-# Literal["AUTO", "JPEG", "WEBP", "NONE"]: Can't use Literal in Blender 2.8 that still use Python 3.7
-# May use enum class in the future instead of string?
 def get_gltf_export_textures(obj: bpy.types.Object, is_animation: bool = False) -> Literal["AUTO", "JPEG", "WEBP", "NONE"]:
     if is_animation:
         if obj.bfu_export_animation_without_mesh:
