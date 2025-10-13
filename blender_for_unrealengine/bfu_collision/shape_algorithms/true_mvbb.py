@@ -20,6 +20,31 @@ import bmesh
 from typing import Any, Optional
 from ... import bpl
 
+# Compatibility fix for Python 3.7 - numpy type annotations
+import sys
+if sys.version_info >= (3, 8):
+    # Python 3.8+ supports subscriptable numpy types natively
+    pass
+else:
+    # Python 3.7 simple monkey patch - avoid metaclass conflicts
+    _original_ndarray = np.ndarray
+    _original_dtype = np.dtype
+    
+    # Simple wrapper classes that just support __getitem__
+    class ndarray:
+        def __class_getitem__(cls, item):
+            return _original_ndarray
+    
+    class dtype:
+        def __class_getitem__(cls, item):
+            return _original_dtype
+    
+    # Only patch if not already done (avoid reload issues)
+    if not hasattr(np.ndarray, '__class_getitem__'):
+        np.ndarray = ndarray
+    if not hasattr(np.dtype, '__class_getitem__'):
+        np.dtype = dtype
+
 def _orthonormalize(
     n1: np.ndarray[Any, np.dtype[np.float64]], 
     n2: np.ndarray[Any, np.dtype[np.float64]], 
