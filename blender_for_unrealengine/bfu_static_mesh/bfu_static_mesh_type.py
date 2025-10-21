@@ -129,7 +129,7 @@ class BFU_StaticMesh(BFU_ObjectAssetClass):
 
                 if search_mode.search_packages():
                     target_pak = asset.add_asset_package(target.name, [f"Lod{i}"])
-                    self.set_package_file(target_pak, data, details)
+                    self.set_package_file(target_pak, target, details)
 
                     if search_mode.search_package_content():
                         target_pak.add_objects(bfu_base_object.bfu_base_obj_utils.get_exportable_objects(target))
