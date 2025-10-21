@@ -30,6 +30,18 @@ classes = (
 )
 
 
+def get_scene_object_properties_expanded(scene: bpy.types.Scene) -> bool:
+    return scene.bfu_object_properties_expanded.is_expend()  # type: ignore
+
+def get_object_export_folder_name(obj: bpy.types.Object) -> str:
+    return obj.bfu_export_folder_name  # type: ignore
+
+def get_object_use_custom_export_name(obj: bpy.types.Object) -> bool:
+    return obj.bfu_use_custom_export_name  # type: ignore
+
+def get_object_custom_export_name(obj: bpy.types.Object) -> str:
+    return obj.bfu_custom_export_name  # type: ignore
+
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)  # type: ignore
