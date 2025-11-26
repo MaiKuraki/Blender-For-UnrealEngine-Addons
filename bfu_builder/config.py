@@ -1,6 +1,8 @@
 from typing import List, Tuple
 from pathlib import Path
 
+windows_blender_install_path: Path = Path("C:/Program Files/Blender Foundation")
+linux_blender_install_path: Path = Path("/media/bleuraven/Game Engines/BlenderBuilds")
 
 class BlenderVersionDetails:
     def __init__(self, version: Tuple[int, int, int]):
@@ -21,6 +23,7 @@ def add_blender_version(version: Tuple[int, int, int], path: Path) -> BlenderVer
     return details
 
 # Use default installation paths on Windows, adjust it for Linux or MacOS
+add_blender_version((5, 0, 0), Path("C:/Program Files/Blender Foundation/Blender 5.0/blender.exe"))
 add_blender_version((4, 5, 0), Path("C:/Program Files/Blender Foundation/Blender 4.5/blender.exe"))
 add_blender_version((4, 4, 0), Path("C:/Program Files/Blender Foundation/Blender 4.4/blender.exe"))
 add_blender_version((4, 3, 0), Path("C:/Program Files/Blender Foundation/Blender 4.3/blender.exe"))
