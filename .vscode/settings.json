@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "${env:VIRTUAL_ENV}/bin/python",
+    "python.analysis.extraPaths": [
+        "${env:VIRTUAL_ENV}/lib/python3.13/site-packages",
+        "${env:VIRTUAL_ENV}/Lib/site-packages"
+    ]
+}
