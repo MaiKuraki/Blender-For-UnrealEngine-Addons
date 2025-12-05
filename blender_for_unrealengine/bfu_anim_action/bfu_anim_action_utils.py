@@ -9,9 +9,9 @@
 
 import fnmatch
 import bpy
-from typing import List, Tuple, Set, Dict
+from bpy_extras import anim_utils
+from typing import List, Tuple, Set, Dict, Optional
 from .. import bfu_debug_settings
-from .. import bfu_basics
 from .. import bfu_export_filter
 from . import bfu_anim_action_props
 from .bfu_anim_action_props import BFU_AnimActionExportEnum
@@ -53,6 +53,22 @@ def object_support_action_export(obj: bpy.types.Object) -> bool:
         return False
     return True
 
+def get_can_associate_fcurve_list_with_armature(obj: bpy.types.Object, fcurves: List[bpy.types.FCurve]) -> bool:
+    # Check if an list of fcurves can be associated with an armature object
+
+    if not isinstance(obj.data, bpy.types.Armature):
+        return False
+
+    for fcurve in fcurves:
+        s = fcurve.data_path
+        start = s.find('["')
+        end = s.rfind('"]')
+        if start > 0 and end > 0:
+            substring = s[start+2:end]
+            if substring in obj.data.bones:
+                return True
+    return False
+
 def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Object]) -> List[Tuple[bpy.types.Object, bpy.types.Action]]:
     if not support_action_export(scene):
         return []
@@ -69,13 +85,32 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
             # Export Auto
             if action_export_enum.value == BFU_AnimActionExportEnum.EXPORT_AUTO.value:
                 events.add_sub_event(f'Export Auto "{obj.name}" Prepare')
-                obj_bone_names: Set[str] = {b.name for b in obj.data.bones}
-                events.stop_last_and_start_new_event(f'Export Auto "{obj.name}" Loop actions')
-                for action in bpy.data.actions:
-                    if not action.library:
-                        if bfu_basics.get_if_action_can_associate_str_set(action, obj_bone_names):
-                            armature_actions_map.append((obj, action))
+
+                if bpy.app.version >= (4, 4, 0):
+                    # Found compatible actions using action slot and amature bones
+                    if obj.animation_data:
+                        last_slot_identifier: str = obj.animation_data.last_slot_identifier
+                        events.stop_last_and_start_new_event(f'Export Auto "{obj.name}" Loop actions')
+                        for action in bpy.data.actions:
+                            if not action.library:
+                                if last_slot_identifier in action.slots:
+                                    slot: bpy.types.ActionSlot = action.slots[last_slot_identifier]
+                                    action_channel_bag: Optional[bpy.types.ActionChannelbag] = anim_utils.action_get_channelbag_for_slot(action, slot)
+                                    if action_channel_bag:
+                                        if get_can_associate_fcurve_list_with_armature(obj, action_channel_bag.fcurves):
+                                            armature_actions_map.append((obj, action))
+
+                else:
+                    # Found compatible actions using armature bones
+                    events.stop_last_and_start_new_event(f'Export Auto "{obj.name}" Loop actions')
+                    for action in bpy.data.actions:
+                        if not action.library:
+                            if get_can_associate_fcurve_list_with_armature(obj, action.fcurves): #type: ignore
+                                armature_actions_map.append((obj, action))
+                
                 events.stop_last_event()
+
+                
 
             # Export Specific List
             elif action_export_enum.value == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST.value:

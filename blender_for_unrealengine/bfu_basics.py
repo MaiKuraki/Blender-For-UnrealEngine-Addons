@@ -9,7 +9,6 @@
 
 import string
 from pathlib import Path
-from typing import Set
 import bpy
 import shutil
 import bmesh
@@ -75,34 +74,6 @@ def valid_file_name(filename: str) -> str:
     filename = ''.join(c for c in filename if c in valid_chars)
 
     return filename
-
-
-def get_if_action_can_associate_str_set(action: bpy.types.Action, bone_names: Set[str]) -> bool:
-    # for group in action.groups:
-    #    for fcurve in group.channels:
-    for fcurve in action.fcurves:
-        s = fcurve.data_path
-        start = s.find('["')
-        end = s.rfind('"]')
-        if start > 0 and end > 0:
-            substring = s[start+2:end]
-            if substring in bone_names:
-                return True
-    return False
-
-def get_if_action_can_associate_armature(action: bpy.types.Action, armature: bpy.types.Armature) -> bool:
-    # for group in action.groups:
-    #    for fcurve in group.channels:
-    for fcurve in action.fcurves:
-        s = fcurve.data_path
-        start = s.find('["')
-        end = s.rfind('"]')
-        if start > 0 and end > 0:
-            substring = s[start+2:end]
-            if substring in armature.bones:
-                return True
-    return False
-
 
 def get_surface_area(obj: bpy.types.Object) -> float:
     if isinstance(obj.data, bpy.types.Mesh):
