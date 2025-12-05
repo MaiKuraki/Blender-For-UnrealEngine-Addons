@@ -18,8 +18,8 @@ class UserSelectSave():
 
     def __init__(self):
         # Select
-        self.user_active = None
-        self.user_active_name = ""
+        self.user_active: Optional[bpy.types.Object] = None
+        self.user_active_name: Optional[str] = None
         self.user_selecteds: List[bpy.types.Object] = []
         self.user_selected_names: List[str] = []
 
@@ -30,9 +30,6 @@ class UserSelectSave():
         """
         Save user selection.
         """
-
-        if bpy.context is None:
-            return
 
         # Save data (This can take time)
 
@@ -49,33 +46,35 @@ class UserSelectSave():
         Reset user selection at the last save.
         """
 
-        if bpy.context is None:
+        scene = bpy.context.scene
+        if scene is None:
             return
 
-        scene = bpy.context.scene
         self.save_mode(use_names)
         utils.safe_mode_set("OBJECT", bpy.ops.object)  # type: ignore
         for obj in bpy.context.selected_objects:
             obj.select_set(False)
 
-        if use_names:
-            for obj in scene.objects:
-                if obj.name in self.user_selected_names:
-                    if obj.name in bpy.context.view_layer.objects:
-                        scene.objects.get(obj.name).select_set(True)  # Use the name because can be duplicated name  # type: ignore
+        view_layer = bpy.context.view_layer
+        if view_layer:
+            if use_names:
+                for obj in scene.objects:
+                    if obj.name in self.user_selected_names:
+                            if obj.name in view_layer.objects:
+                                scene.objects.get(obj.name).select_set(True)  # Use the name because can be duplicated name  # type: ignore
 
-            if self.user_active_name != "":
-                if self.user_active_name in scene.objects:
-                    if self.user_active_name in bpy.context.view_layer.objects:
-                        bpy.context.view_layer.objects.active = scene.objects.get(self.user_active_name)
-        
-        
-        else:
-            for obj in scene.objects:  # Resets previous selected object if still exist
-                if obj in self.user_selecteds:
-                    obj.select_set(True)  # type: ignore
+                if self.user_active_name:
+                    if self.user_active_name in scene.objects:
+                        if self.user_active_name in view_layer.objects:
+                            view_layer.objects.active = scene.objects.get(self.user_active_name)
+            
+            
+            else:
+                for obj in scene.objects:  # Resets previous selected object if still exist
+                    if obj in self.user_selecteds:
+                        obj.select_set(True)  # type: ignore
 
-            bpy.context.view_layer.objects.active = self.user_active
+                view_layer.objects.active = self.user_active
 
         self.reset_mode_at_save()
 
@@ -98,15 +97,17 @@ class UserSelectSave():
 
     def get_user_active(self, use_names: bool = False) -> Optional[bpy.types.Object]:
 
-        if bpy.context is None:
-            return None
-
         scene = bpy.context.scene
+        if scene is None:
+            return None
+        
         if use_names:
-            if self.user_active_name != "":
-                if self.user_active_name in scene.objects:
-                    if self.user_active_name in bpy.context.view_layer.objects:
-                        return scene.objects.get(self.user_active_name)
+            view_layer = bpy.context.view_layer
+            if view_layer:
+                if self.user_active_name:
+                    if self.user_active_name in scene.objects:
+                        if self.user_active_name in view_layer.objects:
+                            return scene.objects.get(self.user_active_name)
             return None
         else:
             return self.user_active
