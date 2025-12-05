@@ -42,9 +42,6 @@ class SavedObject():
         else:
             return self.ref
 
-
-
-
 class SavedBones():
     """
     Saved data from a blender armature bone.
@@ -56,7 +53,6 @@ class SavedBones():
             if bpy.app.version < (5, 0, 0):
                 self.select = bone.select
             self.hide = bone.hide
-
 
 class SavedCollection():
     """
@@ -90,7 +86,6 @@ class SavedViewLayerChildren():
             self.name = child_col.name
             self.exclude = child_col.exclude
             self.hide_viewport = child_col.hide_viewport
-
 
 class UserSceneSave():
     """
