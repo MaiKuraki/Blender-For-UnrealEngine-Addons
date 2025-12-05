@@ -83,6 +83,7 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     # Reset scene data after export
     user_scene_save.reset_scene_at_save(print_removed_items = True)
     user_scene_save.reset_select(use_names = True)
+    user_scene_save.reset_mode_at_save() # Apply the mode after resetting selection
 
     # Clean actions
     for action in bpy.data.actions:
