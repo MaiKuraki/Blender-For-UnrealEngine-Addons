@@ -143,6 +143,31 @@ def object_prefix_name_to_export(obj: bpy.types.Object) -> str:
     return obj.bfu_prefix_name_to_export #  type: ignore
 
 class BFU_UL_ActionExportTarget(bpy.types.UIList):
+
+    def get_is_from_override_library(self, obj: bpy.types.Object, action_name: str) -> bool:
+        if not obj.override_library:
+            return False
+
+        for prop in obj.override_library.properties:
+            if prop.rna_path == "bfu_action_asset_list":
+                for op in prop.operations:
+                    if op.subitem_local_name == action_name:
+                        return False
+        return True
+
+    def get_object_source_file(self, obj: bpy.types.Object) -> str:
+        if not obj.override_library:
+            return "<unknown>"
+
+        override_library = obj.override_library
+        if(override_library):
+            reference = override_library.reference
+            if(reference):
+                library = reference.library
+                if(library):
+                    return library.name_full
+        return "<unknown>"
+
     def draw_item(
             self, 
             context: bpy.types.Context, 
@@ -156,13 +181,16 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
             flt_flag: Optional[int]
         ):
         action_is_valid = False
-        if item.name in bpy.data.actions:  # type: ignore
+        if not isinstance(item, BFU_OT_ObjExportAction):
+            return
+
+        if item.name in bpy.data.actions:
             action_is_valid = True
 
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             if action_is_valid:  # If action is valid
                 layout.prop(
-                    bpy.data.actions[item.name],  # type: ignore
+                    bpy.data.actions[item.name],
                     "name",
                     text="",
                     emboss=False,
@@ -170,8 +198,19 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                 )
                 layout.prop(item, "use", text="")
             else:
-                dataText = ('Action data named "' + item.name + '" Not Found. Please click on update')  # type: ignore
-                layout.label(text=dataText, icon="ERROR")
+                print(data)
+                if data and self.get_is_from_override_library(data, item.name):
+                    origin_file_name: str = self.get_object_source_file(data)
+                    data_text = (f'Action data "{item.name}" Not Found. Please update it on the original file: "{origin_file_name}"')
+                    # Orange/jaune pour erreur de bibliothèque
+                    layout.alert = True
+                    layout.label(text=data_text, icon="LIBRARY_DATA_OVERRIDE")
+                else:
+                    data_text = (f'Action data "{item.name}" Not found. Please click on update')
+                    # Rouge pour erreur locale
+                    layout.alert = True
+                    layout.label(text=data_text, icon="ERROR")
+
         # Not optimized for 'GRID' layout type.
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
