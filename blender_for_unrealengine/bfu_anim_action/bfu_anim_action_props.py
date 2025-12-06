@@ -209,6 +209,17 @@ class BFU_OT_UpdateObjActionListButton(bpy.types.Operator):
         if obj:
             update_export_action_list(obj)
         return {'FINISHED'}
+    
+class BFu_OT_ClearObjActionListButton(bpy.types.Operator):
+    bl_label = "Clear action list"
+    bl_idname = "object.clearobjactionlist"
+    bl_description = "Clear action list"
+
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
+        obj = context.object
+        if obj:
+            obj.bfu_action_asset_list.clear()  # type: ignore
+        return {'FINISHED'}
 
 class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
     bl_label = "Select All"
@@ -294,6 +305,7 @@ classes = (
     BFU_OT_ObjExportAction,
     BFU_UL_ActionExportTarget,
     BFU_OT_UpdateObjActionListButton,
+    BFu_OT_ClearObjActionListButton,
     BFU_OT_SelectAllObjActionListButton,
     BFU_OT_DeselectAllObjActionListButton,
 )

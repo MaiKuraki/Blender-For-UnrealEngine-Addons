@@ -55,15 +55,15 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                             maxrows=5,
                             rows=5
                         )
-                        UpdateObjActionList = ActionListProperty.row()
-                        UpdateObjActionList.operator(
-                            "object.updateobjactionlist",
-                            icon='RECOVER_LAST')
-                        SelectDeselectObjActionList = ActionListProperty.row()
-                        SelectDeselectObjActionList.operator("object.selectallobjactionlist")
-                        SelectDeselectObjActionList.operator("object.deselectallobjactionlist")
+                        update_obj_action_list = panel.row(align=True)
+                        update_obj_action_list.operator("object.updateobjactionlist", icon='RECOVER_LAST')
+                        update_obj_action_list.operator("object.clearobjactionlist", icon='X', text="")
+
+                        select_deselect_obj_action_list = panel.row()
+                        select_deselect_obj_action_list.operator("object.selectallobjactionlist")
+                        select_deselect_obj_action_list.operator("object.deselectallobjactionlist")
                     elif bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj) == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_PREFIX:
-                        ActionListProperty.prop(obj, 'bfu_prefix_name_to_export')
+                        panel.prop(obj, 'bfu_prefix_name_to_export')
 
                 # Action Time
                 if obj.type != "CAMERA":
