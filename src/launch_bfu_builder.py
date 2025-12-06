@@ -12,7 +12,7 @@ if platform.system() == "Windows":
 else:
     script_to_call = script_directory / "run_bfu_builder.py"
     # For Linux it use source ~/venv/bin/activate
-    python_cmd = Path.home() / "venv" / "bin" / "python"
+    python_cmd = Path.home() / "venvs/blender_for_unrealengine/bin/python"
 
 # Prepare arguments as strings
 args = [
