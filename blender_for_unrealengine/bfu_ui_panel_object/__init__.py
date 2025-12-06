@@ -144,6 +144,7 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             text = "Open Github page",
             icon="HELP"
             )
+        events.stop_last_event()
         
         # Presets
         events.stop_last_and_start_new_event("Draw Presets")

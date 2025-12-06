@@ -162,7 +162,7 @@ class BFU_SkeletalActionAnimation(BFU_ObjectAssetClass):
 
     def get_batch_asset_export_data(self, search_mode: AssetDataSearchMode, force_cache_update: bool = False) -> List[AssetToExport]:
         events = bfu_debug_settings.root_events
-        events.add_sub_event("Get Batch cached actions Asset List")
+        events.new_event("Get Batch cached actions Asset List")
         target_asset_to_export: List[AssetToExport] = []
 
         scene = bpy.context.scene

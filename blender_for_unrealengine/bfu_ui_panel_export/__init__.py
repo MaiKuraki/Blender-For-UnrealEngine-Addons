@@ -68,7 +68,8 @@ class BFU_PT_Export(bpy.types.Panel):
         
         bfu_debug_settings.start_draw_record()
         events = bfu_debug_settings.root_events
-        events.new_event("Draw Export")
+        events.new_event("Draw Export Panel")
+
 
         # Presets
         events.add_sub_event("Draw Export Presets")
@@ -85,6 +86,7 @@ class BFU_PT_Export(bpy.types.Panel):
         events.stop_last_and_start_new_event("Draw Export Process")
         bfu_export_process.bfu_export_process_ui.draw_ui(layout, context)
         events.stop_last_event()
+
 
         events.stop_last_event()
         bfu_debug_settings.stop_draw_record_and_print()

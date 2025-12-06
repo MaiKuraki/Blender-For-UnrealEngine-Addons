@@ -18,6 +18,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     addon_prefs = bfu_addon_prefs.get_addon_preferences()
     events = bfu_debug_settings.root_events
+    events.new_event("Draw Nomenclature Panel")
 
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_nomenclature_properties_expanded")
     if accordion:
@@ -25,7 +26,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
         if panel:
 
             # Prefix
-            events.add_sub_event("Draw Export Presets")
+            events.add_sub_event("Draw Nomenclature Presets")
             propsPrefix = panel.row()
             propsPrefix = propsPrefix.column()
             propsPrefix.prop(scene, 'bfu_static_mesh_prefix_export_name', icon='OBJECT_DATA')
@@ -39,7 +40,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
             propsPrefix.prop(scene, 'bfu_spline_prefix_export_name', icon='OBJECT_DATA')
 
             # Sub folder
-            events.stop_last_and_start_new_event("Draw Export Subfolder")
+            events.stop_last_and_start_new_event("Draw Anim Subfolder")
             propsSub = panel.row()
             propsSub = propsSub.column()
             propsSub.prop(scene, 'bfu_anim_subfolder_name', icon='FILE_FOLDER')
@@ -78,3 +79,5 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
                     'bfu_file_import_sequencer_script_name',
                     icon='FILE')
             events.stop_last_event()
+
+    events.stop_last_event()
