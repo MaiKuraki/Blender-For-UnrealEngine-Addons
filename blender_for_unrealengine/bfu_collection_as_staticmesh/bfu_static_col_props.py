@@ -26,22 +26,22 @@ class BFU_OT_SceneStaticCollectionExport(bpy.types.PropertyGroup):
 
 class BFU_UL_StaticCollectionExportTarget(bpy.types.UIList):
 
-    def get_is_from_override_library(self, obj: bpy.types.Object, action_name: str) -> bool:
-        if not obj.override_library:
+    def get_is_from_override_library(self, scene: bpy.types.Scene, collection_name: str) -> bool:
+        if not scene.override_library:
             return False
 
-        for prop in obj.override_library.properties:
-            if prop.rna_path == "bfu_action_asset_list":
+        for prop in scene.override_library.properties:
+            if prop.rna_path == "bfu_static_collection_asset_list":
                 for op in prop.operations:
-                    if op.subitem_local_name == action_name:
+                    if op.subitem_local_name == collection_name:
                         return False
         return True
 
-    def get_object_source_file(self, obj: bpy.types.Object) -> str:
-        if not obj.override_library:
+    def get_collection_source_file(self, scene: bpy.types.Scene) -> str:
+        if not scene.override_library:
             return "<unknown>"
 
-        override_library = obj.override_library
+        override_library = scene.override_library
         if(override_library):
             reference = override_library.reference
             if(reference):
@@ -67,7 +67,6 @@ class BFU_UL_StaticCollectionExportTarget(bpy.types.UIList):
         if not isinstance(item, BFU_OT_SceneStaticCollectionExport):
             return
 
-
         if item.name in bpy.data.collections:
             collection_is_valid = True
 
@@ -81,16 +80,15 @@ class BFU_UL_StaticCollectionExportTarget(bpy.types.UIList):
                     icon="OUTLINER_COLLECTION")
                 layout.prop(item, "use", text="")
             else:
-                print(data)
                 if data and self.get_is_from_override_library(data, item.name):
-                    origin_file_name: str = self.get_object_source_file(data)
-                    dataText = (f'Collection named "{item.name}" Not Found. Please update it on the original file: "{origin_file_name}"')
+                    origin_file_name: str = self.get_collection_source_file(data)
+                    data_text = (f'Collection named "{item.name}" Not Found. Please update it on the original file: "{origin_file_name}"')
                     layout.alert = True
-                    layout.label(text=dataText, icon="LIBRARY_DATA_OVERRIDE")
+                    layout.label(text=data_text, icon="LIBRARY_DATA_OVERRIDE")
                 else:
-                    dataText = (f'Collection named "{item.name}" Not found. Please clic on update')
+                    data_text = (f'Collection named "{item.name}" Not found. Please click on update')
                     layout.alert = True
-                    layout.label(text=dataText, icon="ERROR")
+                    layout.label(text=data_text, icon="ERROR")
 
         # Not optimised for 'GRID' layout type.
         elif self.layout_type in {'GRID'}:

@@ -198,16 +198,13 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                 )
                 layout.prop(item, "use", text="")
             else:
-                print(data)
                 if data and self.get_is_from_override_library(data, item.name):
                     origin_file_name: str = self.get_object_source_file(data)
                     data_text = (f'Action data "{item.name}" Not Found. Please update it on the original file: "{origin_file_name}"')
-                    # Orange/jaune pour erreur de bibliothèque
                     layout.alert = True
                     layout.label(text=data_text, icon="LIBRARY_DATA_OVERRIDE")
                 else:
                     data_text = (f'Action data "{item.name}" Not found. Please click on update')
-                    # Rouge pour erreur locale
                     layout.alert = True
                     layout.label(text=data_text, icon="ERROR")
 
