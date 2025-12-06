@@ -208,6 +208,7 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         # Scene
         events.add_sub_event("Draw Scene")
         bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
+        bfu_collection_as_staticmesh.bfu_static_col_ui.draw_ui(layout, context)
         events.stop_last_event()
 
         events.stop_last_event()
