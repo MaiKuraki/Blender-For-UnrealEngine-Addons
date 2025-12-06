@@ -195,6 +195,7 @@ def create_root_init_file(generated_list: List[Tuple[Tuple[int, int, int], str]]
         init_file.write("blender_version = bpy.app.version\n\n")
 
         # Write conditional imports
+        last_import: str = ""
         for x, generate in enumerate(generated_list):
             version = generate[0]
             str_version = generate[1]
@@ -202,10 +203,15 @@ def create_root_init_file(generated_list: List[Tuple[Tuple[int, int, int], str]]
                 init_file.write(f"if blender_version >= {version}:\n")
             else:
                 init_file.write(f"elif blender_version >= {version}:\n")
-            init_file.write(f"    from . import {config.io_scene_fbx_prefix}{str_version} as current_fbxio \n")
+            last_import = f"    from . import {config.io_scene_fbx_prefix}{str_version} as current_fbxio \n"
+            init_file.write(last_import)
             
         init_file.write(f"else:\n")
-        init_file.write(f"    print('ERROR, no fbx exporter found for this version of Blender!') \n")
+        if last_import:
+            init_file.write(last_import + " #Fall back") # Always fall back to the last version (Used for Blender 2.80 to 2.82)
+        else:
+            init_file.write(f"    print('ERROR, no custom fbx exporter found for this version of Blender!') \n")
+            init_file.write(f"    print(\"Blender version detected:\", blender_version)\n")
 
         init_file.write("\n")
         
