@@ -8,7 +8,7 @@
 # ----------------------------------------------
 
 
-from typing import List
+from typing import List, Tuple
 import bpy
 from enum import Enum
 from .. import bbpl
@@ -21,7 +21,7 @@ class BFU_AnimNLAStartEndTimeEnum(str, Enum):
     def default() -> "BFU_AnimNLAStartEndTimeEnum":
         return BFU_AnimNLAStartEndTimeEnum.WITH_SCENEFRAMES
     
-def get_anim_nla_start_end_time_enum_list() -> List[tuple[str, str, str]]:
+def get_anim_nla_start_end_time_enum_list() -> List[Tuple[str, str, str]]:
     return [
         (BFU_AnimNLAStartEndTimeEnum.WITH_SCENEFRAMES,
             "Scene time",

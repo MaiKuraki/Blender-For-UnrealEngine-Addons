@@ -9,7 +9,7 @@
 
 import bpy
 import mathutils
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Tuple
 from .. import utils
 
 
@@ -54,7 +54,7 @@ def get_mirror_bone_name(original_bones: Union[str, List[str]]) -> Union[str, Li
     def mirror_name(bone: str) -> str:
         bases = [("l", "r"), ("left", "right")]
         seps = [".", "_", ""]
-        patterns: List[tuple[str, str]] = []
+        patterns: List[Tuple[str, str]] = []
         for sep in seps:
             for l, r in bases:
                 for lcase, rcase in [
