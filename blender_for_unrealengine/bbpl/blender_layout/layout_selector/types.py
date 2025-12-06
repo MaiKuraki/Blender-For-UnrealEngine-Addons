@@ -30,12 +30,12 @@ class StringSelector():
     def create_properties(self):
         string_selector = self
 
-        def string_update_wrapper(property_self: bpy.types.bpy_struct, context: bpy.types.Context):
+        def string_update_wrapper(property_self: Any, context: bpy.types.Context):
             update_selector_from_string(property_self, string_selector)
             if string_selector.update:
                 string_selector.update()
 
-        def enum_update_wrapper(property_self: bpy.types.bpy_struct, context: bpy.types.Context):
+        def enum_update_wrapper(property_self: Any, context: bpy.types.Context):
             update_string_from_enum(property_self, string_selector)
             if string_selector.update:
                 string_selector.update()

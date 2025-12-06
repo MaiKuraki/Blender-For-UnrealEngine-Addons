@@ -85,7 +85,7 @@ class ProxyCopy_NLATrack:
             self.mute = nla_track.mute
             self.name = nla_track.name
             self.select = nla_track.select
-            self.strips = []
+            self.strips: List[ProxyCopy_NlaStrip] = []
             for strip in nla_track.strips:
                 self.strips.append(ProxyCopy_NlaStrip(strip))
 

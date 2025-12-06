@@ -106,7 +106,8 @@ def register():
         bpy.utils.register_class(cls)
 
     global BBPL_UI_Accordion_CUSTOM_CLASS
-    bpy.utils.register_class(BBPL_UI_Accordion_CUSTOM_CLASS)
+    if BBPL_UI_Accordion_CUSTOM_CLASS:
+        bpy.utils.register_class(BBPL_UI_Accordion_CUSTOM_CLASS)
 
 
 def unregister():
@@ -114,4 +115,5 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     global BBPL_UI_Accordion_CUSTOM_CLASS
-    bpy.utils.unregister_class(BBPL_UI_Accordion_CUSTOM_CLASS)
+    if BBPL_UI_Accordion_CUSTOM_CLASS:
+        bpy.utils.unregister_class(BBPL_UI_Accordion_CUSTOM_CLASS)

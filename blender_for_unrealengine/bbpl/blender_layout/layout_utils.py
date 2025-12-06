@@ -30,7 +30,7 @@ def get_property_name_from_property_group(property_group: bpy.types.PropertyGrou
                         return test_pro_owner.bl_rna.properties[prop_id_name].name  # type: ignore
             return None
 
-        id_data = property_group.id_data
+        id_data = property_group.id_data  # type: ignore
 
         # FOR NODE TREE
         if isinstance(id_data, bpy.types.NodeTree):
@@ -74,7 +74,7 @@ def get_property_name_from_property_group(property_group: bpy.types.PropertyGrou
     else:
         # Older versions of Blender
         prop_id_name = property_group.path_from_id()
-        id_data = property_group.id_data
+        id_data = property_group.id_data  # type: ignore
         if prop_id_name in id_data.bl_rna.properties:
             return id_data.bl_rna.properties[prop_id_name].name  # type: ignore
 

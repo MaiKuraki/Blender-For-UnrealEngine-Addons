@@ -14,11 +14,11 @@ from . import utils
 from ... import __internal__
 
 def add_doc_page_operator(layout: bpy.types.UILayout, url: str="", text: str="", icon: str="HELP"):
-    doc_operator = layout.operator(  # type: ignore
+    doc_operator = layout.operator(
         utils.get_open_target_web_page_idname(),
-        icon=icon,
+        icon=icon,  # type: ignore
         text=text
-        )  # type: ignore
+        )
     if TYPE_CHECKING:
         doc_operator: types.CustomOpenTargetWebPage_Operator
     
@@ -29,26 +29,26 @@ def add_doc_page_operator(layout: bpy.types.UILayout, url: str="", text: str="",
 
 def add_left_doc_page_operator(layout: bpy.types.UILayout, url: str="", text: str="", icon: str="HELP"):
     new_row = layout.row()
-    doc_operator = new_row.operator(  # type: ignore
+    doc_operator = new_row.operator(
         utils.get_open_target_web_page_idname(),
-        icon=icon,
+        icon=icon,  # type: ignore
         text=""
-        )  # type: ignore
+        )
     
     if TYPE_CHECKING:
         doc_operator: types.CustomOpenTargetWebPage_Operator
     doc_operator.url = url
-    new_row.label(text=text)  # type: ignore
+    new_row.label(text=text)
     return new_row
 
 def add_right_doc_page_operator(layout: bpy.types.UILayout, url: str="", text: str="", icon: str="HELP"):
     new_row = layout.row()
-    new_row.label(text=text)  # type: ignore
-    doc_operator = new_row.operator(  # type: ignore
+    new_row.label(text=text)
+    doc_operator = new_row.operator(
         utils.get_open_target_web_page_idname(),
-        icon=icon,
+        icon=icon,  # type: ignore
         text=""
-        )  # type: ignore
+        )
     
     if TYPE_CHECKING:
         doc_operator: types.CustomOpenTargetWebPage_Operator

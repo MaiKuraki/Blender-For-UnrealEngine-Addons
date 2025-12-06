@@ -49,13 +49,12 @@ def get_mirror_bone_name(original_bones: Union[str, List[str]]) -> Union[str, Li
     Returns the mirror name of a bone or a list of bones.
     Automatically handles .l/.r, .L/.R, _l/_r, _L/_R, _left/_right, Left/Right, etc.
     """
-    from typing import Union
     bones: List[str] = [original_bones] if isinstance(original_bones, str) else original_bones
 
     def mirror_name(bone: str) -> str:
         bases = [("l", "r"), ("left", "right")]
         seps = [".", "_", ""]
-        patterns = []
+        patterns: List[tuple[str, str]] = []
         for sep in seps:
             for l, r in bases:
                 for lcase, rcase in [
@@ -84,7 +83,7 @@ def get_mirror_bone_name(original_bones: Union[str, List[str]]) -> Union[str, Li
     mirrored = [mirror_name(b) for b in bones]
     return mirrored[0] if isinstance(original_bones, str) else mirrored
 
-def get_name_with_new_prefix(name, old_prefix, new_prefix):
+def get_name_with_new_prefix(name: str, old_prefix: str, new_prefix: str) -> str:
     """
     Replace a prefix and add a new prefix to a name.
     """
@@ -97,17 +96,17 @@ def get_name_with_new_prefix(name, old_prefix, new_prefix):
         raise TypeError('"' + old_prefix + '" not found as prefix in "' + name + '".')
     return new_bone_name
 
-def get_name_list_with_new_prefix(name_list, old_prefix, new_prefix):
+def get_name_list_with_new_prefix(name_list: List[str], old_prefix: str, new_prefix: str) -> List[str]:
     """
     Replace a prefix and add a new prefix to each name in a list.
     """
 
-    new_list = []
+    new_list: List[str] = []
     for name in name_list:
         new_list.append(get_name_with_new_prefix(name, old_prefix, new_prefix))
     return new_list
 
-def no_num(name):
+def no_num(name: str) -> str:
     """
     Remove the number index from a bone name.
     """
@@ -119,6 +118,9 @@ def no_num(name):
 if bpy.app.version >= (4, 0, 0):
     def add_bone_to_collection(armature: bpy.types.Object, bone_name: str, collection_name: str) -> bpy.types.BoneCollection:
         #Add bone to collection and create if not exist
+
+        if not isinstance(armature.data, bpy.types.Armature):
+            raise TypeError("The provided object is not an armature.")
 
         if bpy.app.version >= (4, 1, 0):
             # Need to use collections_all for include all collections childs.
@@ -137,25 +139,28 @@ if bpy.app.version >= (4, 0, 0):
         col.assign(bone)
         return col
 
-    def remove_bone_from_collection(arm, bone_name, collection_name) -> Optional[bpy.types.BoneCollection]:
+    def remove_bone_from_collection(armature: bpy.types.Object, bone_name: str, collection_name: str) -> Optional[bpy.types.BoneCollection]:
+        if not isinstance(armature.data, bpy.types.Armature):
+            raise TypeError("The provided object is not an armature.")
+
         #Remove bone from collection.
         if bpy.app.version >= (4, 1, 0):
             # Need to use collections_all for include all collections childs.
-            if collection_name in arm.data.collections_all:
-                col = arm.data.collections_all[collection_name]
-                bone = arm.data.edit_bones[bone_name]
+            if collection_name in armature.data.collections_all:
+                col = armature.data.collections_all[collection_name]
+                bone = armature.data.edit_bones[bone_name]
                 col.unassign(bone)
                 return col
         else:
-            if collection_name in arm.data.collections:
-                col = arm.data.collections[collection_name]
-                bone = arm.data.edit_bones[bone_name]
+            if collection_name in armature.data.collections:
+                col = armature.data.collections[collection_name]
+                bone = armature.data.edit_bones[bone_name]
                 col.unassign(bone)
                 return col
 
 if bpy.app.version <= (3, 6, 0):
 
-    def change_current_layer(layer, source):
+    def change_current_layer(layer: int, source: bpy.types.Armature):
         """
         Change the current active layer to the specified layer.
         Deprecated in new version of Blender.
@@ -180,7 +185,7 @@ if bpy.app.version <= (3, 6, 0):
         """
         change_current_layer(layer, bpy.context.object.data)  # type: ignore
 
-    def duplicate_rig_layer(armature, original_layer, new_layer, old_prefix, new_prefix):
+    def duplicate_rig_layer(armature: bpy.types.Object, original_layer: int, new_layer: int, old_prefix: str, new_prefix: str) -> List[str]:
         """
         Deprecated in new version of Blender.
         Duplicates the bones in the specified original layer of the armature and moves them to the new layer.
@@ -197,6 +202,9 @@ if bpy.app.version <= (3, 6, 0):
             list: A list of the names of the duplicated bones.
         """
 
+        if not isinstance(armature.data, bpy.types.Armature):
+            raise TypeError("The provided object is not an armature.")
+
         utils.safe_mode_set(armature, "EDIT")  # Set the armature to edit mode safely  # type: ignore
         # Change the current active layer to the original layer
         change_current_layer(original_layer, bpy.context.object.data)  # type: ignore
@@ -205,7 +213,7 @@ if bpy.app.version <= (3, 6, 0):
         change_select_layer(new_layer)  # Move the duplicated bones to the new layer
         change_user_view_layer(new_layer)  # Set the user view to the new layer
 
-        new_bone_names  = []
+        new_bone_names: List[str] = []
         for bone in bpy.context.selected_bones:  # type: ignore
             new_bone_names .append(bone.name)
 
@@ -225,16 +233,25 @@ class Orig_prefixhanBone():
     Create a new Orig_prefixhanBone instance.
     """
 
-    def __init__(self, armature, child_bone):
+    def __init__(self, armature: bpy.types.Object, child_bone: bpy.types.Bone):
+        if not isinstance(armature.data, bpy.types.Armature):
+            raise TypeError("The provided object is not an armature.")
+        
         self.armature = armature
         self.name = child_bone.name
-        self.old_parent_name = child_bone.parent.name
+        if child_bone.parent:
+            self.old_parent_name = child_bone.parent.name
+        else:
+            self.old_parent_name = ""
         self.new_parent_name = ""
 
     def apply_new_parent(self):
         """
         Apply the new parent bone to the child bone.
         """
+        if not isinstance(self.armature.data, bpy.types.Armature):
+            raise TypeError("The provided object is not an armature.")
+
         if self.new_parent_name != "":
             for bone in self.armature.data.edit_bones:
                 if bone.name == self.name:
@@ -244,19 +261,25 @@ class Orig_prefixhanBone():
             print("Error: new_parent not set in Orig_prefixhanBone for " + self.name)
 
 
-def set_bone_orientation(armature, bone_name, vector, roll):
+def set_bone_orientation(armature: bpy.types.Object, bone_name: str, vector: mathutils.Vector, roll: float):
     """
     Définit l'orientation d'un os dans l'armature.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+
     bone = armature.data.edit_bones[bone_name]
     length = bone.length
     bone.tail = bone.head + vector * length
     bone.roll = roll
 
-def get_bone_with_length(armature, bone_name, new_length, apply_tail=True):
+def get_bone_with_length(armature: bpy.types.Object, bone_name: str, new_length: float, apply_tail: bool = True) -> mathutils.Vector:
     """
     Evaluate the edit_bone tail position with specific length
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+
     bone = armature.data.edit_bones[bone_name]
     vector = bone.tail - bone.head
     vector.normalize()
@@ -264,10 +287,13 @@ def get_bone_with_length(armature, bone_name, new_length, apply_tail=True):
     new_tail = bone.head + (vector * new_length)
     return new_tail
 
-def set_bone_length(armature, bone_name, new_length):
+def set_bone_length(armature: bpy.types.Object, bone_name: str, new_length: float) -> mathutils.Vector:
     """
     Définit la longueur d'un os dans l'armature.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+
     bone = armature.data.edit_bones[bone_name]
     vector = bone.tail - bone.head
     vector.normalize()
@@ -277,18 +303,24 @@ def set_bone_length(armature, bone_name, new_length):
     bone.tail = new_tail
     return new_tail
 
-def get_bone_vector(armature, bone_name):
+def get_bone_vector(armature: bpy.types.Object, bone_name: str) -> mathutils.Vector:
     """
     Récupère le vecteur (direction) d'un os dans l'armature.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+
     head = armature.data.edit_bones[bone_name].head
     tail = armature.data.edit_bones[bone_name].tail
     return head - tail
 
-def set_bone_scale(armature, bone_name, new_scale, apply_tail=True):
+def set_bone_scale(armature: bpy.types.Object, bone_name: str, new_scale: float, apply_tail: bool = True) -> mathutils.Vector:
     """
     Définit l'échelle d'un os dans l'armature.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+
     bone = armature.data.edit_bones[bone_name]
     vector = bone.tail - bone.head
 
@@ -302,13 +334,13 @@ class BoneDataSave:
     """
     Définit le mode d'orientation de l'os dans l'armature.
     """
-    def __init__(self, armature, saved_bone):
+    def __init__(self, armature: bpy.types.Object, saved_bone: bpy.types.Bone):
         self.name = saved_bone.name
         self.parent = saved_bone.parent.name
         self.childs = [bone for bone in armature if bone.parent == saved_bone]
 
 
-def get_first_parent(bone):
+def get_first_parent(bone: bpy.types.Bone) -> bpy.types.Bone:
     """
     Recursively retrieves the first parent bone of the given bone.
     """
@@ -317,19 +349,26 @@ def get_first_parent(bone):
     else:
         return bone
 
-def create_simple_stretch(armature, bone, target_bone_name, name):
+def create_simple_stretch(armature: bpy.types.Object, bone: str, target_bone_name: str, name: str):
     """
     Create a simple stretch constraint for a bone in an armature.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+
     bpy.ops.object.mode_set(mode='POSE')
-    constraint = armature.pose.bones[bone].constraints.new('STRETCH_TO')
-    constraint.target = armature
-    constraint.subtarget = target_bone_name
-    constraint.name = name
-    bpy.ops.object.mode_set(mode='EDIT')
-    constraint.rest_length = (
-        armature.data.edit_bones[target_bone_name].head - armature.data.edit_bones[bone].tail
-    ).length
+    if armature.pose is None:
+        raise TypeError("The armature has no pose data.")
+
+    constraint: bpy.types.Constraint = armature.pose.bones[bone].constraints.new('STRETCH_TO')
+    if isinstance(constraint, bpy.types.StretchToConstraint):
+        constraint.target = armature
+        constraint.subtarget = target_bone_name
+        constraint.name = name
+        bpy.ops.object.mode_set(mode='EDIT')
+        constraint.rest_length = (
+            armature.data.edit_bones[target_bone_name].head - armature.data.edit_bones[bone].tail
+        ).length
 
 
 class DriverPropertyHelper:
@@ -337,7 +376,7 @@ class DriverPropertyHelper:
     Helper class for applying drivers to custom properties in Blender.
     """
 
-    def __init__(self, armature, bone_const_name, constraint_name, name="NoPropertyName"):
+    def __init__(self, armature: bpy.types.Object, bone_const_name: str, constraint_name: str, name: str ="NoPropertyName"):
 
         self.armature = armature
         self.bone_const_name = bone_const_name
@@ -348,7 +387,7 @@ class DriverPropertyHelper:
         self.min = 0.0
         self.max = 1.0
 
-    def apply_driver(self, bone_name):
+    def apply_driver(self, bone_name: str):
         """
         Applies a driver to the custom property.
 
@@ -377,10 +416,15 @@ class DriverPropertyHelper:
         set_driver(self.armature, driver, bone_name, self.property_name)
 
 
-def create_bone_custom_property(armature, property_bone_name, property_name, default=0.0, value_min=0.0, value_max=1.0, description='..', overridable=True):
+def create_bone_custom_property(armature: bpy.types.Object, property_bone_name: str, property_name: str, default: float = 0.0, value_min: float = 0.0, value_max: float = 1.0, description: str = '..', overridable: bool = True):
     """
     Creates a custom property for the specified bone in the armature.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+    if armature.pose is None:
+        raise TypeError("The armature has no pose data.")
+
     property_bone = armature.pose.bones[property_bone_name]
     property_bone[property_name] = default
     ui_data = property_bone.id_properties_ui(property_name)
@@ -398,7 +442,7 @@ def create_bone_custom_property(armature, property_bone_name, property_name, def
     data_path = f'pose.bones["{escaped_property_bone_name}"]["{escaped_property_name}"]'
     return data_path
 
-def set_driver(armature, driver, bone_name, driver_name, clean_previous=True):
+def set_driver(armature: bpy.types.Object, driver: bpy.types.Driver, bone_name: str, driver_name: str, clean_previous: bool = True):
     """
     Sets up a driver for the specified bone and property in the armature.
     """
@@ -416,7 +460,7 @@ def set_driver(armature, driver, bone_name, driver_name, clean_previous=True):
     driver.expression = v.name
     return v
 
-def subdivise_one_bone(armature, bone_name, subdivise_prefix_name="Subdivise_", split_number=2, keep_parent=True, ):
+def subdivise_one_bone(armature: bpy.types.Object, bone_name: str, subdivise_prefix_name: str ="Subdivise_", split_number: int =2, keep_parent: bool = True) -> List[str]:
     """
     Subdivides a bone into multiple segments.
 
@@ -430,8 +474,11 @@ def subdivise_one_bone(armature, bone_name, subdivise_prefix_name="Subdivise_", 
         list: A list of the created bones.
     """
 
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+
     # Vars
-    edit_bone = armature.data.edit_bones[bone_name]
+    edit_bone: bpy.types.EditBone = armature.data.edit_bones[bone_name]
     original_tail = edit_bone.tail + mathutils.Vector((0, 0, 0))
 
     # Duplication
@@ -469,7 +516,7 @@ def subdivise_one_bone(armature, bone_name, subdivise_prefix_name="Subdivise_", 
     # Final reparenting
     return chain
 
-def duplicate_bone(arm, bone_name, new_name=None):
+def duplicate_bone(armature: bpy.types.Object, bone_name: str, new_name: Optional[str] = None):
     """
     Creates a duplicate bone in the armature.
 
@@ -481,11 +528,13 @@ def duplicate_bone(arm, bone_name, new_name=None):
     Returns:
         str: The name of the created bone.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
 
-    edit_bone = arm.data.edit_bones[bone_name]
+    edit_bone: bpy.types.EditBone = armature.data.edit_bones[bone_name]
     if new_name is None:
         new_name = edit_bone.name + "_dup"
-    new_bone = arm.data.edit_bones.new(new_name)
+    new_bone = armature.data.edit_bones.new(new_name)
     new_bone.head = edit_bone.head
     new_bone.tail = edit_bone.tail
     new_bone.roll = edit_bone.roll
@@ -494,18 +543,18 @@ def duplicate_bone(arm, bone_name, new_name=None):
     new_bone.parent = edit_bone.parent
     if bpy.app.version >= (4, 1, 0):
         for bone_col in edit_bone.collections:
-            col = arm.data.collections_all[bone_col.name]
+            col = armature.data.collections_all[bone_col.name]
             col.assign(new_bone)
     elif bpy.app.version >= (4, 0, 0):
         for bone_col in edit_bone.collections:
-            col = arm.data.collections[bone_col.name]
+            col = armature.data.collections[bone_col.name]
             col.assign(new_bone)
     else:
         new_bone.layers = edit_bone.layers # Deprecated in Blender 4.0
 
     return new_bone.name
 
-def copy_constraint(armature, copy_bone_name, paste_bone_name, clear=True):
+def copy_constraint(armature: bpy.types.Object, copy_bone_name: str, paste_bone_name: str, clear: bool = True):
     """
     Copies constraints from one bone to another in the armature.
 
@@ -515,6 +564,12 @@ def copy_constraint(armature, copy_bone_name, paste_bone_name, clear=True):
         paste_bone_name (str): The name of the bone to which the constraints are copied.
         clear (bool, optional): Indicates whether to clear existing constraints in the destination bone. Defaults to True.
     """
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("The provided object is not an armature.")
+    
+    if armature.pose is None:
+        raise TypeError("The armature has no pose data.")
+
     copy_bone = armature.pose.bones[copy_bone_name]
     paste_bone = armature.pose.bones[paste_bone_name]
 
@@ -531,14 +586,17 @@ def copy_constraint(armature, copy_bone_name, paste_bone_name, clear=True):
 
     # armature.pose.bones[paste_bone].constraints = armature.pose.bones[copy_bone].constraints
 
-def set_bones_lock(armature, bone_names, lock):
+def set_bones_lock(armature: bpy.types.Object, bone_names: List[str], lock: bool):
     for bone_name in bone_names:
         set_bone_lock(armature, bone_name, lock)
 
-def set_bone_lock(armature, bone_name, lock):
+def set_bone_lock(armature: bpy.types.Object, bone_name: str, lock: bool):
     # Check if we are in Pose mode
-    if armature.mode != 'POSE':
-        raise TypeError("Error: You must be in Pose mode to modify bone locks.")
+    if not isinstance(armature.data, bpy.types.Armature):
+        raise TypeError("Error: The provided object is not an armature.")
+
+    if armature.pose is None:
+        raise TypeError("Error: The armature has no pose data.")
     
     # Check if the bone exists in the armature
     if bone_name not in armature.pose.bones:
