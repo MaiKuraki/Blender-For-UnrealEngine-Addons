@@ -96,12 +96,12 @@ class FBXExporterGenerate:
         with open(source_file, 'r', newline='\n') as file:
             file_content = file.read()
             
-            # Utiliser les expressions régulières pour trouver bl_info et la version
+            # Use regular expressions to find bl_info and version
             bl_info_match = re.search(r'bl_info\s*=\s*\{([^}]*)\}', file_content, re.DOTALL)
             if bl_info_match:
                 bl_info_lines = bl_info_match.group(1).split('\n')
 
-                # Analyser chaque ligne pour trouver la version
+                # Parse each line to find the version
                 for line in bl_info_lines:
                     if 'version' in line:
                         match = re.search(r'\(([^)]+)\)', line)

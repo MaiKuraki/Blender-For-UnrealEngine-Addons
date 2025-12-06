@@ -111,7 +111,7 @@ class BFU_OT_ConvertAnyCurveToBezier(bpy.types.Operator):
     
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:  # type: ignore
-        # Cela appelle la boîte de dialogue permettant à l'utilisateur de modifier les propriétés avant l'exécution
+        # This calls the dialog allowing the user to modify properties before execution
         return context.window_manager.invoke_props_dialog(self)  # type: ignore
 
         return {'FINISHED'}

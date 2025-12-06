@@ -20,7 +20,7 @@ from .bfu_anim_action_props import BFU_AnimActionExportEnum
 
 
 def precompute_action_bones() -> Dict[bpy.types.Action, Set[str]]:
-    """Retourne un dict {Action: set(noms de bones dans l'action)}"""
+    """Returns a dict {Action: set(bone names in the action)}"""
     action_bones_map: Dict[bpy.types.Action, Set[str]] = {}
     for action in bpy.data.actions:
         bones_in_action: Set[str] = set()

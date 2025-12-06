@@ -146,7 +146,7 @@ def bfu_load_handler(dummy: Any):
 
 def deferred_execution():
     update_old_variables()
-    return None  # Important pour que le timer ne se répète pas
+    return None  # Important so the timer doesn't repeat
 
 classes = (
 )

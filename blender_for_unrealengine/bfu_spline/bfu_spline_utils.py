@@ -102,7 +102,7 @@ def json_to_ue_format(json_data: Dict[str, Any]) -> str:
 
 
             result_parts.append(f"SplineCurves=({', '.join(spline_parts)})")
-        else:  # Pour ReparamTable ou autres éléments similaires
+        else:  # For ReparamTable or similar elements
             points = transform_point_data(data["Points"])
             result_parts.append(f"{spline}=(Points={points})")
     return ", ".join(result_parts)

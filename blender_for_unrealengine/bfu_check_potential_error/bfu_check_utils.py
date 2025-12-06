@@ -59,7 +59,7 @@ def process_general_fix()-> Dict[str, str]:
 def get_vertices_with_zero_weight(Armature: bpy.types.Object, Mesh: bpy.types.Object) -> List[bpy.types.MeshVertex]:
     vertices: List[bpy.types.MeshVertex] = []
 
-    # Créez un ensemble des noms des os de l'armature pour une recherche plus rapide
+    # Create a set of armature bone names for faster lookup
     armature_bone_names: Set[str] = set(bone.name for bone in Armature.data.bones)
 
     for vertex in Mesh.data.vertices:  # MeshVertex(bpy_struct)
@@ -73,7 +73,7 @@ def get_vertices_with_zero_weight(Armature: bpy.types.Object, Mesh: bpy.types.Ob
                     if group_index <= group_len:
                         group = Mesh.vertex_groups[group_elem.group]
                         
-                        # Utilisez l'ensemble des noms d'os pour vérifier l'appartenance à l'armature
+                        # Use the set of bone names to check membership in the armature
                         if group.name in armature_bone_names:
                             cumulateWeight += group_elem.weight
         
