@@ -36,7 +36,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
             return
 
         _, panel = accordion.draw(layout)
-        if accordion.is_expend():
+        if accordion.is_expanded():
             asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
             if asset_class and asset_class.use_materials == True:
 

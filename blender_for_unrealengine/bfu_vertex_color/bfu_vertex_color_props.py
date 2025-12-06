@@ -113,7 +113,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_object_vertex_color_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_object_vertex_color_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_object_vertex_color_properties_expanded.is_expanded()  # type: ignore
 
 def get_object_vertex_color_import_option(obj: bpy.types.Object) -> BFU_VertexColorImportOptionEnum:
     for option in BFU_VertexColorImportOptionEnum:

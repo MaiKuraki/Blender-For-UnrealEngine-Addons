@@ -84,7 +84,7 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_properties_expanded")
-        if accordion and accordion.is_expend():
+        if accordion and accordion.is_expanded():
             if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
                 if not bfu_alembic_animation.bfu_alembic_animation_props.get_object_export_as_alembic_animation(obj):
                     skeletal_mesh_ui = layout.column()

@@ -21,7 +21,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_object_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_groom_alembic_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_groom_alembic_properties_expanded.is_expanded()  # type: ignore
 
 def get_object_export_as_groom_simulation(obj: bpy.types.Object) -> bool:
     return obj.bfu_export_as_groom_simulation  # type: ignore

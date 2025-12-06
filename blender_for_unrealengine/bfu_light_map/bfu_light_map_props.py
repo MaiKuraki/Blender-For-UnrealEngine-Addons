@@ -51,10 +51,10 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_light_map_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_object_light_map_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_object_light_map_properties_expanded.is_expanded()  # type: ignore
 
 def get_tools_light_map_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_tools_light_map_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_tools_light_map_properties_expanded.is_expanded()  # type: ignore
 
 def get_object_static_mesh_light_map_mode(obj: bpy.types.Object) -> BFU_StaticMeshLightMapMode:
     for item in BFU_StaticMeshLightMapMode:

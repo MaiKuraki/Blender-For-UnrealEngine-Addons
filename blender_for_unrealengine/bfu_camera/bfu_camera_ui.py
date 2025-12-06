@@ -32,7 +32,7 @@ def draw_ui_object_camera(layout: bpy.types.UILayout, context: bpy.types.Context
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_camera_properties_expanded")
         _, panel = accordion.draw(layout)
-        if accordion.is_expend():
+        if accordion.is_expanded():
             camera_ui = panel.column()
             if obj.type == "CAMERA":
                 camera_ui_pop = camera_ui.column()

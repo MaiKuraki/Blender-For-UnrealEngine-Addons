@@ -124,7 +124,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_engine_ref_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_engine_ref_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_engine_ref_properties_expanded.is_expanded()  # type: ignore
 
 def get_object_engine_ref_skeleton_search_mode(obj: bpy.types.Object) -> BFU_EngineRefSkeletonSearchModeEnum:
     for mode in BFU_EngineRefSkeletonSearchModeEnum:

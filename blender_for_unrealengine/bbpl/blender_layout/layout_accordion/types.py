@@ -75,8 +75,11 @@ class CustomAccordionUI_PropertyGroup(bpy.types.PropertyGroup):
         # Return
         return header, panel
 
-    def is_expend(self):
+    def is_expanded(self):
         return self.expend
+
+    def is_collapsed(self):
+        return not self.expend
 
 def get_layout_accordion_class():
     global BBPL_UI_Accordion_CUSTOM_CLASS

@@ -21,7 +21,7 @@ def get_preset_values() -> List[str]:
 
 
 def get_scene_collection_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_collection_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_collection_properties_expanded.is_expanded()  # type: ignore
 
 def get_collection_export_folder_name(col: bpy.types.Collection) -> str:
     return col.bfu_export_folder_name  # type: ignore

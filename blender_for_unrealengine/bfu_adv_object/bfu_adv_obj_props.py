@@ -31,7 +31,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_object_advanced_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_object_advanced_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_object_advanced_properties_expanded.is_expanded()  # type: ignore
 
 def get_object_move_to_center_for_export(obj: bpy.types.Object) -> bool:
     return obj.bfu_move_to_center_for_export  # type: ignore

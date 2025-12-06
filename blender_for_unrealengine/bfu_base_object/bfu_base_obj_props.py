@@ -23,7 +23,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_object_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_object_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_object_properties_expanded.is_expanded()  # type: ignore
 
 def get_object_export_folder_name(obj: bpy.types.Object) -> str:
     return obj.bfu_export_folder_name  # type: ignore

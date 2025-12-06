@@ -560,7 +560,7 @@ class ProxyCopy_Constraint:
     It is used to safely copy Blender PoseBoneConstraints.
     """
 
-    def __init__(self, constraint):
+    def __init__(self, constraint: bpy.types.Constraint):
         """
         Initializes the ProxyCopy_Constraint object.
 

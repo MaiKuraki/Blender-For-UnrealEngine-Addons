@@ -49,7 +49,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def scene_get_animation_nla_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_animation_nla_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_animation_nla_properties_expanded.is_expanded()  # type: ignore
 
 def get_object_anim_nla_use(obj: bpy.types.Object) -> bool:
     return obj.bfu_anim_nla_use  # type: ignore

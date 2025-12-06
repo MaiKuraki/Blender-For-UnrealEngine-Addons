@@ -53,7 +53,7 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_nomenclature_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_nomenclature_properties_expanded.is_expend()  # type: ignore
+    return scene.bfu_nomenclature_properties_expanded.is_expanded()  # type: ignore
 
 def get_static_mesh_prefix_export_name(scene: bpy.types.Scene) -> str:
     return scene.bfu_static_mesh_prefix_export_name  # type: ignore
