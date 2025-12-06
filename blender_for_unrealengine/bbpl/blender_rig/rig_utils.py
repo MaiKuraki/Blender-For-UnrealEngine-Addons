@@ -263,7 +263,7 @@ class Orig_prefixhanBone():
 
 def set_bone_orientation(armature: bpy.types.Object, bone_name: str, vector: mathutils.Vector, roll: float):
     """
-    Définit l'orientation d'un os dans l'armature.
+    Sets the orientation of a bone in the armature.
     """
     if not isinstance(armature.data, bpy.types.Armature):
         raise TypeError("The provided object is not an armature.")
@@ -289,7 +289,7 @@ def get_bone_with_length(armature: bpy.types.Object, bone_name: str, new_length:
 
 def set_bone_length(armature: bpy.types.Object, bone_name: str, new_length: float) -> mathutils.Vector:
     """
-    Définit la longueur d'un os dans l'armature.
+    Sets the length of a bone in the armature.
     """
     if not isinstance(armature.data, bpy.types.Armature):
         raise TypeError("The provided object is not an armature.")
@@ -305,7 +305,7 @@ def set_bone_length(armature: bpy.types.Object, bone_name: str, new_length: floa
 
 def get_bone_vector(armature: bpy.types.Object, bone_name: str) -> mathutils.Vector:
     """
-    Récupère le vecteur (direction) d'un os dans l'armature.
+    Retrieves the vector (direction) of a bone in the armature.
     """
     if not isinstance(armature.data, bpy.types.Armature):
         raise TypeError("The provided object is not an armature.")
@@ -316,7 +316,7 @@ def get_bone_vector(armature: bpy.types.Object, bone_name: str) -> mathutils.Vec
 
 def set_bone_scale(armature: bpy.types.Object, bone_name: str, new_scale: float, apply_tail: bool = True) -> mathutils.Vector:
     """
-    Définit l'échelle d'un os dans l'armature.
+    Sets the scale of a bone in the armature.
     """
     if not isinstance(armature.data, bpy.types.Armature):
         raise TypeError("The provided object is not an armature.")
@@ -332,7 +332,7 @@ def set_bone_scale(armature: bpy.types.Object, bone_name: str, new_scale: float,
 
 class BoneDataSave:
     """
-    Définit le mode d'orientation de l'os dans l'armature.
+    Defines the orientation mode of the bone in the armature.
     """
     def __init__(self, armature: bpy.types.Object, saved_bone: bpy.types.Bone):
         self.name = saved_bone.name
@@ -449,7 +449,7 @@ def set_driver(armature: bpy.types.Object, driver: bpy.types.Driver, bone_name: 
     if clean_previous:
         utils.clear_driver_var(driver)
 
-    # Échapper les noms de bone et driver pour les utiliser en toute sécurité dans data_path
+    # Escape bone and driver names for safe use in data_path
     escaped_bone_name = bpy.utils.escape_identifier(bone_name)
     escaped_driver_name = bpy.utils.escape_identifier(driver_name)
 

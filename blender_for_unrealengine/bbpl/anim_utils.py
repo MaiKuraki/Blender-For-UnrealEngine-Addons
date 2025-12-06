@@ -162,7 +162,7 @@ class ProxyCopy_NlaStrip:
         nla_strip.influence = 0.5
         
         # I don't know why but when I set use_animated_influence or influence 
-        # it automaticaly add a key in the curve...
+        # it automatically adds a key in the curve...
         # This is why I override and not do a simple paste
         nla_strip.use_animated_influence = self.use_animated_influence
         for fcurve in self.fcurves:

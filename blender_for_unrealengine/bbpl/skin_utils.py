@@ -11,7 +11,7 @@ import bpy
 from typing import List, Dict, Any
 from .. import bbpl
 
-def save_defoms_bones(armature: bpy.types.Object) -> Dict[str, bool]:
+def save_deform_bones(armature: bpy.types.Object) -> Dict[str, bool]:
     """
     Save the deform flag for each bone in the armature.
     Returns a dictionary of bone names and their deform flags.
@@ -97,7 +97,7 @@ def apply_auto_rig_parent(
     Optionally, specify a white list or black list of bones to control the deform flag.
     """
 
-    save_defom = save_defoms_bones(armature)
+    save_defom = save_deform_bones(armature)
 
     if len(white_list_bones) > 0:
         set_all_bones_deforms(armature, False)

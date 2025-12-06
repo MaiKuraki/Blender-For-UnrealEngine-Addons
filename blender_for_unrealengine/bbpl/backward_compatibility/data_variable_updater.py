@@ -8,7 +8,7 @@ def enum_callback(data: Any, old_var_name: str, new_var_name: str) -> Any:
     enum_definition = data.bl_rna.properties.get(new_var_name)
 
     if enum_definition and enum_definition.type == "ENUM":
-        # Obtenez la liste des valeurs de l'enum
+        # Get the list of enum values
         for enum_item in enum_definition.enum_items:
             if value == enum_item.value:
                 return enum_item.identifier
