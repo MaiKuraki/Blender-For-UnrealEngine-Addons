@@ -48,7 +48,7 @@ def draw_copy_import_script_ui(
 ) -> None:
     
     scene = context.scene
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_script_tool_expanded")
     if accordion:
         _, panel = accordion.draw(layout)

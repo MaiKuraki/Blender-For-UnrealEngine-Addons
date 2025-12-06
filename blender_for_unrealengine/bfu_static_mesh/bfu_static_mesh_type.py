@@ -21,9 +21,10 @@ from .. import bfu_vertex_color
 from .. import bfu_material
 from .. import bfu_lod
 from .. import bfu_base_object
-from .. import bfu_export_nomenclature
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_export_filter
+from .. import bfu_alembic_animation
+from .. import bfu_groom
 
 class BFU_StaticMesh(BFU_ObjectAssetClass):
     def __init__(self):
@@ -55,9 +56,10 @@ class BFU_StaticMesh(BFU_ObjectAssetClass):
             # Can't export camera as static mesh
             return False
 
-        elif data.bfu_export_as_groom_simulation:  # type: ignore
+        elif bfu_groom.bfu_groom_props.get_object_export_as_groom_simulation(data):  # type: ignore
             return False
-        elif data.bfu_export_as_alembic_animation:  # type: ignore
+        
+        elif bfu_alembic_animation.bfu_alembic_animation_props.get_object_export_as_alembic_animation(data):
             return False
         return True
 
@@ -68,7 +70,7 @@ class BFU_StaticMesh(BFU_ObjectAssetClass):
         return bfu_export_filter.bfu_export_filter_utils.get_use_static_export()
 
     def get_asset_import_directory_path(self, data: bpy.types.Object, details: Any = None, extra_path: Optional[Path] = None) -> Path:
-        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+        dirpath = bfu_base_object.bfu_base_obj_utils.get_obj_import_location(data)
         return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
 # ###################################################################

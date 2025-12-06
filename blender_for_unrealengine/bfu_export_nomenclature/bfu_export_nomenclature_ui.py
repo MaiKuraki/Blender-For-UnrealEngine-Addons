@@ -16,7 +16,7 @@ from .. import bfu_debug_settings
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     events = bfu_debug_settings.root_events
 
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_nomenclature_properties_expanded")

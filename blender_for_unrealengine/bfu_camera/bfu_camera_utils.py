@@ -8,6 +8,7 @@
 # ----------------------------------------------
 
 import bpy
+from typing import Tuple
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
@@ -31,3 +32,19 @@ def is_camera(obj: bpy.types.Object) -> bool:
         if asset_class.get_asset_type(obj) == AssetType.CAMERA:
             return True
     return False
+
+def get_desired_camera_start_end_range(obj: bpy.types.Object)-> Tuple[float, float]:
+    # Returns desired action or camera anim start/end time
+    
+    if not isinstance(obj.data, bpy.types.Camera):
+        return (0.0, 1.0)
+
+    scene = bpy.context.scene
+    if scene is None:
+        raise Exception("No active scene found")
+    
+    startTime = scene.frame_start
+    endTime = scene.frame_end
+    if endTime <= startTime:
+        endTime = startTime+1
+    return (startTime, endTime)

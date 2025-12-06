@@ -73,6 +73,9 @@ def scene_use_text_import_sequence_script(scene: bpy.types.Scene) -> bool:
 def scene_use_text_additional_data(scene: bpy.types.Scene) -> bool:
     return scene.bfu_use_text_additional_data # type: ignore
 
+def scene_export_selection_filter(scene: bpy.types.Scene) -> str:
+    return scene.bfu_export_selection_filter # type: ignore
+
 # -------------------------------------------------------------------
 #   Register & Unregister
 # -------------------------------------------------------------------

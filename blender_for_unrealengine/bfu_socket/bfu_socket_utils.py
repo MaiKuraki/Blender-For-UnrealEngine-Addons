@@ -57,7 +57,7 @@ def get_skeletal_mesh_socket_data(obj: bpy.types.Object) -> List[Dict[str, Any]]
     if not isinstance(obj.data, bpy.types.Armature):
         return []
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     sockets: List[bpy.types.Object] = []
 
     for socket in get_socket_desired_children(obj):

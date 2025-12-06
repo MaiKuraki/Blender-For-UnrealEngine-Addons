@@ -17,6 +17,8 @@ def get_object_export_type(obj: bpy.types.Object) -> BFU_ExportTypeEnum:
     for export_type in BFU_ExportTypeEnum:
         if obj.bfu_export_type == export_type.value:  # type: ignore
             return export_type
+        
+    print(f"Warning: Object '{obj.name}' has an invalid export type '{obj.bfu_export_type}'. Using default export type.")  # type: ignore
     return BFU_ExportTypeEnum.default()
 
 # Check functions

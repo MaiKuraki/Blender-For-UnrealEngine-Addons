@@ -36,7 +36,7 @@ class BFU_PT_Export(bpy.types.Panel):
         bl_label = 'Nomenclature Presets'
         preset_subdir = 'blender-for-unrealengine/nomenclature-presets'
         preset_operator = 'script.execute_preset'
-        draw = bpy.types.Menu.draw_preset
+        draw = bpy.types.Menu.draw_preset  # type: ignore
 
     from bl_operators.presets import AddPresetBase
 

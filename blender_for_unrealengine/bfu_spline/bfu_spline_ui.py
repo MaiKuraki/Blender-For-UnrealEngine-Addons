@@ -14,6 +14,7 @@ from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_export_control
 from .. import bfu_debug_settings
+from .. import bfu_alembic_animation
 from ..bbpl.blender_layout import layout_doc_button
 from . import bfu_spline_utils
 from . import bfu_spline_data
@@ -78,17 +79,14 @@ def draw_general_ui_object(layout: bpy.types.UILayout, obj: bpy.types.Object):
         return
     
     scene = bpy.context.scene 
-
-    if TYPE_CHECKING:
-        export_as_alembic_animation: bool = False
-    else:
-        export_as_alembic_animation: bool = obj.bfu_export_as_alembic_animation
+    if scene is None:
+        return
     
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_properties_expanded")
         if accordion and accordion.is_expend():
             if bfu_export_control.bfu_export_control_utils.is_export_recursive(obj):
-                if not export_as_alembic_animation:
+                if not bfu_alembic_animation.bfu_alembic_animation_props.get_object_export_as_alembic_animation(obj):
                     skeletal_mesh_ui = layout.column()
                     # Show asset type
                     skeletal_mesh_ui.prop(obj, "bfu_export_spline_as_static_mesh")

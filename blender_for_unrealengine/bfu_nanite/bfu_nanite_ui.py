@@ -20,11 +20,9 @@ from .. import bfu_export_control
 def draw_obj_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
     # Hide filters
-    if obj is None:
-        return
     if addon_prefs.useGeneratedScripts is False:
         return
     if not bfu_utils.draw_proxy_propertys(obj):
@@ -39,7 +37,8 @@ def draw_obj_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy
 
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_nanite_properties_expanded")
-        _, panel = accordion.draw(layout)
-        if accordion.is_expend():
-            panel.prop(obj, 'bfu_build_nanite_mode')
+        if accordion:
+            _, panel = accordion.draw(layout)
+            if panel:
+                panel.prop(obj, 'bfu_build_nanite_mode')
 

@@ -67,7 +67,7 @@ def export_as_action_animation(
     if scene is None:
         raise ValueError("No active scene found!")
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     is_library = armature.data.library is not None
 
     # [SAVE ASSET DATA]
@@ -212,7 +212,7 @@ def export_as_action_animation(
             use_metadata=active.bfu_export_with_meta_data,
             primary_bone_axis=bfu_export.bfu_export_utils.get_final_fbx_export_primary_bone_axis(active),
             secondary_bone_axis=bfu_export.bfu_export_utils.get_final_fbx_export_secondary_bone_axis(active),
-            mirror_symmetry_right_side_bones=active.bfu_mirror_symmetry_right_side_bones,
+            mirror_symmetry_right_side_bones=bfu_skeletal_mesh.bfu_skeletal_mesh_props.get_object_mirror_symmetry_right_side_bones(active),
             use_ue_mannequin_bone_alignment=active.bfu_use_ue_mannequin_bone_alignment,
             disable_free_scale_animation=active.bfu_disable_free_scale_animation,
             use_space_transform=bfu_export.bfu_export_utils.get_skeleton_fbx_export_use_space_transform(active),

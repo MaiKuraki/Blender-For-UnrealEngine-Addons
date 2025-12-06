@@ -8,12 +8,36 @@
 # ----------------------------------------------
 
 
-from typing import List
+from typing import List, Tuple
 import bpy
-from .. import bfu_utils
+from enum import Enum
 from .. import bbpl
-from . import bfu_light_map_utils
 
+
+class BFU_StaticMeshLightMapMode(str, Enum):
+    DEFAULT = "Default"
+    CUSTOM_MAP = "CustomMap"
+    SURFACE_AREA = "SurfaceArea"
+
+    @staticmethod
+    def default() -> "BFU_StaticMeshLightMapMode":
+        return BFU_StaticMeshLightMapMode.DEFAULT
+    
+def get_static_mesh_light_map_mode_enum_list() -> List[Tuple[str, str, str]]:
+    return [
+        (BFU_StaticMeshLightMapMode.DEFAULT,
+            "Default",
+            "Has no effect on light maps"),
+        (BFU_StaticMeshLightMapMode.CUSTOM_MAP,
+            "Custom map",
+            "Set the custom light map resolution"),
+        (BFU_StaticMeshLightMapMode.SURFACE_AREA,
+            "Surface Area",
+            "Set light map resolution depending on the surface Area"),
+    ]
+
+def get_default_static_mesh_light_map_mode_enum() -> str:
+    return BFU_StaticMeshLightMapMode.default().value
 
 def get_preset_values() -> List[str]:
     preset_values = [
@@ -26,38 +50,37 @@ def get_preset_values() -> List[str]:
         ]
     return preset_values
 
-class BFU_OT_ComputLightMap(bpy.types.Operator):
-    bl_label = "Calculate surface area"
-    bl_idname = "object.comput_lightmap"
-    bl_description = "Click to calculate the surface of the object"
-    bl_options = {'REGISTER', 'UNDO'}
+def get_scene_light_map_properties_expanded(scene: bpy.types.Scene) -> bool:
+    return scene.bfu_object_light_map_properties_expanded.is_expend()  # type: ignore
 
-    def execute(self, context):
-        obj = context.object
-        obj.computedStaticMeshLightMapRes = bfu_utils.GetExportRealSurfaceArea(obj)
-        self.report(
-            {'INFO'},
-            "Light map area updated to " + str(round(obj.computedStaticMeshLightMapRes)) + ". " +
-            "Compunted Light map: " + str(bfu_light_map_utils.GetCompuntedLightMap(obj)))
-        return {'FINISHED'}
+def get_tools_light_map_properties_expanded(scene: bpy.types.Scene) -> bool:
+    return scene.bfu_tools_light_map_properties_expanded.is_expend()  # type: ignore
 
-class BFU_OT_ComputAllLightMap(bpy.types.Operator):
-    bl_label = "Calculate all surface area"
-    bl_idname = "object.comput_all_lightmap"
-    bl_description = (
-        "Click to calculate the surface of the all object in the scene"
-        )
-    bl_options = {'REGISTER', 'UNDO'}
+def get_object_static_mesh_light_map_mode(obj: bpy.types.Object) -> BFU_StaticMeshLightMapMode:
+    for item in BFU_StaticMeshLightMapMode:
+        if item.value == obj.bfu_static_mesh_light_map_mode:  # type: ignore
+            return item
 
-    def execute(self, context: bpy.types.Context):
-        scene = context.scene
-        if scene:
-            updated = bfu_light_map_utils.update_area_light_map_list(scene)
-            self.report({'INFO'}, "The light maps of " + str(updated) + " object(s) have been updated.")
-            return {'FINISHED'}
-        else:
-            self.report({'WARNING'}, "No objects found to update.")
-            return {'CANCELLED'}
+    print(f"Warning: Object {obj.name} has unknown light map mode '{obj.bfu_static_mesh_light_map_mode}'. Falling back to default light map mode...")  # type: ignore
+    return BFU_StaticMeshLightMapMode.default()
+
+def get_object_static_mesh_custom_light_map_res(obj: bpy.types.Object) -> int:
+    return obj.bfu_static_mesh_custom_light_map_res  # type: ignore
+
+def get_object_computed_static_mesh_light_map_res(obj: bpy.types.Object) -> float:
+    return obj.bfu_computed_static_mesh_light_map_res  # type: ignore
+
+def get_object_static_mesh_light_map_surface_scale(obj: bpy.types.Object) -> float:
+    return obj.bfu_static_mesh_light_map_surface_scale  # type: ignore
+
+def get_object_static_mesh_light_map_round_power_of_two(obj: bpy.types.Object) -> bool:
+    return obj.bfu_static_mesh_light_map_round_power_of_two  # type: ignore
+
+def get_object_use_static_mesh_light_map_world_scale(obj: bpy.types.Object) -> bool:
+    return obj.bfu_use_static_mesh_light_map_world_scale  # type: ignore
+
+def get_object_generate_light_map_uvs(obj: bpy.types.Object) -> bool:
+    return obj.bfu_generate_light_map_uvs  # type: ignore
 
 
 # -------------------------------------------------------------------
@@ -65,8 +88,6 @@ class BFU_OT_ComputAllLightMap(bpy.types.Operator):
 # -------------------------------------------------------------------
 
 classes = (
-    BFU_OT_ComputLightMap,
-    BFU_OT_ComputAllLightMap
 )
 
 
@@ -74,35 +95,23 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.bfu_object_light_map_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Light map")
-    bpy.types.Scene.bfu_tools_light_map_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Light Map")
+    bpy.types.Scene.bfu_object_light_map_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Light map")  # type: ignore[attr-defined]
+    bpy.types.Scene.bfu_tools_light_map_properties_expanded = bbpl.blender_layout.layout_accordion.add_ui_accordion(name="Light Map")  # type: ignore[attr-defined]
 
 
     # StaticMeshImportData
     # https://api.unrealengine.com/INT/API/Editor/UnrealEd/Factories/UFbxStaticMeshImportData/index.html
 
 
-    bpy.types.Object.bfu_static_mesh_light_map_mode = bpy.props.EnumProperty(
+    bpy.types.Object.bfu_static_mesh_light_map_mode = bpy.props.EnumProperty(  # type: ignore[attr-defined]
         name="Light Map",
         description='Specify how the light map resolution will be generated',
         override={'LIBRARY_OVERRIDABLE'},
-        items=[
-            ("Default",
-                "Default",
-                "Has no effect on light maps",
-                1),
-            ("CustomMap",
-                "Custom map",
-                "Set the custom light map resolution",
-                2),
-            ("SurfaceArea",
-                "Surface Area",
-                "Set light map resolution depending on the surface Area",
-                3)
-            ]
+        items= get_static_mesh_light_map_mode_enum_list(),
+        default= get_default_static_mesh_light_map_mode_enum()
         )
 
-    bpy.types.Object.bfu_static_mesh_custom_light_map_res = bpy.props.IntProperty(
+    bpy.types.Object.bfu_static_mesh_custom_light_map_res = bpy.props.IntProperty(  # type: ignore[attr-defined]
         name="Light Map Resolution",
         description="This is the resolution of the light map",
         override={'LIBRARY_OVERRIDABLE'},
@@ -113,14 +122,14 @@ def register():
         default=64
         )
 
-    bpy.types.Object.computedStaticMeshLightMapRes = bpy.props.FloatProperty(
+    bpy.types.Object.bfu_computed_static_mesh_light_map_res = bpy.props.FloatProperty(  # type: ignore[attr-defined]
         name="Computed Light Map Resolution",
         description="This is the computed resolution of the light map",
         override={'LIBRARY_OVERRIDABLE'},
         default=64.0
         )
 
-    bpy.types.Object.bfu_static_mesh_light_map_surface_scale = bpy.props.FloatProperty(
+    bpy.types.Object.bfu_static_mesh_light_map_surface_scale = bpy.props.FloatProperty(  # type: ignore[attr-defined]
         name="Surface scale",
         description="This is for resacle the surface Area value",
         override={'LIBRARY_OVERRIDABLE'},
@@ -128,7 +137,7 @@ def register():
         default=64
         )
 
-    bpy.types.Object.bfu_static_mesh_light_map_round_power_of_two = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_static_mesh_light_map_round_power_of_two = bpy.props.BoolProperty(  # type: ignore[attr-defined]
         name="Round power of 2",
         description=(
             "round Light Map resolution to nearest power of 2"
@@ -136,7 +145,7 @@ def register():
         default=True
         )
 
-    bpy.types.Object.bfu_use_static_mesh_light_map_world_scale = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_use_static_mesh_light_map_world_scale = bpy.props.BoolProperty(  # type: ignore[attr-defined]
         name="Use world scale",
         description=(
             "If not that will use the object scale."
@@ -145,7 +154,7 @@ def register():
         default=False
         )
 
-    bpy.types.Object.bfu_generate_light_map_uvs = bpy.props.BoolProperty(
+    bpy.types.Object.bfu_generate_light_map_uvs = bpy.props.BoolProperty(  # type: ignore[attr-defined]
         name="Generate LightmapUVs",
         description=(
             "If checked, UVs for Lightmap will automatically be generated."
@@ -158,13 +167,13 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Object.bfu_generate_light_map_uvs
-    del bpy.types.Object.bfu_use_static_mesh_light_map_world_scale
-    del bpy.types.Object.bfu_static_mesh_light_map_round_power_of_two
-    del bpy.types.Object.bfu_static_mesh_light_map_surface_scale
-    del bpy.types.Object.computedStaticMeshLightMapRes
-    del bpy.types.Object.bfu_static_mesh_custom_light_map_res
-    del bpy.types.Object.bfu_static_mesh_light_map_mode
+    del bpy.types.Object.bfu_generate_light_map_uvs  # type: ignore[attr-defined]
+    del bpy.types.Object.bfu_use_static_mesh_light_map_world_scale  # type: ignore[attr-defined]
+    del bpy.types.Object.bfu_static_mesh_light_map_round_power_of_two  # type: ignore[attr-defined]
+    del bpy.types.Object.bfu_static_mesh_light_map_surface_scale  # type: ignore[attr-defined]
+    del bpy.types.Object.bfu_computed_static_mesh_light_map_res  # type: ignore[attr-defined]
+    del bpy.types.Object.bfu_static_mesh_custom_light_map_res  # type: ignore[attr-defined]
+    del bpy.types.Object.bfu_static_mesh_light_map_mode  # type: ignore[attr-defined]
 
-    del bpy.types.Scene.bfu_tools_light_map_properties_expanded
-    del bpy.types.Scene.bfu_object_light_map_properties_expanded
+    del bpy.types.Scene.bfu_tools_light_map_properties_expanded  # type: ignore[attr-defined]
+    del bpy.types.Scene.bfu_object_light_map_properties_expanded  # type: ignore[attr-defined]

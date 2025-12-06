@@ -13,8 +13,10 @@ from bpy_extras import anim_utils
 from typing import List, Tuple, Set, Dict, Optional
 from .. import bfu_debug_settings
 from .. import bfu_export_filter
+from .. import bfu_anim_nla
 from . import bfu_anim_action_props
 from .bfu_anim_action_props import BFU_AnimActionExportEnum
+
 
 
 def precompute_action_bones() -> Dict[bpy.types.Action, Set[str]]:
@@ -47,7 +49,7 @@ def support_action_export(scene: bpy.types.Scene) -> bool:
 def object_support_action_export(obj: bpy.types.Object) -> bool:
     if obj.bfu_export_as_lod_mesh:  # type: ignore[attr-defined]
         return False
-    if obj.bfu_anim_nla_use:  # type: ignore[attr-defined]
+    if bfu_anim_nla.bfu_anim_nla_props.get_object_anim_nla_use(obj):
         return False
     if obj.bfu_export_skeletal_mesh_as_static_mesh:  # type: ignore[attr-defined]
         return False
@@ -95,7 +97,7 @@ def optimizated_asset_search(scene: bpy.types.Scene, objects: List[bpy.types.Obj
                             if not action.library:
                                 if last_slot_identifier in action.slots:
                                     slot: bpy.types.ActionSlot = action.slots[last_slot_identifier]
-                                    action_channel_bag: Optional[bpy.types.ActionChannelbag] = anim_utils.action_get_channelbag_for_slot(action, slot)
+                                    action_channel_bag: Optional[bpy.types.ActionChannelbag] = anim_utils.action_get_channelbag_for_slot(action, slot)  # type: ignore
                                     if action_channel_bag:
                                         if get_can_associate_fcurve_list_with_armature(obj, action_channel_bag.fcurves):
                                             armature_actions_map.append((obj, action))

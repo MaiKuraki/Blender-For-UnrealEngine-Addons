@@ -10,16 +10,17 @@
 import bpy
 from typing import List, Any, Optional, Dict
 from pathlib import Path
-from . import bfu_export_nla_package
-from . import bfu_export_procedure
+
+from .. import bfu_anim_nla
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, AssetToExport, AssetDataSearchMode, BFU_ObjectAssetClass
-from .. import bfu_utils
 from .. import bfu_basics
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
-from .. import bfu_export_nomenclature
 from .. import bfu_base_object
 from .. import bfu_export_filter
+from . import bfu_export_nla_package
+from . import bfu_export_procedure
+from . import bfu_skeletal_nla_utils
 
 
 
@@ -41,7 +42,7 @@ class BFU_SkeletalNonLinearAnimation(BFU_ObjectAssetClass):
             return False
         if details is not None:
             return False
-        if data.type == "ARMATURE" and data.bfu_anim_nla_use:  # type: ignore[attr-defined]
+        if data.type == "ARMATURE" and bfu_anim_nla.bfu_anim_nla_props.get_object_anim_nla_use(data):
             return True
         return False
 
@@ -53,7 +54,7 @@ class BFU_SkeletalNonLinearAnimation(BFU_ObjectAssetClass):
         return bfu_export_filter.bfu_export_filter_utils.get_use_animation_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
-        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+        dirpath = bfu_base_object.bfu_base_obj_utils.get_obj_import_location(data)
         return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
 ####################################################################
@@ -78,7 +79,7 @@ class BFU_SkeletalNonLinearAnimation(BFU_ObjectAssetClass):
         return super().get_package_file_name(
             data,
             details,
-            desired_name=data.bfu_anim_nla_export_name,
+            desired_name=bfu_anim_nla.bfu_anim_nla_props.get_object_anim_nla_export_name(data),
             without_extension=without_extension,
         )
 
@@ -123,7 +124,7 @@ class BFU_SkeletalNonLinearAnimation(BFU_ObjectAssetClass):
                 else:
                     pak.add_objects(bfu_base_object.bfu_base_obj_utils.get_exportable_objects(data))
 
-                frame_range = bfu_utils.get_desired_nla_start_end_range(data)
+                frame_range = bfu_skeletal_nla_utils.get_desired_nla_start_end_range(data)
                 pak.set_frame_range(frame_range[0], frame_range[1])
                 pak.export_function = bfu_export_nla_package.process_nla_animation_export_from_package
                             

@@ -53,7 +53,7 @@ def process_export(op: bpy.types.Operator, final_asset_list_to_export: List[Asse
     prepare_all_export_time_log = bfu_export_logs.bfu_process_time_logs_utils.start_time_log("Prepare all export")
 
     scene = bpy.context.scene
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
     # Save scene data before export
     bbpl.scene_utils.move_to_global_view()

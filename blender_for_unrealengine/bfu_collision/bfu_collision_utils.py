@@ -184,7 +184,7 @@ def convert_to_unrealengine_collision(
     if scene is None:
         raise ValueError("No active scene found!")
     
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
     def deselect_all_except_active() -> None:
         for obj in bpy.context.selected_objects:
@@ -259,7 +259,7 @@ def create_collision_material() -> bpy.types.Material:
     return mat
 
 def update_collision_material(mat: bpy.types.Material) -> None:
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
     # Viewport display settings
     mat.diffuse_color = addon_prefs.collisionColor

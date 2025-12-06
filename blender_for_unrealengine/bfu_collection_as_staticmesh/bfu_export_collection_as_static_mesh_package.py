@@ -85,7 +85,7 @@ def export_collection_as_static_mesh(
 
     if TYPE_CHECKING:
         class FakeCollection(bpy.types.Collection):
-            bfu_collection_export_procedure: str
+            bfu_static_collection_export_procedure: str
         col = FakeCollection()  # type: ignore
         class FakeObject(bpy.types.Object):
             bfu_static_export_procedure: str

@@ -22,7 +22,7 @@ from ..bbpl.blender_layout import layout_doc_button
 
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
     scene = bpy.context.scene 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
     # Hide filters
     is_static_mesh = bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(obj)

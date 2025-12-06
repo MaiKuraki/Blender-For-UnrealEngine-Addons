@@ -24,6 +24,7 @@ from .. import bfu_socket
 from .. import bfu_export_logs
 from .. import bfu_addon_prefs
 from .. import bfu_collision
+from .. import bfu_adv_object
 
 # @TODO: Move this to a config file.
 dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
@@ -381,7 +382,7 @@ def SetSocketsExportName(obj: bpy.types.Object):
 def SetSocketsExportTransform(obj: bpy.types.Object):
     # Set socket Transform for Unreal
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     for socket in bfu_socket.bfu_socket_utils.get_socket_desired_children(obj):
         socket["BFU_PreviousSocketScale"] = socket.scale
         socket["BFU_PreviousSocketLocation"] = socket.location
@@ -639,7 +640,7 @@ def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
     if not bfu_skeletal_mesh.bfu_export_procedure.is_fbx_file_export(obj):
         return False  # Rescale only if FBX export.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleFullRigAtExport == "auto":
 
         if bfu_utils.get_scene_unit_scale_is_close(0.01):
@@ -656,7 +657,7 @@ def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
 def get_rescale_rig_factor() -> float:
     # This will return the rescale factor.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleFullRigAtExport == "auto":
         return 100 * bfu_utils.get_scene_unit_scale()
     else:
@@ -666,7 +667,7 @@ def get_rescale_rig_factor() -> float:
 def get_should_rescale_sockets():
     # This will return if the socket should be rescale.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleSocketsAtExport == "auto":
         if bpy.context.scene.unit_settings.scale_length == 0.01:
             return False  # False because that useless to rescale at 1 :v
@@ -682,7 +683,7 @@ def get_should_rescale_sockets():
 def GetRescaleSocketFactor():
     # This will return the rescale factor.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleSocketsAtExport == "auto":
         return 1/(100*bfu_utils.get_scene_unit_scale())
     else:
@@ -698,49 +699,49 @@ def export_additional_data(fullpath: Path, data: Dict[str, str]) -> None:
         bfu_export_text_files.bfu_export_text_files_utils.export_single_json_file(additional_data, fullpath)
 
 def get_final_fbx_export_primary_bone_axis(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_primary_bone_axis
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["primary_bone_axis"]
 
 def get_final_fbx_export_secondary_bone_axis(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_secondary_bone_axis
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["secondary_bone_axis"]
 
 def get_skeleton_fbx_export_use_space_transform(obj: bpy.types.Object) -> bool:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_use_space_transform
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["use_space_transform"]
 
 def get_skeleton_export_axis_forward(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_forward
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_forward"]
 
 def get_skeleton_export_axis_up(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_up
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_up"]
 
 def get_static_fbx_export_use_space_transform(obj: bpy.types.Object) -> bool:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_use_space_transform
     else:
         return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["use_space_transform"]
 
 def get_static_fbx_export_axis_forward(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_forward
     else:
         return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_forward"]
 
 def get_static_fbx_export_axis_up(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_up
     else:
         return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_up"]

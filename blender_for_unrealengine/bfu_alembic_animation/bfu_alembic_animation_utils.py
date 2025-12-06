@@ -8,6 +8,7 @@
 # ----------------------------------------------
 
 import bpy
+from typing import Tuple
 from .. import bfu_assets_manager
 
 
@@ -20,3 +21,11 @@ def is_alembic_animation(obj: bpy.types.Object) -> bool:
 
 def is_not_alembic_animation(obj: bpy.types.Object) -> bool:
     return not is_alembic_animation(obj)
+
+def get_desired_alembic_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
+    # Returns desired alembic anim start/end time
+    scene = bpy.context.scene
+    if scene is None:
+        raise Exception("No active scene found")
+    
+    return (scene.frame_start, scene.frame_end)

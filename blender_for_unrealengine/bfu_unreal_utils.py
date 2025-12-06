@@ -10,6 +10,8 @@
 import os
 import bpy
 from . import bfu_utils
+from . import bfu_export_nomenclature
+from . import bfu_base_object
 
 def get_predicted_skeleton_name(obj: bpy.types.Object) -> str:
     # Get the predicted skeleton name in Unreal Engine
@@ -17,14 +19,18 @@ def get_predicted_skeleton_name(obj: bpy.types.Object) -> str:
     if scene is None:
         raise ValueError("No active scene found!")
 
-    return scene.bfu_skeleton_prefix_export_name + bfu_utils.clean_filename_for_unreal(obj.name) + "_Skeleton"
+    return bfu_export_nomenclature.bfu_export_nomenclature_props.get_skeleton_prefix_export_name(scene) + bfu_utils.clean_filename_for_unreal(obj.name) + "_Skeleton"
 
 def get_predicted_skeleton_path(obj: bpy.types.Object) -> str:
     scene = bpy.context.scene
     if scene is None:
         raise ValueError("No active scene found!")
 
-    ref_path = os.path.join("/" + scene.bfu_unreal_import_module + "/", scene.bfu_unreal_import_location, obj.bfu_export_folder_name)
+    unreal_import_module = bfu_export_nomenclature.bfu_export_nomenclature_props.get_unreal_import_module(scene)
+    unreal_import_location = bfu_export_nomenclature.bfu_export_nomenclature_props.get_unreal_import_location(scene)
+    export_folder_name = bfu_base_object.bfu_base_obj_props.get_object_export_folder_name(obj)
+
+    ref_path = os.path.join("/" + unreal_import_module + "/", unreal_import_location, export_folder_name)
     ref_path = ref_path.replace('\\', '/')
     return ref_path
 
@@ -41,14 +47,18 @@ def get_predicted_skeletal_mesh_name(obj: bpy.types.Object) -> str:
     if scene is None:
         raise ValueError("No active scene found!")
     
-    return scene.bfu_skeletal_mesh_prefix_export_name + bfu_utils.clean_filename_for_unreal(obj.name)
+    return bfu_export_nomenclature.bfu_export_nomenclature_props.get_skeletal_mesh_prefix_export_name(scene) + bfu_utils.clean_filename_for_unreal(obj.name)
 
 def get_predicted_skeletal_mesh_path(obj: bpy.types.Object) -> str:
     scene = bpy.context.scene
     if scene is None:
         raise ValueError("No active scene found!")
 
-    ref_path = os.path.join("/" + scene.bfu_unreal_import_module + "/", scene.bfu_unreal_import_location, obj.bfu_export_folder_name)
+    unreal_import_module = bfu_export_nomenclature.bfu_export_nomenclature_props.get_unreal_import_module(scene)
+    unreal_import_location = bfu_export_nomenclature.bfu_export_nomenclature_props.get_unreal_import_location(scene)
+    export_folder_name = bfu_base_object.bfu_base_obj_props.get_object_export_folder_name(obj)
+
+    ref_path = os.path.join("/" + unreal_import_module + "/", unreal_import_location, export_folder_name)
     ref_path = ref_path.replace('\\', '/')
     return ref_path
 

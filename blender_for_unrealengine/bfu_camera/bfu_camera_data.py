@@ -272,7 +272,7 @@ class BFU_CameraTracks():
             print("Error: The provided object is not a camera.")
             return
 
-        addon_prefs = bfu_addon_prefs.get_addon_prefs()
+        addon_prefs = bfu_addon_prefs.get_addon_preferences()
         unit_scale = bfu_utils.get_scene_unit_scale()
         set_current_frame(frame)
 
@@ -348,7 +348,7 @@ class BFU_CameraTracks():
         if scene is None:
             return
 
-        addon_prefs = bfu_addon_prefs.get_addon_prefs()
+        addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
         #print(f"Start evaluate camera {camera.name} Frames:({str(frame_start)}-{str(frame_end)})")
         counter = bpl.utils.CounterTimer()
@@ -412,7 +412,7 @@ class BFU_MultiCameraTracks():
 
         frame_start = self.frame_start
         frame_end = self.frame_end
-        addon_prefs = bfu_addon_prefs.get_addon_prefs()
+        addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
         counter = bpl.utils.CounterTimer()
         slms = bfu_utils.TimelineMarkerSequence()
