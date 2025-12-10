@@ -15,6 +15,8 @@ from .. import bfu_assets_manager
 from .. import bfu_export_control
 from .. import bfu_debug_settings
 from .. import bfu_collection_as_staticmesh
+from .. import bfu_export_filter
+from ..bfu_export_filter.bfu_export_filter_props import BFU_ExportSelectionFilterEnum
 
 
 
@@ -40,7 +42,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         scene = bpy.context.scene
         if not scene:
             return []
-        export_filter = scene.bfu_export_selection_filter  # type: ignore[attr-defined]
+        export_filter: BFU_ExportSelectionFilterEnum = bfu_export_filter.bfu_export_filter_props.scene_export_selection_filter(scene)
 
         target_asset_to_export: List[AssetToExport] = []
 
@@ -50,12 +52,12 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             
             # Search for objects
             obj_list: List[bpy.types.Object] = []
-            if export_filter == "default":
+            if export_filter.value == BFU_ExportSelectionFilterEnum.DEFAULT.value:
                 events.add_sub_event("Search recursive objects 01")
                 obj_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects(scene)
                 events.stop_last_event()
 
-            elif export_filter in ["only_object", "only_object_and_active"]:
+            elif export_filter.value in [BFU_ExportSelectionFilterEnum.ONLY_OBJECT.value, BFU_ExportSelectionFilterEnum.ONLY_OBJECT_AND_ACTIVE.value]:
                 events.add_sub_event("Search recursive objects 02")
                 recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_objects(scene)
 
@@ -82,7 +84,7 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
         events.stop_last_and_start_new_event("Search Collections")
         if asset_to_search.value in [AssetToSearch.ALL_ASSETS.value, AssetToSearch.COLLECTION_ONLY.value]:
         
-            if export_filter == "default":
+            if export_filter.value == BFU_ExportSelectionFilterEnum.DEFAULT.value:
                 collection_list: List[bpy.types.Collection] = []
                 events.add_sub_event("-> S1")
             
@@ -106,9 +108,9 @@ class BFU_FinalExportAssetCache(bpy.types.PropertyGroup):
             
             # Search for armatures and their actions
             armature_list: List[bpy.types.Object] = []
-            if export_filter == "default":
+            if export_filter.value == BFU_ExportSelectionFilterEnum.DEFAULT.value:
                 armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures(scene)
-            elif export_filter in ["only_object", "only_object_and_active"]:
+            elif export_filter.value in [BFU_ExportSelectionFilterEnum.ONLY_OBJECT.value, BFU_ExportSelectionFilterEnum.ONLY_OBJECT_AND_ACTIVE.value]:
                 armature_recursive_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures(scene)
 
                 for obj in bpy.context.selected_objects:
