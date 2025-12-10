@@ -72,3 +72,11 @@ def get_all_export_recursive_armatures(scene: bpy.types.Scene) ->  List[bpy.type
                 found_objects.append(obj)
     return found_objects
 
+def get_all_selected_export_recursive_objects(scene: bpy.types.Scene) -> List[bpy.types.Object]:
+    found_objects: List[bpy.types.Object] = []
+    for obj in scene.objects:
+        if obj.select_get():
+            if obj.bfu_export_type == BFU_ExportTypeEnum.EXPORT_RECURSIVE.value:  # type: ignore
+                found_objects.append(obj)
+    return found_objects
+
