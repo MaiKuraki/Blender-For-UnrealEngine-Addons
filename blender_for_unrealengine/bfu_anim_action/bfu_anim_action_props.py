@@ -142,6 +142,13 @@ def object_action_asset_list(obj: bpy.types.Object) -> List[BFU_OT_ObjExportActi
 def object_prefix_name_to_export(obj: bpy.types.Object) -> str:
     return obj.bfu_prefix_name_to_export #  type: ignore
 
+def object_clear_action_asset_list(obj: bpy.types.Object) -> None:
+    obj.bfu_action_asset_list.clear()  # type: ignore
+
+def object_add_action_asset_list_item(obj: bpy.types.Object) -> BFU_OT_ObjExportAction:
+    item = obj.bfu_action_asset_list.add()  # type: ignore
+    return item
+
 class BFU_UL_ActionExportTarget(bpy.types.UIList):
 
     def get_is_from_override_library(self, obj: bpy.types.Object, action_name: str) -> bool:
@@ -214,9 +221,9 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
             layout.label(text="", icon_value=icon)
 
 class BFU_OT_UpdateObjActionListButton(bpy.types.Operator):
-    bl_label = "Update action list"
+    bl_label = "Update Action List"
     bl_idname = "object.updateobjactionlist"
-    bl_description = "Update action list"
+    bl_description = "Update the list of actions in this file."
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         def update_export_action_list(obj: bpy.types.Object):
@@ -235,26 +242,34 @@ class BFU_OT_UpdateObjActionListButton(bpy.types.Operator):
                 use = action_asset.use
                 action_list_save.append((name, use))
 
-            obj.bfu_action_asset_list.clear()  # type: ignore
+            object_clear_action_asset_list(obj)
+
+            # Get know action from library source file if exist.
+            action_names: Set[str] = set()
+            for action_asset in object_action_asset_list(obj):
+                action_names.add(action_asset.name)
+
             for action in bpy.data.actions:
-                obj.bfu_action_asset_list.add().name = action.name  # type: ignore
-                use_from_last: bool = set_use_from_last(action_list_save, action.name)
-                obj.bfu_action_asset_list[action.name].use = use_from_last  # type: ignore
+                # Cache action only if not already in the list from library file.
+                if action.name not in action_names:
+                    new_item = object_add_action_asset_list_item(obj)
+                    new_item.name = action.name
+                    new_item.use = set_use_from_last(action_list_save, action.name)
         
         obj = context.object
         if obj:
             update_export_action_list(obj)
         return {'FINISHED'}
     
-class BFu_OT_ClearObjActionListButton(bpy.types.Operator):
-    bl_label = "Clear action list"
+class BFU_OT_ClearObjActionListButton(bpy.types.Operator):
+    bl_label = "Clear Action List"
     bl_idname = "object.clearobjactionlist"
-    bl_description = "Clear action list"
+    bl_description = "Clear the list of actions in this file."
 
     def execute(self, context: bpy.types.Context) -> Set[Any]:
         obj = context.object
         if obj:
-            obj.bfu_action_asset_list.clear()  # type: ignore
+            object_clear_action_asset_list(obj)
         return {'FINISHED'}
 
 class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
@@ -341,7 +356,7 @@ classes = (
     BFU_OT_ObjExportAction,
     BFU_UL_ActionExportTarget,
     BFU_OT_UpdateObjActionListButton,
-    BFu_OT_ClearObjActionListButton,
+    BFU_OT_ClearObjActionListButton,
     BFU_OT_SelectAllObjActionListButton,
     BFU_OT_DeselectAllObjActionListButton,
 )

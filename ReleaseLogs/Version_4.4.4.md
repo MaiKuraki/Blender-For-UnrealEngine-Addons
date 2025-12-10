@@ -8,3 +8,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: All lods are exported with the same name, so the last lod become the lod 0 and the mesh don't have any lods.
 - Fixed: After export, the mode is not restored correctly.
 - Fixed: Custom FBX exporter don't load in Blender 2.80 to 2.82.
+- Fixed: Update Action List button cached already cached actions from library files. The the action list contains doubled items.
