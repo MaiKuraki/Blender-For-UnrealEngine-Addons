@@ -17,6 +17,7 @@ from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_base_object
 from .. import bfu_anim_action
 from .. import bfu_export_filter
+from ..bfu_export_filter.bfu_export_filter_props import BFU_ExportSelectionFilterEnum 
 from .. import bfu_debug_settings
 from .. import bfu_export_control
 from .. import bfu_cached_action_assets
@@ -169,12 +170,12 @@ class BFU_SkeletalActionAnimation(BFU_ObjectAssetClass):
         if scene is None:
             return target_asset_to_export
 
-        export_filter = bfu_export_filter.bfu_export_filter_props.scene_export_selection_filter(scene)
+        export_filter: BFU_ExportSelectionFilterEnum = bfu_export_filter.bfu_export_filter_props.scene_export_selection_filter(scene)
 
 
         armature_actions_map: List[Tuple[bpy.types.Object, bpy.types.Action]] = []
         armature_list = bfu_export_control.bfu_export_control_utils.get_all_export_recursive_armatures(scene)
-        if export_filter == "only_object_and_active":
+        if export_filter.value == BFU_ExportSelectionFilterEnum.ONLY_OBJECT_AND_ACTIVE.value:
             events.add_sub_event("Active Search")
             for armature in armature_list:
                 if bfu_export_filter.bfu_export_filter_props.scene_use_animation_export(scene):
