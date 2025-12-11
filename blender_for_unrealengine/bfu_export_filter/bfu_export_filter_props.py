@@ -101,7 +101,7 @@ def scene_use_text_additional_data(scene: bpy.types.Scene) -> bool:
 def scene_export_selection_filter(scene: bpy.types.Scene) -> BFU_ExportSelectionFilterEnum:
     for item in BFU_ExportSelectionFilterEnum:
         if item.value == scene.bfu_export_selection_filter:  # type: ignore
-            return item.value
+            return item
         
     print(f"Warning: Scene has unknown export selection filter '{scene.bfu_export_selection_filter}'. Falling back to default export selection filter...")  # type: ignore
     return BFU_ExportSelectionFilterEnum.default()
