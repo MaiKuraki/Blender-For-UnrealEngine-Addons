@@ -146,8 +146,7 @@ def object_clear_action_asset_list(obj: bpy.types.Object) -> None:
     obj.bfu_action_asset_list.clear()  # type: ignore
 
 def object_add_action_asset_list_item(obj: bpy.types.Object) -> BFU_OT_ObjExportAction:
-    item = obj.bfu_action_asset_list.add()  # type: ignore
-    return item
+    return obj.bfu_action_asset_list.add()  # type: ignore
 
 class BFU_UL_ActionExportTarget(bpy.types.UIList):
 
@@ -196,13 +195,22 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
 
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             if action_is_valid:  # If action is valid
-                layout.prop(
+                action_detail = layout.row()
+                action_detail.alignment = 'LEFT'
+                action_detail.prop(
                     bpy.data.actions[item.name],
                     "name",
                     text="",
                     emboss=False,
                     icon="ACTION"
                 )
+                show_additional_info: bool = True
+                if show_additional_info:  
+                    name: str = item.name
+                    frame_range: str = str(bpy.data.actions[item.name].frame_range)
+                    origin_file_name: str = self.get_object_source_file(data) if data else "<unknown>"
+                    additional_action_info = f"Name: {name} Frames: {frame_range} Origin: {origin_file_name}"
+                    action_detail.label(text=additional_action_info, icon="INFO")
                 layout.prop(item, "use", text="")
             else:
                 if data and self.get_is_from_override_library(data, item.name):
