@@ -169,3 +169,33 @@ def get_action_is_current(obj: bpy.types.Object, action: bpy.types.Action) -> bo
         if obj.animation_data.action == action:
             return True
     return False
+
+def update_export_action_list(obj: bpy.types.Object):
+    # Update the provisional action list known by the object
+
+    def set_use_from_last(anim_list: List[Tuple[str, bool]], action_name: str) -> bool:
+        for item in anim_list:
+            if item[0] == action_name:
+                if item[1]:
+                    return True
+        return False
+
+    action_list_save: List[Tuple[str, bool]] = [("", False)]
+    for action_asset in bfu_anim_action_props.object_action_asset_list(obj):
+        name = action_asset.name
+        use = action_asset.use
+        action_list_save.append((name, use))
+
+    bfu_anim_action_props.object_clear_action_asset_list(obj)
+
+    # Get know action from library source file if exist.
+    action_names: Set[str] = set()
+    for action_asset in bfu_anim_action_props.object_action_asset_list(obj):
+        action_names.add(action_asset.name)
+
+    for action in bpy.data.actions:
+        # Cache action only if not already in the list from library file.
+        if action.name not in action_names:
+            new_item = bfu_anim_action_props.object_add_action_asset_list_item(obj)
+            new_item.name = action.name
+            new_item.use = set_use_from_last(action_list_save, action.name)

@@ -8,9 +8,10 @@
 # ----------------------------------------------
 
 from enum import Enum
-from typing import List, Tuple, TYPE_CHECKING, Any, Set, Optional
+from typing import List, Tuple
 import bpy
 from .. import bbpl
+from .bfu_anim_action_operator_action_group import BFU_OT_ObjExportAction
 
 class BFU_AnimActionExportEnum(str, Enum):
     EXPORT_AUTO = "export_auto"
@@ -128,13 +129,7 @@ def get_preset_values() -> List[str]:
 
 
 
-class BFU_OT_ObjExportAction(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name="Action data name", default="Unknown", override={'LIBRARY_OVERRIDABLE'}) # type: ignore
-    use: bpy.props.BoolProperty(name="use this action", default=False, override={'LIBRARY_OVERRIDABLE'}) # type: ignore
 
-    if TYPE_CHECKING:
-        name: str
-        use: bool
 
 def object_action_asset_list(obj: bpy.types.Object) -> List[BFU_OT_ObjExportAction]:
     return obj.bfu_action_asset_list #  type: ignore
@@ -147,166 +142,6 @@ def object_clear_action_asset_list(obj: bpy.types.Object) -> None:
 
 def object_add_action_asset_list_item(obj: bpy.types.Object) -> BFU_OT_ObjExportAction:
     return obj.bfu_action_asset_list.add()  # type: ignore
-
-class BFU_UL_ActionExportTarget(bpy.types.UIList):
-
-    def get_is_from_override_library(self, obj: bpy.types.Object, action_name: str) -> bool:
-        if not obj.override_library:
-            return False
-
-        for prop in obj.override_library.properties:
-            if prop.rna_path == "bfu_action_asset_list":
-                for op in prop.operations:
-                    if op.subitem_local_name == action_name:
-                        return False
-        return True
-
-    def get_object_source_file(self, obj: bpy.types.Object) -> str:
-        if not obj.override_library:
-            return "<unknown>"
-
-        override_library = obj.override_library
-        if(override_library):
-            reference = override_library.reference
-            if(reference):
-                library = reference.library
-                if(library):
-                    return library.name_full
-        return "<unknown>"
-
-    def draw_item(
-            self, 
-            context: bpy.types.Context, 
-            layout: bpy.types.UILayout, 
-            data: Optional[Any], 
-            item: Optional[Any], 
-            icon: Optional[int], 
-            active_data: Any, 
-            active_property: Optional[str], 
-            index: Optional[int],
-            flt_flag: Optional[int]
-        ):
-        action_is_valid = False
-        if not isinstance(item, BFU_OT_ObjExportAction):
-            return
-
-        if item.name in bpy.data.actions:
-            action_is_valid = True
-
-        if self.layout_type in {'DEFAULT', 'COMPACT'}:
-            if action_is_valid:  # If action is valid
-                action_detail = layout.row()
-                action_detail.alignment = 'LEFT'
-                action_detail.prop(
-                    bpy.data.actions[item.name],
-                    "name",
-                    text="",
-                    emboss=False,
-                    icon="ACTION"
-                )
-                show_additional_info: bool = True
-                if show_additional_info:  
-                    name: str = item.name
-                    frame_range: str = str(bpy.data.actions[item.name].frame_range)
-                    origin_file_name: str = self.get_object_source_file(data) if data else "<unknown>"
-                    additional_action_info = f"Name: {name} Frames: {frame_range} Origin: {origin_file_name}"
-                    action_detail.label(text=additional_action_info, icon="INFO")
-                layout.prop(item, "use", text="")
-            else:
-                if data and self.get_is_from_override_library(data, item.name):
-                    origin_file_name: str = self.get_object_source_file(data)
-                    data_text = (f'Action data "{item.name}" Not Found. Please update it on the original file: "{origin_file_name}"')
-                    layout.alert = True
-                    layout.label(text=data_text, icon="LIBRARY_DATA_OVERRIDE")
-                else:
-                    data_text = (f'Action data "{item.name}" Not found. Please click on update')
-                    layout.alert = True
-                    layout.label(text=data_text, icon="ERROR")
-
-        # Not optimized for 'GRID' layout type.
-        elif self.layout_type in {'GRID'}:
-            layout.alignment = 'CENTER'
-            layout.label(text="", icon_value=icon)
-
-class BFU_OT_UpdateObjActionListButton(bpy.types.Operator):
-    bl_label = "Update Action List"
-    bl_idname = "object.updateobjactionlist"
-    bl_description = "Update the list of actions in this file."
-
-    def execute(self, context: bpy.types.Context) -> Set[Any]:
-        def update_export_action_list(obj: bpy.types.Object):
-            # Update the provisional action list known by the object
-
-            def set_use_from_last(anim_list: List[Tuple[str, bool]], action_name: str) -> bool:
-                for item in anim_list:
-                    if item[0] == action_name:
-                        if item[1]:
-                            return True
-                return False
-
-            action_list_save: List[Tuple[str, bool]] = [("", False)]
-            for action_asset in object_action_asset_list(obj):
-                name = action_asset.name
-                use = action_asset.use
-                action_list_save.append((name, use))
-
-            object_clear_action_asset_list(obj)
-
-            # Get know action from library source file if exist.
-            action_names: Set[str] = set()
-            for action_asset in object_action_asset_list(obj):
-                action_names.add(action_asset.name)
-
-            for action in bpy.data.actions:
-                # Cache action only if not already in the list from library file.
-                if action.name not in action_names:
-                    new_item = object_add_action_asset_list_item(obj)
-                    new_item.name = action.name
-                    new_item.use = set_use_from_last(action_list_save, action.name)
-        
-        obj = context.object
-        if obj:
-            update_export_action_list(obj)
-        return {'FINISHED'}
-    
-class BFU_OT_ClearObjActionListButton(bpy.types.Operator):
-    bl_label = "Clear Action List"
-    bl_idname = "object.clearobjactionlist"
-    bl_description = "Clear the list of actions in this file."
-
-    def execute(self, context: bpy.types.Context) -> Set[Any]:
-        obj = context.object
-        if obj:
-            object_clear_action_asset_list(obj)
-        return {'FINISHED'}
-
-class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
-    bl_label = "Select All"
-    bl_idname = "object.selectallobjactionlist"
-    bl_description = "Select all action list"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context: bpy.types.Context) -> Set[Any]:
-        obj = context.object
-        if obj:
-            action_list = object_action_asset_list(obj)
-            for item in action_list:
-                item.use = True
-        return {'FINISHED'}
-
-class BFU_OT_DeselectAllObjActionListButton(bpy.types.Operator):
-    bl_label = "Deselect All"
-    bl_idname = "object.deselectallobjactionlist"
-    bl_description = "Deselect all action list"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context: bpy.types.Context) -> Set[Any]:
-        obj = context.object
-        if obj:
-            for action_asset in object_action_asset_list(obj):
-                action_asset.use = False
-        return {'FINISHED'}
-
 
 def get_object_active_action_asset_list(obj: bpy.types.Object) -> int:
     return obj.bfu_active_action_asset_list  # type: ignore
@@ -361,12 +196,6 @@ def get_object_anim_naming_type_enum(obj: bpy.types.Object) -> BFU_AnimNamingTyp
 # -------------------------------------------------------------------
 
 classes = (
-    BFU_OT_ObjExportAction,
-    BFU_UL_ActionExportTarget,
-    BFU_OT_UpdateObjActionListButton,
-    BFU_OT_ClearObjActionListButton,
-    BFU_OT_SelectAllObjActionListButton,
-    BFU_OT_DeselectAllObjActionListButton,
 )
 
 

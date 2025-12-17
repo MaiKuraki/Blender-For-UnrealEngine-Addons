@@ -1,0 +1,169 @@
+# SPDX-FileCopyrightText: 2018-2025 Xavier Loux (BleuRaven)
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# ----------------------------------------------
+#  Blender For UnrealEngine
+#  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
+# ----------------------------------------------
+
+from typing import Any, Set, Optional
+import bpy
+from . import bfu_anim_action_utils
+from . import bfu_anim_action_props
+from .bfu_anim_action_operator_action_group import BFU_OT_ObjExportAction
+
+
+class BFU_UL_ActionExportTarget(bpy.types.UIList):
+
+    def get_is_from_override_library(self, obj: bpy.types.Object, action_name: str) -> bool:
+        if not obj.override_library:
+            return False
+
+        for prop in obj.override_library.properties:
+            if prop.rna_path == "bfu_action_asset_list":
+                for op in prop.operations:
+                    if op.subitem_local_name == action_name:
+                        return False
+        return True
+
+    def get_object_source_file(self, obj: bpy.types.Object) -> str:
+        if not obj.override_library:
+            return "<unknown>"
+
+        override_library = obj.override_library
+        if(override_library):
+            reference = override_library.reference
+            if(reference):
+                library = reference.library
+                if(library):
+                    return library.name_full
+        return "<unknown>"
+
+    def draw_item(
+            self, 
+            context: bpy.types.Context, 
+            layout: bpy.types.UILayout, 
+            data: Optional[Any], 
+            item: Optional[Any], 
+            icon: Optional[int], 
+            active_data: Any, 
+            active_property: Optional[str], 
+            index: Optional[int],
+            flt_flag: Optional[int]
+        ):
+        action_is_valid = False
+        if not isinstance(item, BFU_OT_ObjExportAction):
+            return
+
+        if item.name in bpy.data.actions:
+            action_is_valid = True
+
+        if self.layout_type in {'DEFAULT', 'COMPACT'}:
+            if action_is_valid:  # If action is valid
+                action_detail = layout.row()
+                action_detail.alignment = 'LEFT'
+                action_detail.prop(
+                    bpy.data.actions[item.name],
+                    "name",
+                    text="",
+                    emboss=False,
+                    icon="ACTION"
+                )
+                show_additional_info: bool = True
+                if show_additional_info:  
+                    name: str = item.name
+                    frame_range: str = str(bpy.data.actions[item.name].frame_range)
+                    origin_file_name: str = self.get_object_source_file(data) if data else "<unknown>"
+                    additional_action_info = f"Name: {name} Frames: {frame_range} Origin: {origin_file_name}"
+                    action_detail.label(text=additional_action_info, icon="INFO")
+                layout.prop(item, "use", text="")
+            else:
+                if data and self.get_is_from_override_library(data, item.name):
+                    origin_file_name: str = self.get_object_source_file(data)
+                    data_text = (f'Action data "{item.name}" Not Found. Please update it on the original file: "{origin_file_name}"')
+                    layout.alert = True
+                    layout.label(text=data_text, icon="LIBRARY_DATA_OVERRIDE")
+                else:
+                    data_text = (f'Action data "{item.name}" Not found. Please click on update')
+                    layout.alert = True
+                    layout.label(text=data_text, icon="ERROR")
+
+        # Not optimized for 'GRID' layout type.
+        elif self.layout_type in {'GRID'}:
+            layout.alignment = 'CENTER'
+            layout.label(text="", icon_value=icon)
+
+class BFU_OT_UpdateObjActionListButton(bpy.types.Operator):
+    bl_label = "Update Action List"
+    bl_idname = "object.updateobjactionlist"
+    bl_description = "Update the list of actions in this file."
+
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
+
+        
+        obj = context.object
+        if obj:
+            bfu_anim_action_utils.update_export_action_list(obj)
+        return {'FINISHED'}
+    
+class BFU_OT_ClearObjActionListButton(bpy.types.Operator):
+    bl_label = "Clear Action List"
+    bl_idname = "object.clearobjactionlist"
+    bl_description = "Clear the list of actions in this file."
+
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
+        obj = context.object
+        if obj:
+            bfu_anim_action_props.object_clear_action_asset_list(obj)
+        return {'FINISHED'}
+
+class BFU_OT_SelectAllObjActionListButton(bpy.types.Operator):
+    bl_label = "Select All"
+    bl_idname = "object.selectallobjactionlist"
+    bl_description = "Select all action list"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
+        obj = context.object
+        if obj:
+            action_list = bfu_anim_action_props.object_action_asset_list(obj)
+            for item in action_list:
+                item.use = True
+        return {'FINISHED'}
+
+class BFU_OT_DeselectAllObjActionListButton(bpy.types.Operator):
+    bl_label = "Deselect All"
+    bl_idname = "object.deselectallobjactionlist"
+    bl_description = "Deselect all action list"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
+        obj = context.object
+        if obj:
+            for action_asset in bfu_anim_action_props.object_action_asset_list(obj):
+                action_asset.use = False
+        return {'FINISHED'}
+
+# -------------------------------------------------------------------
+#   Register & Unregister
+# -------------------------------------------------------------------
+
+classes = (
+    BFU_UL_ActionExportTarget,
+    BFU_OT_UpdateObjActionListButton,
+    BFU_OT_ClearObjActionListButton,
+    BFU_OT_SelectAllObjActionListButton,
+    BFU_OT_DeselectAllObjActionListButton,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+
