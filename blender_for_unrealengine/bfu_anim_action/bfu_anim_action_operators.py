@@ -73,11 +73,18 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                 show_additional_info: bool = True
                 if show_additional_info:  
                     name: str = item.name
-                    frame_range: str = str(bpy.data.actions[item.name].frame_range)
-                    origin_file_name: str = self.get_object_source_file(data) if data else "<unknown>"
-                    additional_action_info = f"Name: {name} Frames: {frame_range} Origin: {origin_file_name}"
+                    first_frame: int = int(bpy.data.actions[item.name].frame_range[0])
+                    last_frame: int = int(bpy.data.actions[item.name].frame_range[1])
+                    frame_range: str = f"({first_frame} - {last_frame})"
+                    if data and self.get_is_from_override_library(data, item.name):
+                        origin_file_name: str = self.get_object_source_file(data)
+                    else:
+                        origin_file_name: str = "Current .blend file"
+                    additional_action_info = f"Name: '{name}' Frames: {frame_range} Origin: {origin_file_name}"
                     action_detail.label(text=additional_action_info, icon="INFO")
-                layout.prop(item, "use", text="")
+                action_use = layout.row()
+                action_use.alignment = 'RIGHT'
+                action_use.prop(item, "use", text="")
             else:
                 if data and self.get_is_from_override_library(data, item.name):
                     origin_file_name: str = self.get_object_source_file(data)
