@@ -16,6 +16,16 @@ from .bfu_anim_action_operator_action_group import BFU_OT_ObjExportAction
 
 class BFU_UL_ActionExportTarget(bpy.types.UIList):
 
+    def print_override_library_actions(self, obj: bpy.types.Object):
+        # Debug function
+        if not obj.override_library:
+            return False
+        
+        for prop in obj.override_library.properties:
+            if prop.rna_path == "bfu_action_asset_list":
+                for op in prop.operations:
+                    print(f"Override Action: {op.subitem_local_name}")
+
     def get_is_from_override_library(self, obj: bpy.types.Object, action_name: str) -> bool:
         if not obj.override_library:
             return False
@@ -24,8 +34,8 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
             if prop.rna_path == "bfu_action_asset_list":
                 for op in prop.operations:
                     if op.subitem_local_name == action_name:
-                        return False
-        return True
+                        return True
+        return False
 
     def get_object_source_file(self, obj: bpy.types.Object) -> str:
         if not obj.override_library:
@@ -60,7 +70,8 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
             action_is_valid = True
 
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
-            if action_is_valid:  # If action is valid
+            if action_is_valid:  
+                # If action is valid
                 action_detail = layout.row()
                 action_detail.alignment = 'LEFT'
                 action_detail.prop(
@@ -80,19 +91,22 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                         origin_file_name: str = self.get_object_source_file(data)
                     else:
                         origin_file_name: str = "Current .blend file"
-                    additional_action_info = f"Name: '{name}' Frames: {frame_range} Origin: {origin_file_name}"
+                    additional_action_info = f'Name: "{name}" Frames: {frame_range} Origin: {origin_file_name}'
                     action_detail.label(text=additional_action_info, icon="INFO")
                 action_use = layout.row()
                 action_use.alignment = 'RIGHT'
                 action_use.prop(item, "use", text="")
             else:
+                # If action is not valid
+                name: str = item.name
+
                 if data and self.get_is_from_override_library(data, item.name):
                     origin_file_name: str = self.get_object_source_file(data)
-                    data_text = (f'Action data "{item.name}" Not Found. Please update it on the original file: "{origin_file_name}"')
+                    data_text = (f'Action data "{name}" Not Found. Please update it on the original file: "{origin_file_name}"')
                     layout.alert = True
                     layout.label(text=data_text, icon="LIBRARY_DATA_OVERRIDE")
                 else:
-                    data_text = (f'Action data "{item.name}" Not found. Please click on update')
+                    data_text = (f'Action data "{name}" Not found. Please click on update')
                     layout.alert = True
                     layout.label(text=data_text, icon="ERROR")
 
