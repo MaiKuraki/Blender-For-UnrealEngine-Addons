@@ -27,7 +27,7 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                 for op in prop.operations:
                     print(f"Override Action: {op.subitem_local_name}")
 
-    def get_is_from_linked_file(self, obj: bpy.types.Object, action_name: str) -> bool:
+    def get_data_is_from_linked_file(self, obj: bpy.types.Object, action_name: str) -> bool:
         if not obj.override_library:
             return False
 
@@ -52,6 +52,18 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                 if(library):
                     return library.name_full
         return "<unknown>"
+    
+    
+    def get_action_is_from_linked_file(self, action: bpy.types.Action) -> bool:
+        if action.library:
+            return True
+        return False
+
+    def get_action_source_file(self, action: bpy.types.Action) -> str:
+        if action.library:
+            return action.library.name_full
+        return "<unknown>"
+
 
     def draw_item(
             self, 
@@ -80,10 +92,11 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
 
             if action_is_valid:  
                 # If action is valid
+                action: bpy.types.Action = bpy.data.actions[item.name]
                 action_detail = layout.row()
                 action_detail.alignment = 'LEFT'
                 action_detail.prop(
-                    bpy.data.actions[item.name],
+                    action,
                     "name",
                     text="",
                     emboss=False,
@@ -91,15 +104,21 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                 )
                 show_additional_info: bool = True
                 if show_additional_info:  
-                    name: str = item.name
-                    first_frame: int = int(bpy.data.actions[item.name].frame_range[0])
-                    last_frame: int = int(bpy.data.actions[item.name].frame_range[1])
+                    name: str = action.name
+                    first_frame: int = int(action.frame_range[0])
+                    last_frame: int = int(action.frame_range[1])
                     frame_range: str = f"({first_frame} - {last_frame})"
-                    if data and self.get_is_from_linked_file(data, item.name):
-                        origin_file_name: str = self.get_object_source_file(data)
+                    if data and self.get_data_is_from_linked_file(data, action.name):
+                        data_file_name: str = self.get_object_source_file(data)
                     else:
-                        origin_file_name: str = "Current .blend file"
-                    additional_action_info = f'Name: "{name}" Frames: {frame_range} Origin: {origin_file_name}'
+                        data_file_name: str = "Current .blend file"
+
+                    if action and self.get_action_is_from_linked_file(action):
+                        action_file_name: str = self.get_action_source_file(action)
+                    else:
+                        action_file_name: str = "Current .blend file"
+                        
+                    additional_action_info = f'Name: "{name}" Frames: {frame_range} Data Origin: {data_file_name}, Action Origin: {action_file_name}'
                     action_detail.label(text=additional_action_info, icon="INFO")
                 action_use = layout.row()
                 action_use.alignment = 'RIGHT'
@@ -108,9 +127,9 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                 # If action is not valid
                 name: str = item.name
 
-                if data and self.get_is_from_linked_file(data, item.name):
-                    origin_file_name: str = self.get_object_source_file(data)
-                    data_text = (f'Action data "{name}" Not Found. Please update it on the original file: "{origin_file_name}"')
+                if data and self.get_data_is_from_linked_file(data, item.name):
+                    data_file_name: str = self.get_object_source_file(data)
+                    data_text = (f'Action data "{name}" Not Found. Please update it on the original file: "{data_file_name}"')
                     layout.alert = True
                     layout.label(text=data_text, icon="LIBRARY_DATA_OVERRIDE")
                 else:
