@@ -41,11 +41,12 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
             if panel:
                 if is_skeletal_mesh:
                     # Action list
-                    ActionListProperty = panel.column()
-                    ActionListProperty.prop(obj, 'bfu_anim_action_export_enum')
+                    action_list_property = panel.column()
+                    action_list_property.prop(obj, 'bfu_anim_action_export_enum')
                     
                     if bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj) == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST:
-                        ActionListProperty.template_list(
+                        action_list_panel_box = panel.box()                        
+                        action_list_panel_box.template_list(
                             # type and unique id
                             "BFU_UL_ActionExportTarget", "",
                             # pointer to the CollectionProperty
@@ -55,11 +56,14 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                             maxrows=5,
                             rows=5
                         )
-                        update_obj_action_list = panel.row(align=True)
+                        update_obj_action_list = action_list_panel_box.row(align=True)
                         update_obj_action_list.operator("object.updateobjactionlist", icon='RECOVER_LAST')
                         update_obj_action_list.operator("object.clearobjactionlist", icon='X', text="")
 
-                        select_deselect_obj_action_list = panel.row()
+                        wm = context.window_manager
+                        action_list_panel_box.prop(wm, 'bfu_debug_show_action_list')
+
+                        select_deselect_obj_action_list = action_list_panel_box.row()
                         select_deselect_obj_action_list.operator("object.selectallobjactionlist")
                         select_deselect_obj_action_list.operator("object.deselectallobjactionlist")
                     elif bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj) == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_PREFIX:

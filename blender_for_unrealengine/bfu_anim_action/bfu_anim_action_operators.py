@@ -92,9 +92,11 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
 
             if action_is_valid:  
                 # If action is valid
+                show_additional_info: bool = bfu_anim_action_props.get_window_manager_debug_show_action_list()
                 action: bpy.types.Action = bpy.data.actions[item.name]
                 action_detail = layout.row()
-                action_detail.alignment = 'LEFT'
+                if show_additional_info:  
+                    action_detail.alignment = 'LEFT'
                 action_detail.prop(
                     action,
                     "name",
@@ -102,7 +104,7 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                     emboss=False,
                     icon="ACTION"
                 )
-                show_additional_info: bool = True
+                
                 if show_additional_info:  
                     name: str = action.name
                     first_frame: int = int(action.frame_range[0])
@@ -118,10 +120,13 @@ class BFU_UL_ActionExportTarget(bpy.types.UIList):
                     else:
                         action_file_name: str = "Current .blend file"
                         
-                    additional_action_info = f'Name: "{name}" Frames: {frame_range} Data Origin: {data_file_name}, Action Origin: {action_file_name}'
+                    additional_action_info = f'Name: "{name}" Frames: {frame_range} Data: {data_file_name}, Action: {action_file_name}'
                     action_detail.label(text=additional_action_info, icon="INFO")
                 action_use = layout.row()
-                action_use.alignment = 'RIGHT'
+                if show_additional_info:  
+                    pass
+                    action_use.alignment = 'RIGHT'
+                    action_use.scale_x = 1.15
                 action_use.prop(item, "use", text="")
             else:
                 # If action is not valid

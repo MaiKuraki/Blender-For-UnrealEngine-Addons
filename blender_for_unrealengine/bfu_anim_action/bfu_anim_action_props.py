@@ -191,6 +191,13 @@ def get_object_anim_naming_type_enum(obj: bpy.types.Object) -> BFU_AnimNamingTyp
     print(f"Warning: Object {obj.name} has unknown naming type '{obj.bfu_anim_naming_type}'. Falling back to default naming type...")  # type: ignore
     return BFU_AnimNamingTypeEnum.default()
 
+def get_object_anim_naming_custom(obj: bpy.types.Object) -> str:
+    return obj.bfu_anim_naming_custom  # type: ignore
+
+def get_window_manager_debug_show_action_list() -> bool:
+    wm = bpy.context.window_manager
+    return wm.bfu_debug_show_action_list  # type: ignore
+
 # -------------------------------------------------------------------
 #   Register & Unregister
 # -------------------------------------------------------------------
@@ -289,10 +296,18 @@ def register():
         override={'LIBRARY_OVERRIDABLE'},
         default='MyCustomName'
         )
+    
+    bpy.types.WindowManager.bfu_debug_show_action_list = bpy.props.BoolProperty(   # type: ignore[attr-defined]
+        name="Show Debug Info",
+        description="Show debug information about the action list overrides",
+        default=False
+        )
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+
+    del bpy.types.WindowManager.bfu_debug_show_action_list   # type: ignore[attr-defined]
 
     del bpy.types.Object.bfu_anim_naming_custom   # type: ignore[attr-defined]
     del bpy.types.Object.bfu_anim_naming_type   # type: ignore[attr-defined]
