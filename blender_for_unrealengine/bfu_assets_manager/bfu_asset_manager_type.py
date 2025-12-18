@@ -216,13 +216,37 @@ class AssetPackage:
         # Set the package file with the given directory path and filename
         self.file = PackageFile(dirpath, filename, file_type)
         return self.file
+
+    def check_object_in_scene(self, obj: bpy.types.Object) -> bool:
+        # Check if the object is valid in the current scene
+        scene = bpy.context.scene
+        if not scene:
+            raise ValueError("No active scene found in the current context.")
+        
+        if not obj.name in scene.objects:
+            raise ValueError(f"Object {obj.name} not found in the current scene.")
+        
+        scene_obj = scene.objects[obj.name]
+        if scene_obj != obj:
+            error_text = (f"Object {obj.name} is not valid in the current scene. " + 
+            "if the object comes from a library, you need get scene reference created at the link.")  
+            raise ValueError(error_text)
+        return True
     
+    def check_objects_in_scene(self, objects: List[bpy.types.Object]) -> bool:
+        # Check if all objects are valid in the current scene
+        for obj in objects:
+            self.check_object_in_scene(obj)
+        return True
+
     def add_object(self, obj: bpy.types.Object) -> None:
         # Add an object to the package
+        self.check_object_in_scene(obj)
         self.objects.append(obj)
 
     def add_objects(self, objects: List[bpy.types.Object]) -> None:
         # Add multiple objects to the package
+        self.check_objects_in_scene(objects)
         self.objects.extend(objects)
 
     def set_collection(self, collection: bpy.types.Collection) -> None:

@@ -144,6 +144,9 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
 
         scene = bpy.context.scene
+        if scene is None:
+            return []
+
         asset_list: List[AssetToExport] = []
         
         # Export the armature and all mesh as a single skeletal mesh

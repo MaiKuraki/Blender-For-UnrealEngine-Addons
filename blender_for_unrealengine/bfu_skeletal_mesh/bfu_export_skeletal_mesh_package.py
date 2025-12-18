@@ -28,7 +28,6 @@ def process_skeletal_mesh_export_from_package(
     op: bpy.types.Operator,
     package: AssetPackage
 ) -> bool:
-
     if package.file:
         return export_as_skeletal_mesh(
             op=op,
@@ -63,7 +62,7 @@ def export_as_skeletal_mesh(
     if scene is None:
         raise ValueError("No active scene found!")
     
-    is_library = armature.data.library is not None
+    is_library: bool = armature.data.library is not None  # type: ignore
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
