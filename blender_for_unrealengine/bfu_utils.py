@@ -443,7 +443,7 @@ class ModifiersDataScale():
         self.saved_data = {}
 
 
-    def RescaleForUnrealEngine(self):
+    def rescale_for_unreal_engine(self):
         for x, mod in enumerate(self.modifiers):
             if mod.type == "MIRROR":
                 self.saved_data[x] = mod.merge_threshold

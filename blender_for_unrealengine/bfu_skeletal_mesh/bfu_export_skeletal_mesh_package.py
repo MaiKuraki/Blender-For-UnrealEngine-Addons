@@ -136,12 +136,12 @@ def export_as_skeletal_mesh(
         my_skeletal_export_scale = bfu_utils.SkeletalExportScale(active)
         my_skeletal_export_scale.apply_skeletal_export_scale(rrf)
         my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf)
-        my_modifiers_data_scale.RescaleForUnrealEngine()
+        my_modifiers_data_scale.rescale_for_unreal_engine()
 
     # Set rename temporarily the Armature as "Armature"
     bfu_utils.disable_all_bones_consraints(active)
     armature_rest_pose_data = bfu_export.bfu_export_utils.set_armature_to_rest_pose(active)
-    bfu_export.bfu_export_utils.ConvertArmatureConstraintToModifiers(active)
+    bfu_export.bfu_export_utils.convert_armature_constraint_to_modifiers(active)
 
     # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
@@ -261,7 +261,7 @@ def export_as_skeletal_mesh(
         my_modifiers_data_scale.ResetScaleAfterExport()  # type: ignore
 
     bfu_vertex_color.bfu_vertex_color_utils.clear_vertex_color_for_unreal_export(active)
-    bfu_export.bfu_export_utils.ResetArmatureConstraintToModifiers(active)
+    bfu_export.bfu_export_utils.reset_armature_constraint_to_modifiers(active)
     bfu_export.bfu_export_utils.reset_sockets_export_name(active)
     bfu_export.bfu_export_utils.reset_sockets_transform(active)
     

@@ -151,7 +151,7 @@ def export_as_action_animation(
         my_shape_keys_curve_scale = bfu_utils.ShapeKeysCurveScale(rrf)
         my_shape_keys_curve_scale.rescale_for_unreal_engine()
         my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf)
-        my_modifiers_data_scale.RescaleForUnrealEngine()
+        my_modifiers_data_scale.rescale_for_unreal_engine()
 
         bfu_utils.rescale_select_curve_hooks(1/rrf)
         bbpl.anim_utils.reset_armature_pose(active)

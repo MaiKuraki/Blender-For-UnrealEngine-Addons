@@ -13,7 +13,7 @@ import math
 import mathutils
 from bpy_extras.io_utils import axis_conversion
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, TYPE_CHECKING
 from .. import bfu_export_text_files
 from .. import bfu_utils
 from .. import bbpl
@@ -28,8 +28,10 @@ from .. import bfu_adv_object
 
 # @TODO: Move this to a config file.
 dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
-Export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
+export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
 
+previous_enabled_armature_constraints_key = "BFU_PreviousEnabledArmatureConstraints"
+armature_modifier_prefix = "BFU_Const_"
 
 def ApplyProxyData(obj: bpy.types.Object) -> None:
 
@@ -573,15 +575,15 @@ def CorrectExtremUVAtExport(obj: bpy.types.Object):
             return True
     return False
 
+
+
 # Armature
-
-
-def ConvertArmatureConstraintToModifiers(armature: bpy.types.Object):
+def convert_armature_constraint_to_modifiers(armature: bpy.types.Object):
     for obj in bfu_utils.GetExportDesiredChilds(armature):
-        previous_enabled_armature_constraints = []
+        previous_enabled_armature_constraints: List[str] = []
 
         for const in obj.constraints:
-            if const.type == "ARMATURE":
+            if isinstance(const, bpy.types.ArmatureConstraint):
                 if const.enabled is True:
                     previous_enabled_armature_constraints.append(const.name)
 
@@ -592,29 +594,45 @@ def ConvertArmatureConstraintToModifiers(armature: bpy.types.Object):
                     # TO DO:
 
                     # Add Vertex Group
-                    for target in const.targets:
-                        bone_name = target.subtarget
-                        group = obj.vertex_groups.new(name=bone_name)
+                    if isinstance(obj.data, bpy.types.Mesh):
+                        for target in const.targets:
+                            bone_name = target.subtarget
+                            group = obj.vertex_groups.new(name=bone_name)
 
-                        vertex_indices = range(0, len(obj.data.vertices))
-                        group.add(vertex_indices, 1.0, 'REPLACE')
+                            vertex_indices = range(0, len(obj.data.vertices))
+                            group.add(vertex_indices, 1.0, 'REPLACE')
 
                     # Add armature modifier
-                    mod = obj.modifiers.new("BFU_Const_"+const.name, "ARMATURE")
-                    mod.object = armature
+                    mod = obj.modifiers.new(armature_modifier_prefix+const.name, "ARMATURE")
+                    if isinstance(mod, bpy.types.ArmatureModifier):
+                        mod.object = armature
+                    else:
+                        raise Exception("Attempting to create an Armature Modifier but got a different type.")
 
         # Save data for reset after export
-        obj["BFU_PreviousEnabledArmatureConstraints"] = previous_enabled_armature_constraints
+        obj[previous_enabled_armature_constraints_key] = previous_enabled_armature_constraints
 
 
-def ResetArmatureConstraintToModifiers(armature: bpy.types.Object):
+def reset_armature_constraint_to_modifiers(armature: bpy.types.Object):
     for obj in bfu_utils.GetExportDesiredChilds(armature):
-        if "BFU_PreviousEnabledArmatureConstraints" in obj:
-            for const_names in obj["BFU_PreviousEnabledArmatureConstraints"]:
-                const = obj.constraints[const_names]
+        if previous_enabled_armature_constraints_key in obj:
+            # Get all previous enabled constraints before apply changes
+            previous_enabled_armature_constraints: List[str] = obj[previous_enabled_armature_constraints_key]
 
+
+            for const_names in previous_enabled_armature_constraints:
+                if const_names not in obj.constraints:
+                    raise Exception("Constraint name not found during reset: " + const_names)
+                
+                const = obj.constraints[const_names]
+                if not isinstance(const, bpy.types.ArmatureConstraint):
+                    raise Exception("Constraint type mismatch during reset for constraint: " + const_names)
+               
                 # Remove created armature for export
-                mod = obj.modifiers["BFU_Const_"+const_names]
+                mod = obj.modifiers[armature_modifier_prefix+const_names]
+                if not isinstance(mod, bpy.types.ArmatureModifier):
+                    raise Exception("Modifier type mismatch during reset for modifier: " + mod.name)
+
                 obj.modifiers.remove(mod)
 
                 # Remove created Vertex Group
@@ -628,8 +646,6 @@ def ResetArmatureConstraintToModifiers(armature: bpy.types.Object):
 
                 # Enable back constraint
                 const.enabled = True
-
-
 
 
 def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
