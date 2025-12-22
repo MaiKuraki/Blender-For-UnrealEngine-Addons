@@ -139,7 +139,7 @@ def export_as_skeletal_mesh(
         my_modifiers_data_scale.rescale_for_unreal_engine()
 
     # Set rename temporarily the Armature as "Armature"
-    bfu_utils.disable_all_bones_consraints(active)
+    armature_bones_constraints = bfu_export.bfu_export_utils.disable_all_bone_constraints(active) # @TODO: Please what the reason to disable all bones constraints at skeletal mesh export?
     armature_rest_pose_data = bfu_export.bfu_export_utils.set_armature_to_rest_pose(active)
     bfu_export.bfu_export_utils.convert_armature_constraint_to_modifiers(active)
 
@@ -266,6 +266,7 @@ def export_as_skeletal_mesh(
     bfu_export.bfu_export_utils.reset_sockets_transform(active)
     
     if is_library:
+        armature_bones_constraints.reset_all_bone_constraints()
         armature_rest_pose_data.reset_armature_pose_position()
     else:
         bfu_utils.clean_delete_objects(bpy.context.selected_objects)

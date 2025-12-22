@@ -588,7 +588,7 @@ def convert_armature_constraint_to_modifiers(armature: bpy.types.Object):
                     previous_enabled_armature_constraints.append(const.name)
 
                     # Disable constraint
-                    const.enabled = False
+                    #const.enabled = False
 
                     # Remove All Vertex Group
                     # TO DO:
@@ -645,7 +645,7 @@ def reset_armature_constraint_to_modifiers(armature: bpy.types.Object):
                     # TO DO:
 
                 # Enable back constraint
-                const.enabled = True
+                #const.enabled = True
 
 
 def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
@@ -834,3 +834,60 @@ def set_armature_to_rest_pose(obj: bpy.types.Object) -> ArmatureRestPoseData:
     armature_rest_pose_data.set_armature_to_rest_pose()
     return armature_rest_pose_data
     
+class ArmatureEnabledContraintsData():
+    def __init__(self, obj: bpy.types.Object):
+        self.bone_constraints_enabled: Dict[str, Dict[str, bool]] = {}
+        self.obj: bpy.types.Object = obj
+
+        if isinstance(obj.data, bpy.types.Armature):
+            self.previous_pose_position = obj.data.pose_position
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def save_bone_constraints_enabled(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            self.bone_constraints_enabled[b.name] = {}
+            for c in b.constraints:
+                self.bone_constraints_enabled[b.name][c.name] = c.enabled
+        
+    def disable_all_bone_constraints(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            for c in b.constraints:
+                c.enabled = False
+
+    def enable_all_bone_constraints(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            for c in b.constraints:
+                c.enabled = True
+
+    def reset_all_bone_constraints(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            if b.name in self.bone_constraints_enabled:
+                for c in b.constraints:
+                    if c.name in self.bone_constraints_enabled[b.name]:
+                        c.enabled = self.bone_constraints_enabled[b.name][c.name]
+
+
+def disable_all_bone_constraints(obj: bpy.types.Object) -> ArmatureEnabledContraintsData:
+    # Disable all bone constraints for export
+    # Return ArmatureEnabledContraintsData for reset after export
+    armature_constraints_data = ArmatureEnabledContraintsData(obj)
+    armature_constraints_data.save_bone_constraints_enabled()
+    armature_constraints_data.disable_all_bone_constraints()
+    return armature_constraints_data
