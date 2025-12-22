@@ -579,7 +579,7 @@ def CorrectExtremUVAtExport(obj: bpy.types.Object):
 
 # Armature
 def convert_armature_constraint_to_modifiers(armature: bpy.types.Object):
-    for obj in bfu_utils.GetExportDesiredChilds(armature):
+    for obj in bfu_utils.get_export_desired_childs(armature):
         previous_enabled_armature_constraints: List[str] = []
 
         for const in obj.constraints:
@@ -614,7 +614,7 @@ def convert_armature_constraint_to_modifiers(armature: bpy.types.Object):
 
 
 def reset_armature_constraint_to_modifiers(armature: bpy.types.Object):
-    for obj in bfu_utils.GetExportDesiredChilds(armature):
+    for obj in bfu_utils.get_export_desired_childs(armature):
         if previous_enabled_armature_constraints_key in obj:
             # Get all previous enabled constraints before apply changes
             previous_enabled_armature_constraints: List[str] = obj[previous_enabled_armature_constraints_key]

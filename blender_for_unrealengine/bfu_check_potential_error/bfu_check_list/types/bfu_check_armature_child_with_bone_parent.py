@@ -22,7 +22,7 @@ class BFU_Checker_ArmatureChildWithBoneParent(bfu_checker):
         if not asset.asset_type.is_skeletal():
             return
         for obj in self.get_armatures_to_check(asset):
-            childs = bfu_utils.GetExportDesiredChilds(obj)
+            childs = bfu_utils.get_export_desired_childs(obj)
             for child in childs:
                 if child.type == "MESH" and child.parent_type == 'BONE':  # type: ignore
                     my_po_error = self.add_potential_error()

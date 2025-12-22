@@ -9,10 +9,10 @@
 
 
 import bpy
-from typing import List, Set
+from typing import List, Set, Any
 from .. import bpl
 from .. import bbpl
-from .. import bfu_basics
+from .. import bfu_export_nomenclature
 from .. import bfu_utils
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetToSearch, AssetToExport, AssetDataSearchMode
@@ -21,6 +21,7 @@ from .. import bfu_check_potential_error
 from .. import bfu_export
 from .. import bfu_export_text_files
 from .. import bfu_export_logs
+from .. import bfu_export_filter
 from . import bfu_export_process_utils
 
 
@@ -29,8 +30,11 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
     bl_idname = "object.exportforunreal"
     bl_description = "Export all assets of this scene."
 
-    def execute(self, context: bpy.types.Context) -> Set[str]:
-        scene = bpy.context.scene
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
+        scene = context.scene
+        if not scene:
+            self.report({'WARNING'}, "No active scene found.")
+            return {'CANCELLED'}
 
         def is_ready_for_export(final_asset_list_to_export: List[AssetToExport]) -> bool:
 
@@ -41,8 +45,10 @@ class BFU_OT_ExportForUnrealEngineButton(bpy.types.Operator):
                     if assets.can_export_asset_type():
                         return True
 
-                if (scene.bfu_use_static_collection_export
-                        or scene.bfu_use_animation_export):
+                use_static_collection_export = bfu_export_filter.bfu_export_filter_props.scene_use_static_collection_export(scene)
+                use_animation_export = bfu_export_filter.bfu_export_filter_props.scene_use_animation_export(scene)
+
+                if (use_static_collection_export or use_animation_export):
                     return True
                 else:
                     return False
@@ -118,13 +124,15 @@ class BFU_OT_CopyImportAssetScriptCommand(bpy.types.Operator):
     bl_idname = "object.copy_importassetscript_command"
     bl_description = "Copy Import Asset Script command"
 
-    def execute(self, context: bpy.types.Context) -> Set[str]:
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
         scene = context.scene
-        bfu_basics.set_windows_clipboard(bfu_utils.get_import_asset_script_command())
-        self.report(
-            {'INFO'},
-            "command for "+scene.bfu_file_import_asset_script_name +
-            " copied")
+        if not scene:
+            self.report({'WARNING'}, "No active scene found.")
+            return {'CANCELLED'}
+    
+        bbpl.basics.set_windows_clipboard(bfu_utils.get_import_asset_script_command())
+        file_import_asset_script_name = bfu_export_nomenclature.bfu_export_nomenclature_props.get_file_import_asset_script_name(scene)
+        self.report({'INFO'}, "command for "+file_import_asset_script_name + " copied")
         return {'FINISHED'}
 
 class BFU_OT_CopyImportSequencerScriptCommand(bpy.types.Operator):
@@ -132,19 +140,20 @@ class BFU_OT_CopyImportSequencerScriptCommand(bpy.types.Operator):
     bl_idname = "object.copy_importsequencerscript_command"
     bl_description = "Copy Import Sequencer Script command"
 
-    def execute(self, context: bpy.types.Context) -> Set[str]:
+    def execute(self, context: bpy.types.Context) -> Set[Any]:
         scene = context.scene
-        bfu_basics.set_windows_clipboard(bfu_utils.get_import_sequencer_script_command())
-        self.report(
-            {'INFO'},
-            "command for "+scene.bfu_file_import_sequencer_script_name +
-            " copied")
+        if not scene:
+            self.report({'WARNING'}, "No active scene found.")
+            return {'CANCELLED'}
+
+        bbpl.basics.set_windows_clipboard(bfu_utils.get_import_sequencer_script_command())
+        file_import_sequencer_script_name = bfu_export_nomenclature.bfu_export_nomenclature_props.get_file_import_sequencer_script_name(scene)
+        self.report({'INFO'}, "command for "+file_import_sequencer_script_name + " copied")
         return {'FINISHED'}
 
 
 def get_preset_values() -> List[str]:
-    preset_values = [
-        ]
+    preset_values: List[str] = []
     return preset_values
 
 # -------------------------------------------------------------------

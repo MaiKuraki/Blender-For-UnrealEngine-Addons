@@ -10,7 +10,7 @@
 
 import bpy
 from typing import Set, Any
-from .. import bfu_basics
+from .. import bbpl
 from . import bfu_socket_utils
 from .bfu_socket_types import SocketType
 
@@ -51,7 +51,7 @@ class BFU_OT_CopySkeletalSocketButton(bpy.types.Operator):
         obj = context.object
         if obj:
             if obj.type == "ARMATURE":
-                bfu_basics.set_windows_clipboard(bfu_socket_utils.get_import_skeletal_mesh_socket_script_command(obj))
+                bbpl.basics.set_windows_clipboard(bfu_socket_utils.get_import_skeletal_mesh_socket_script_command(obj))
                 self.report(
                     {'INFO'},
                     "Skeletal sockets copied. Paste in Unreal Engine Skeletal Mesh assets for import sockets. (Ctrl+V)")

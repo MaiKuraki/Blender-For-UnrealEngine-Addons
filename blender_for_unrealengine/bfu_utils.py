@@ -224,39 +224,20 @@ def get_all_collision_and_sockets_obj(objs_list=None):
     return colObjs
 
 
-def GetExportDesiredChilds(obj: bpy.types.Object) -> List[bpy.types.Object]:
+def get_export_desired_childs(obj: bpy.types.Object) -> List[bpy.types.Object]:
     # Get only all child objects that must be exported with parent object
 
-    DesiredObj = []
+    w = bpy.context.window
+    if not w:
+        raise RuntimeError("No window found in context.")
+
+    desired_objs: List[bpy.types.Object] = []
     for child in bbpl.basics.get_recursive_obj_childs(obj):
         if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(child):
-            if child.name in bpy.context.window.view_layer.objects:
-                DesiredObj.append(child)
+            if child.name in w.view_layer.objects:
+                desired_objs.append(child)
 
-    return DesiredObj
-
-
-def disable_all_bones_consraints(obj: bpy.types.Object):
-    for b in obj.pose.bones:
-        for c in b.constraints:
-            c.enabled = False
-
-
-def remove_all_bones_consraints(obj: bpy.types.Object):
-    for b in obj.pose.bones:
-        for c in b.constraints:
-
-            # In Blender 4.4 for some constraint when I remove a constraint from python code it crash.
-            # Disable it and clear drivers before remove fix the crash. I don't know why...
-            fcurve_path = f'pose.bones["{b.name}"].constraints["{c.name}"].influence'
-            if obj.animation_data and obj.animation_data.drivers:
-                for fcurve in obj.animation_data.drivers:
-                    if fcurve.data_path == fcurve_path:
-                        obj.animation_data.drivers.remove(fcurve)
-                        break
-
-            c.enabled = False
-            b.constraints.remove(c)
+    return desired_objs
 
 class ProxyRigConsraint():
     def __init__(self, constraint: bpy.types.Constraint):
@@ -563,7 +544,7 @@ def SelectParentAndDesiredChilds(active: bpy.types.Object):
 
     new_select_list = []
     bpy.ops.object.select_all(action='DESELECT')
-    for obj in GetExportDesiredChilds(active):
+    for obj in get_export_desired_childs(active):
         if obj.name in bpy.context.view_layer.objects:
             new_select_list.append(obj)
 

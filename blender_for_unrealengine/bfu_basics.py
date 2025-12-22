@@ -83,9 +83,3 @@ def get_surface_area(obj: bpy.types.Object) -> float:
         bm.free()
         return area
     return -1.0
-
-
-def set_windows_clipboard(text: str) -> None:
-    if bpy.context.window_manager:
-        bpy.context.window_manager.clipboard = text
-    # bpy.context.window_manager.clipboard.encode('utf8')

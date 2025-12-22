@@ -109,7 +109,7 @@ class VertexColorExportData:
 # Vertex Color
 def SetVertexColorForUnrealExport(parent: bpy.types.Object):
 
-    objs = bfu_utils.GetExportDesiredChilds(parent)
+    objs = bfu_utils.get_export_desired_childs(parent)
     objs.append(parent)
 
     for obj in objs:
@@ -136,7 +136,7 @@ def SetVertexColorForUnrealExport(parent: bpy.types.Object):
 
 def clear_vertex_color_for_unreal_export(parent: bpy.types.Object):
 
-    objs = bfu_utils.GetExportDesiredChilds(parent)
+    objs = bfu_utils.get_export_desired_childs(parent)
     objs.append(parent)
     for obj in objs:
         if isinstance(obj.data, bpy.types.Mesh):

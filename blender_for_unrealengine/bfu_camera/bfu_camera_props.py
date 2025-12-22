@@ -11,9 +11,7 @@
 from typing import List
 import bpy
 import math
-from .. import bfu_basics
 from .. import bbpl
-from .. import languages
 from . import bfu_camera_utils
 from . import bfu_camera_write_paste_commands
 
@@ -39,7 +37,7 @@ class BFU_OT_CopyActiveCameraOperator(bpy.types.Operator):
         obj = context.object
         result = bfu_camera_write_paste_commands.get_import_camera_script_command([obj])  # type: ignore
         if result[0]:
-            bfu_basics.set_windows_clipboard(result[1])
+            bbpl.basics.set_windows_clipboard(result[1])
             self.report({'INFO'}, result[2])
         else:
             self.report({'WARNING'}, result[2])
@@ -55,7 +53,7 @@ class BFU_OT_CopySelectedCamerasOperator(bpy.types.Operator):
         objs = context.selected_objects
         result = bfu_camera_write_paste_commands.get_import_camera_script_command(objs)
         if result[0]:
-            bfu_basics.set_windows_clipboard(result[1])
+            bbpl.basics.set_windows_clipboard(result[1])
             self.report({'INFO'}, result[2])
         else:
             self.report({'WARNING'}, result[2])
