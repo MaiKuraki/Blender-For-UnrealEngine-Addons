@@ -289,8 +289,12 @@ def set_windows_clipboard(text: str):
     Returns:
         None
     """
-    bpy.context.window_manager.clipboard = text # type: ignore
-    # bpy.context.window_manager.clipboard.encode('utf8')
+    wm = bpy.context.window_manager
+    if not wm:
+        raise RuntimeError("No window manager found in context.")
+    
+    wm.clipboard = text
+    # wm.clipboard.encode('utf8')
 
 def get_obj_childs(obj: bpy.types.Object) -> List[bpy.types.Object]:
     # Get all direct childs of a object

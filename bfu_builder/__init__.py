@@ -5,6 +5,7 @@ from . import main
 from . import config
 from . import blender_exec
 from . import blender_version_manager
+from . import output_logger
 
 if "bpl" in locals():
     importlib.reload(bpl)
@@ -16,3 +17,5 @@ if "blender_exec" in locals():
     importlib.reload(blender_exec)
 if "blender_version_manager" in locals():
     importlib.reload(blender_version_manager)
+if "output_logger" in locals():
+    importlib.reload(output_logger)

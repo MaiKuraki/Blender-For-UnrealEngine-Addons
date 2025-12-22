@@ -25,7 +25,7 @@ def draw_asset_preview_bar(
 ) -> None:
 
     events = bfu_debug_settings.root_events
-    events.add_sub_event("Draw Asset Preview Bar")
+    events.new_event("Draw Asset Preview Bar")
     events.add_sub_event("Get asset list")
     final_asset_cache = bfu_cached_assets.bfu_cached_assets_blender_class.get_final_asset_cache()
     final_asset_list_to_export = final_asset_cache.get_final_asset_list(asset_to_search, AssetDataSearchMode.ASSET_NUMBER, force_cache_update=False)
@@ -59,6 +59,9 @@ def draw_asset_package(
 ) -> None:
     
     scene = context.scene
+    if scene is None:
+        return
+    
     package_line = draw_asset_content_line(layout, context)
 
     # Package name and details

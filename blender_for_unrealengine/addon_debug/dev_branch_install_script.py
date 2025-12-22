@@ -18,7 +18,7 @@ import importlib.util
 # ----------------------------------------------
 # Configuration
 current_only: bool = True # Set to build the addon for the current blender version.
-addon_source_path: Path = Path("/home/bleuraven/Téléchargements/Blender-For-UnrealEngine-Addons-Dev/blender-for-unrealengine")
+addon_source_path: Path = Path("/home/bleuraven/Downloads/Blender-For-UnrealEngine-Addons-Dev/blender-for-unrealengine")
 
 # ----------------------------------------------
 def install_addon(addon_path: Path):

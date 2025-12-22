@@ -14,7 +14,6 @@ from . import bfu_export_procedure
 from . import bfu_export_groom_package
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType, BFU_ObjectAssetClass, AssetDataSearchMode, AssetToExport
-from .. import bfu_export_nomenclature
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_base_object
 from .. import bfu_export_filter
@@ -45,7 +44,7 @@ class BFU_Groom(BFU_ObjectAssetClass):
         return bfu_export_filter.bfu_export_filter_utils.get_use_groom_simulation_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
-        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+        dirpath = bfu_base_object.bfu_base_obj_utils.get_obj_import_location(data)
         return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
     
 ####################################################################
@@ -78,10 +77,7 @@ class BFU_Groom(BFU_ObjectAssetClass):
 # ####################################################################
 
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
-        
-        if bpy.context is None:
-            return []
-        
+                
         asset_list: List[AssetToExport] = []
 
         # One asset per groom object.
@@ -95,7 +91,7 @@ class BFU_Groom(BFU_ObjectAssetClass):
 
             if search_mode.search_package_content():
                 pak.add_objects(bfu_base_object.bfu_base_obj_utils.get_exportable_objects(data))
-                pak.export_function = bfu_export_groom_package.process_groom_export_from_package
+                pak.export_function = bfu_export_groom_package.process_groom_simulation_export_from_package
 
         # Set the additional data in the asset, add asset to the list and return the list.
         self.set_additional_data_in_asset(asset, data, details, search_mode)

@@ -9,7 +9,7 @@
 
 import os
 import bpy
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Tuple, Any, Set
 from .bbpl.blender_layout import layout_doc_button
 
 class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
@@ -189,7 +189,7 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
         bl_idname = "object.new_release_info"
         bl_description = "Click to open the latest release page."
 
-        def execute(self, context):
+        def execute(self, context: bpy.types.Context) -> Set[Any]:
             os.system(
                 "start \"\" https://github.com/xavier150/" +
                 "Blender-For-UnrealEngine-Addons/releases/latest"
@@ -255,9 +255,8 @@ class BFU_AP_AddonPreferences(bpy.types.AddonPreferences):
         updateButton.operator("object.new_release_info", icon="TIME")  # type: ignore
 
 
-def get_addon_prefs() -> BFU_AP_AddonPreferences:
+def get_addon_preferences() -> BFU_AP_AddonPreferences:
     return bpy.context.preferences.addons[__package__].preferences # type: ignore
-
 
 classes = (
     BFU_AP_AddonPreferences,

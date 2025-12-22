@@ -7,7 +7,7 @@
 #  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
 # ----------------------------------------------
 
-from typing import List, Dict, Optional, Tuple
+from typing import List
 import bpy
 from .. import bfu_debug_settings
 from .. import bbpl
@@ -16,6 +16,7 @@ from .. import bfu_custom_property
 from .. import bfu_base_object
 from .. import bfu_adv_object
 from .. import bfu_base_collection
+from .. import bfu_collection_as_staticmesh
 from .. import bfu_material
 from .. import bfu_camera
 from .. import bfu_spline
@@ -55,7 +56,8 @@ def get_object_global_preset_propertys() -> List[str]:
 
     # Scene assets
     preset_values += bfu_base_collection.bfu_base_col_props.get_preset_values()
-    preset_values += bfu_base_collection.bfu_export_procedure.get_preset_values()
+    preset_values += bfu_collection_as_staticmesh.bfu_static_col_props.get_preset_values()
+    preset_values += bfu_collection_as_staticmesh.bfu_export_procedure.get_preset_values()
 
     # Object assets
     preset_values += bfu_camera.bfu_camera_props.get_preset_values()
@@ -94,7 +96,7 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         bl_label = 'Global Properties Presets'
         preset_subdir = 'blender-for-unrealengine/global-properties-presets'
         preset_operator = 'script.execute_preset'
-        draw = bpy.types.Menu.draw_preset
+        draw = bpy.types.Menu.draw_preset  # type: ignore
 
     from bl_operators.presets import AddPresetBase
 
@@ -142,6 +144,7 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
             text = "Open Github page",
             icon="HELP"
             )
+        events.stop_last_event()
         
         # Presets
         events.stop_last_and_start_new_event("Draw Presets")
@@ -167,7 +170,15 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         
             # Object
             events.add_sub_event("Draw Object")
+            # Global properties
             bfu_base_object.bfu_base_obj_ui.draw_ui(layout, context, obj)
+            
+            bfu_alembic_animation.bfu_alembic_animation_ui.draw_general_ui_object(layout, obj)
+            bfu_groom.bfu_groom_ui.draw_general_ui_object(layout, obj)
+            bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_general_ui_object(layout, obj)
+            bfu_spline.bfu_spline_ui.draw_general_ui_object(layout, obj)
+
+            # Specific properties
             bfu_adv_object.bfu_adv_obj_ui.draw_ui(layout, context, obj)
             bfu_static_mesh.bfu_static_mesh_ui.draw_ui_object(layout, context, obj)
             bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_ui_object(layout, context, obj)
@@ -197,6 +208,7 @@ class BFU_PT_BlenderForUnrealObject(bpy.types.Panel):
         # Scene
         events.add_sub_event("Draw Scene")
         bfu_base_collection.bfu_base_col_ui.draw_ui(layout, context)
+        bfu_collection_as_staticmesh.bfu_static_col_ui.draw_ui(layout, context)
         events.stop_last_event()
 
         events.stop_last_event()

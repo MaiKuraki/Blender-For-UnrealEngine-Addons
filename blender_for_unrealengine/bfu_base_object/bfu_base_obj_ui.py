@@ -9,16 +9,12 @@
 
 
 import bpy
-from .. import bfu_basics
 from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_assets_manager
-from .. import bfu_alembic_animation
-from .. import bfu_groom
-from .. import bfu_skeletal_mesh
-from .. import bfu_spline
 from .. import bfu_export_control
+from .. import bfu_base_object
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
@@ -26,9 +22,6 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
     scene = bpy.context.scene 
 
     # Hide filters
-    if obj is None:
-        layout.row().label(text='No active object.')
-        return
     if not bfu_utils.draw_proxy_propertys(obj):
         return
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "GENERAL"):
@@ -67,11 +60,7 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                         # exportCustomName
                         exportCustomName = panel.row()
                         exportCustomName.prop(obj, "bfu_use_custom_export_name")
-                        useCustomName = obj.bfu_use_custom_export_name
+                        use_custom_name = bfu_base_object.bfu_base_obj_props.get_object_use_custom_export_name(obj)
                         exportCustomNameText = exportCustomName.column()
                         exportCustomNameText.prop(obj, "bfu_custom_export_name")
-                        exportCustomNameText.enabled = useCustomName
-                bfu_alembic_animation.bfu_alembic_animation_ui.draw_general_ui_object(panel, obj)
-                bfu_groom.bfu_groom_ui.draw_general_ui_object(panel, obj)
-                bfu_skeletal_mesh.bfu_skeletal_mesh_ui.draw_general_ui_object(panel, obj)
-                bfu_spline.bfu_spline_ui.draw_general_ui_object(panel, obj)
+                        exportCustomNameText.enabled = use_custom_name

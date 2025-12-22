@@ -20,8 +20,8 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_socket_properties_expanded")
     if accordion:
         _, panel = accordion.draw(layout)
-        if accordion.is_expend() and panel:
-            addon_prefs = bfu_addon_prefs.get_addon_prefs()
+        if accordion.is_expanded() and panel:
+            addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
             # Draw user tips and check can use buttons
             ready_for_convert_socket = False

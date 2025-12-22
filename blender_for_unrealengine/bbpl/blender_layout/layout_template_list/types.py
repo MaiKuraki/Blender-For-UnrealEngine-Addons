@@ -8,7 +8,7 @@
 # ----------------------------------------------
 
 import bpy
-from typing import Optional
+from typing import Optional, Any
 from . import utils
 
 
@@ -42,15 +42,16 @@ class BBPL_UI_TemplateItem(bpy.types.PropertyGroup):
 class BBPL_UL_TemplateItemDraw(bpy.types.UIList):
     def draw_item(
         self, 
-        context: Optional[bpy.types.Context],
+        context: bpy.types.Context,
         layout: bpy.types.UILayout, 
-        data: bpy.types.PropertyGroup, 
-        item: BBPL_UI_TemplateItem, 
-        icon: str, 
-        active_data: bpy.types.PropertyGroup, 
-        active_propname: str, 
-        index: int
-    ):
+        data: Optional[Any], 
+        item: Optional[Any], 
+        icon: Optional[int], 
+        active_data: Any, 
+        active_property: Optional[str],
+        index: Optional[int],
+        flt_flag: Optional[int]
+    ) -> None:
 
         prop_line = layout
 

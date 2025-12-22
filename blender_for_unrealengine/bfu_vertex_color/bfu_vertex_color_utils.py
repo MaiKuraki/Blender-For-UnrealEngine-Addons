@@ -9,12 +9,16 @@
 
 
 import bpy
-from typing import Dict, Any, Optional, TYPE_CHECKING, Tuple
+from typing import Dict, Any, Optional, Tuple
 from . import bfu_vertex_color_utils
 from .. import bbpl
 from .. import bfu_utils
 from .. import bfu_assets_manager
 from .. bfu_assets_manager.bfu_asset_manager_type import AssetType
+from . import bfu_vertex_color_props
+from .bfu_vertex_color_props import BFU_VertexColorImportOptionEnum
+
+previous_target_index_name: str = "BFU_PreviousTargetIndex"
 
 class VertexColorExportData:
     def __init__(self, obj: bpy.types.Object, parent: Optional[bpy.types.Object] = None):
@@ -27,14 +31,14 @@ class VertexColorExportData:
 
         owner = self.get_property_owner()
         if owner:
-            if owner.bfu_vertex_color_import_option == "IGNORE":
+            if bfu_vertex_color_props.get_object_vertex_color_import_option(owner).value == BFU_VertexColorImportOptionEnum.IGNORE.value:
                 self.export_type = "IGNORE"
 
-            elif owner.bfu_vertex_color_import_option == "OVERRIDE":
-                self.color = owner.bfu_vertex_color_override_color
+            elif bfu_vertex_color_props.get_object_vertex_color_import_option(owner).value == BFU_VertexColorImportOptionEnum.OVERRIDE.value:
+                self.color = bfu_vertex_color_props.get_object_vertex_color_override_color(owner)
                 self.export_type = "OVERRIDE"
 
-            elif owner.bfu_vertex_color_import_option == "REPLACE":
+            elif bfu_vertex_color_props.get_object_vertex_color_import_option(owner).value == BFU_VertexColorImportOptionEnum.REPLACE.value:
                 index = self.getC_chosen_vertex_index()
                 if index != -1:
                     self.index = index
@@ -61,8 +65,8 @@ class VertexColorExportData:
 
         owner = self.get_property_owner()
         if owner:
-            bfu_vertex_color_to_use = owner.bfu_vertex_color_to_use
-            bfu_vertex_color_index_to_use = owner.bfu_vertex_color_index_to_use
+            bfu_vertex_color_to_use = bfu_vertex_color_props.get_object_vertex_color_to_use(owner).value
+            bfu_vertex_color_index_to_use = bfu_vertex_color_props.get_object_vertex_color_index_to_use(owner)
             if obj:
                 if obj.data:
                     vertex_colors = bbpl.utils.get_vertex_colors(obj)
@@ -75,7 +79,9 @@ class VertexColorExportData:
                             return len(vertex_colors)-1
 
                         if bfu_vertex_color_to_use == "ActiveIndex":
-                            return bbpl.utils.get_vertex_colors_render_color_index(obj)
+                            target_index = bbpl.utils.get_vertex_colors_render_color_index(obj)
+                            if target_index:
+                                return target_index
 
                         if bfu_vertex_color_to_use == "CustomIndex":
                             if bfu_vertex_color_index_to_use < len(vertex_colors):
@@ -93,7 +99,7 @@ class VertexColorExportData:
             if obj.type == "MESH":
                 if obj.data:
                     vertex_colors = bbpl.utils.get_vertex_colors(obj)
-                    if obj.bfu_vertex_color_index_to_use < len(vertex_colors):
+                    if bfu_vertex_color_props.get_object_vertex_color_index_to_use(obj) < len(vertex_colors):
                         return vertex_colors[index].name
 
         return "None"
@@ -103,35 +109,43 @@ class VertexColorExportData:
 # Vertex Color
 def SetVertexColorForUnrealExport(parent: bpy.types.Object):
 
-    objs = bfu_utils.GetExportDesiredChilds(parent)
+    objs = bfu_utils.get_export_desired_childs(parent)
     objs.append(parent)
 
     for obj in objs:
-        if obj.type == "MESH":
+        if isinstance(obj.data, bpy.types.Mesh):
             vced = bfu_vertex_color_utils.VertexColorExportData(obj, parent)
             if vced.export_type == "REPLACE":
 
-                vertex_colors = bbpl.utils.get_vertex_colors(obj)
+                if bpy.app.version >= (3, 2, 0):
+                    vertex_colors = obj.data.color_attributes # type: ignore
+                    # Save the previous target
+                    obj.data[previous_target_index_name] = bfu_vertex_color_props.get_object_vertex_color_to_use(obj).value
 
-                # Save the previous target
-                obj.data["BFU_PreviousTargetIndex"] = vertex_colors.active_index
+                    # Set the vertex color for export
+                    vertex_colors.active_index = vced.index
+                else:
+                    vertex_colors = obj.data.vertex_colors # type: ignore
 
-                # Ser the vertex color for export
-                vertex_colors.active_index = vced.index
+                    # Save the previous target
+                    obj.data[previous_target_index_name] = bfu_vertex_color_props.get_object_vertex_color_to_use(obj).value
+
+                    # Set the vertex color for export
+                    vertex_colors.active_index = vced.index
 
 
 def clear_vertex_color_for_unreal_export(parent: bpy.types.Object):
 
-    objs = bfu_utils.GetExportDesiredChilds(parent)
+    objs = bfu_utils.get_export_desired_childs(parent)
     objs.append(parent)
     for obj in objs:
-        if obj.type == "MESH":
-            if "BFU_PreviousTargetIndex" in obj.data:
-                del obj.data["BFU_PreviousTargetIndex"]
+        if isinstance(obj.data, bpy.types.Mesh):
+            if previous_target_index_name in obj.data:
+                del obj.data[previous_target_index_name]
 
 def get_export_colors_type(obj: bpy.types.Object) -> str:
-    if obj.bfu_vertex_color_import_option in ["REPLACE", "OVERRIDE"]:
-        return obj.bfu_vertex_color_type
+    if bfu_vertex_color_props.get_object_vertex_color_import_option(obj).value in [BFU_VertexColorImportOptionEnum.REPLACE.value, BFU_VertexColorImportOptionEnum.OVERRIDE.value]:
+        return bfu_vertex_color_props.get_object_vertex_color_type(obj)
     return "NONE"
 
 def get_vertex_color_asset_data(obj: bpy.types.Object, asset_type: AssetType) -> Dict[str, Any]:

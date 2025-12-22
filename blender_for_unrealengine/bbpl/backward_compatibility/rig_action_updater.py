@@ -50,12 +50,12 @@ class RigActionUpdater:
                         if remove_if_already_exists:
                             action.fcurves.remove(action_fcurve)
                             if self.print_log or show_debug:
-                                print(f'"{current_target}" can not be updated to "{new_target}" in {action.name} action. (Alredy exist!) It was removed in {action.name} action.')
+                                print(f'"{current_target}" can not be updated to "{new_target}" in {action.name} action. (Already exists!) It was removed in {action.name} action.')
                             self.remove_fcurve += 1
-                            break #FCurve removed so no neew to test the other old_var_names
+                            break #FCurve removed so no need to test the other old_var_names
                         else:
                             if self.print_log or show_debug:
-                                print(f'"{current_target}" can not be updated to "{new_target}" in {action.name} action. (Alredy exist!)')
+                                print(f'"{current_target}" can not be updated to "{new_target}" in {action.name} action. (Already exists!)')
                 else:
                     if show_debug: 
                         print(f"{old_data_path} not found in {current_target} for action {action.name}.")

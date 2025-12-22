@@ -1,7 +1,7 @@
 {
     "schema_version": [1,0,0],
     "blender_manifest": {
-        "version": [4,4,3],
+        "version": [4,4,4],
         "id": "unrealengine_assets_exporter",
         "name": "Unreal Engine Assets Exporter",
         "tagline": "Allows to batch export and import in Unreal Engine",
@@ -32,9 +32,26 @@
     },
 
     "builds": {
+        "unrealengine_assets_exporter_5.0": {   
+            "generate_method": "EXTENTION_COMMAND",
+            "auto_install_range": [[5,0,0], "LATEST"],
+            "naming": "{Name}_{Version}-blender_5.0.zip",
+            "module": "unrealengine_assets_exporter", 
+            "pkg_id": "unrealengine_assets_exporter",
+            "exclude_paths": [
+                "fbxio/",
+                "addon_debug/",
+                "languages/check_translation.py"
+            ],
+            "include_paths": [
+                "fbxio/__init__.py/",
+                "fbxio/io_scene_fbx_5_0/"
+            ],
+            "blender_version_min": [5,0,0]
+        },
         "unrealengine_assets_exporter_4.5": {   
             "generate_method": "EXTENTION_COMMAND",
-            "auto_install_range": [[4,5,0], "LATEST"],
+            "auto_install_range": [[4,5,0], [4,5,5]],
             "naming": "{Name}_{Version}-blender_4.5.zip",
             "module": "unrealengine_assets_exporter", 
             "pkg_id": "unrealengine_assets_exporter",

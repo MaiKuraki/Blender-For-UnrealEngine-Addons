@@ -17,6 +17,8 @@ def get_object_export_type(obj: bpy.types.Object) -> BFU_ExportTypeEnum:
     for export_type in BFU_ExportTypeEnum:
         if obj.bfu_export_type == export_type.value:  # type: ignore
             return export_type
+        
+    print(f"Warning: Object '{obj.name}' has an invalid export type '{obj.bfu_export_type}'. Using default export type.")  # type: ignore
     return BFU_ExportTypeEnum.default()
 
 # Check functions
@@ -66,6 +68,14 @@ def get_all_export_recursive_armatures(scene: bpy.types.Scene) ->  List[bpy.type
     found_objects: List[bpy.types.Object] = []
     for obj in scene.objects:
         if isinstance(obj.data, bpy.types.Armature):
+            if obj.bfu_export_type == BFU_ExportTypeEnum.EXPORT_RECURSIVE.value:  # type: ignore
+                found_objects.append(obj)
+    return found_objects
+
+def get_all_selected_export_recursive_objects(scene: bpy.types.Scene) -> List[bpy.types.Object]:
+    found_objects: List[bpy.types.Object] = []
+    for obj in scene.objects:
+        if obj.select_get():
             if obj.bfu_export_type == BFU_ExportTypeEnum.EXPORT_RECURSIVE.value:  # type: ignore
                 found_objects.append(obj)
     return found_objects

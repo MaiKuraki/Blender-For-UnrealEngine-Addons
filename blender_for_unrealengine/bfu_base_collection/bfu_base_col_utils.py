@@ -7,28 +7,22 @@
 #  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
 # ----------------------------------------------
 
-from typing import List
 import bpy
+from pathlib import Path
+from .. import bfu_basics
+from .. import bfu_export_nomenclature
 from . import bfu_base_col_props
-from .. import bfu_export_filter
-from .. import bfu_debug_settings
 
-def support_collection_export(scene: bpy.types.Scene) -> bool:
-    return bfu_export_filter.bfu_export_filter_props.scene_use_static_collection_export(scene)
 
-def optimized_collection_search(scene: bpy.types.Scene) -> List[bpy.types.Collection]:
-    if not support_collection_export(scene):
-        return []
+def get_col_import_location(col: bpy.types.Collection) -> Path:
+    """Get the path to import a collection into Unreal Engine."""
 
-    events = bfu_debug_settings.root_events
-    collection_list: List[bpy.types.Collection] = []
+    export_folder_name = bfu_base_col_props.get_collection_export_folder_name(col)
+    return bfu_export_nomenclature.bfu_export_nomenclature_utils.get_import_location() / bfu_basics.valid_folder_name(export_folder_name)
 
-    events.add_sub_event(f'Export Specific Collection List')
-    for target_col in bfu_base_col_props.scene_collection_asset_list(scene):
-        if target_col.use:
-            # No need to check if not collection.library: because alredsy checked in scene_collection_asset_list
-            if target_col.name in bpy.data.collections:
-                collection_list.append(bpy.data.collections[target_col.name])
-    events.stop_last_event()
+def get_col_export_folder(col: bpy.types.Collection) -> str:
+    """Get the export folder name for a collection."""
+    
+    export_folder_name = bfu_base_col_props.get_collection_export_folder_name(col)
+    return bfu_basics.valid_folder_name(export_folder_name)
 
-    return collection_list

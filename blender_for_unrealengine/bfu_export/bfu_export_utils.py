@@ -13,7 +13,7 @@ import math
 import mathutils
 from bpy_extras.io_utils import axis_conversion
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, TYPE_CHECKING
 from .. import bfu_export_text_files
 from .. import bfu_utils
 from .. import bbpl
@@ -24,11 +24,14 @@ from .. import bfu_socket
 from .. import bfu_export_logs
 from .. import bfu_addon_prefs
 from .. import bfu_collision
+from .. import bfu_adv_object
 
 # @TODO: Move this to a config file.
 dup_temp_name = "BFU_Temp"  # Duplicate object temporary name
-Export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
+export_temp_preFix = "_ESO_Temp"  # _ExportSubObject_TempName
 
+previous_enabled_armature_constraints_key = "BFU_PreviousEnabledArmatureConstraints"
+armature_modifier_prefix = "BFU_Const_"
 
 def ApplyProxyData(obj: bpy.types.Object) -> None:
 
@@ -381,7 +384,7 @@ def SetSocketsExportName(obj: bpy.types.Object):
 def SetSocketsExportTransform(obj: bpy.types.Object):
     # Set socket Transform for Unreal
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     for socket in bfu_socket.bfu_socket_utils.get_socket_desired_children(obj):
         socket["BFU_PreviousSocketScale"] = socket.scale
         socket["BFU_PreviousSocketLocation"] = socket.location
@@ -572,48 +575,64 @@ def CorrectExtremUVAtExport(obj: bpy.types.Object):
             return True
     return False
 
+
+
 # Armature
-
-
-def ConvertArmatureConstraintToModifiers(armature: bpy.types.Object):
-    for obj in bfu_utils.GetExportDesiredChilds(armature):
-        previous_enabled_armature_constraints = []
+def convert_armature_constraint_to_modifiers(armature: bpy.types.Object):
+    for obj in bfu_utils.get_export_desired_childs(armature):
+        previous_enabled_armature_constraints: List[str] = []
 
         for const in obj.constraints:
-            if const.type == "ARMATURE":
+            if isinstance(const, bpy.types.ArmatureConstraint):
                 if const.enabled is True:
                     previous_enabled_armature_constraints.append(const.name)
 
                     # Disable constraint
-                    const.enabled = False
+                    #const.enabled = False
 
                     # Remove All Vertex Group
                     # TO DO:
 
                     # Add Vertex Group
-                    for target in const.targets:
-                        bone_name = target.subtarget
-                        group = obj.vertex_groups.new(name=bone_name)
+                    if isinstance(obj.data, bpy.types.Mesh):
+                        for target in const.targets:
+                            bone_name = target.subtarget
+                            group = obj.vertex_groups.new(name=bone_name)
 
-                        vertex_indices = range(0, len(obj.data.vertices))
-                        group.add(vertex_indices, 1.0, 'REPLACE')
+                            vertex_indices = range(0, len(obj.data.vertices))
+                            group.add(vertex_indices, 1.0, 'REPLACE')
 
                     # Add armature modifier
-                    mod = obj.modifiers.new("BFU_Const_"+const.name, "ARMATURE")
-                    mod.object = armature
+                    mod = obj.modifiers.new(armature_modifier_prefix+const.name, "ARMATURE")
+                    if isinstance(mod, bpy.types.ArmatureModifier):
+                        mod.object = armature
+                    else:
+                        raise Exception("Attempting to create an Armature Modifier but got a different type.")
 
         # Save data for reset after export
-        obj["BFU_PreviousEnabledArmatureConstraints"] = previous_enabled_armature_constraints
+        obj[previous_enabled_armature_constraints_key] = previous_enabled_armature_constraints
 
 
-def ResetArmatureConstraintToModifiers(armature: bpy.types.Object):
-    for obj in bfu_utils.GetExportDesiredChilds(armature):
-        if "BFU_PreviousEnabledArmatureConstraints" in obj:
-            for const_names in obj["BFU_PreviousEnabledArmatureConstraints"]:
+def reset_armature_constraint_to_modifiers(armature: bpy.types.Object):
+    for obj in bfu_utils.get_export_desired_childs(armature):
+        if previous_enabled_armature_constraints_key in obj:
+            # Get all previous enabled constraints before apply changes
+            previous_enabled_armature_constraints: List[str] = obj[previous_enabled_armature_constraints_key]
+
+
+            for const_names in previous_enabled_armature_constraints:
+                if const_names not in obj.constraints:
+                    raise Exception("Constraint name not found during reset: " + const_names)
+                
                 const = obj.constraints[const_names]
-
+                if not isinstance(const, bpy.types.ArmatureConstraint):
+                    raise Exception("Constraint type mismatch during reset for constraint: " + const_names)
+               
                 # Remove created armature for export
-                mod = obj.modifiers["BFU_Const_"+const_names]
+                mod = obj.modifiers[armature_modifier_prefix+const_names]
+                if not isinstance(mod, bpy.types.ArmatureModifier):
+                    raise Exception("Modifier type mismatch during reset for modifier: " + mod.name)
+
                 obj.modifiers.remove(mod)
 
                 # Remove created Vertex Group
@@ -626,9 +645,7 @@ def ResetArmatureConstraintToModifiers(armature: bpy.types.Object):
                     # TO DO:
 
                 # Enable back constraint
-                const.enabled = True
-
-
+                #const.enabled = True
 
 
 def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
@@ -639,7 +656,7 @@ def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
     if not bfu_skeletal_mesh.bfu_export_procedure.is_fbx_file_export(obj):
         return False  # Rescale only if FBX export.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleFullRigAtExport == "auto":
 
         if bfu_utils.get_scene_unit_scale_is_close(0.01):
@@ -656,7 +673,7 @@ def get_should_rescale_skeleton_for_fbx_export(obj: bpy.types.Object) -> bool:
 def get_rescale_rig_factor() -> float:
     # This will return the rescale factor.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleFullRigAtExport == "auto":
         return 100 * bfu_utils.get_scene_unit_scale()
     else:
@@ -666,7 +683,7 @@ def get_rescale_rig_factor() -> float:
 def get_should_rescale_sockets():
     # This will return if the socket should be rescale.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleSocketsAtExport == "auto":
         if bpy.context.scene.unit_settings.scale_length == 0.01:
             return False  # False because that useless to rescale at 1 :v
@@ -682,7 +699,7 @@ def get_should_rescale_sockets():
 def GetRescaleSocketFactor():
     # This will return the rescale factor.
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     if addon_prefs.rescaleSocketsAtExport == "auto":
         return 1/(100*bfu_utils.get_scene_unit_scale())
     else:
@@ -698,49 +715,49 @@ def export_additional_data(fullpath: Path, data: Dict[str, str]) -> None:
         bfu_export_text_files.bfu_export_text_files_utils.export_single_json_file(additional_data, fullpath)
 
 def get_final_fbx_export_primary_bone_axis(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_primary_bone_axis
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["primary_bone_axis"]
 
 def get_final_fbx_export_secondary_bone_axis(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_secondary_bone_axis
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["secondary_bone_axis"]
 
 def get_skeleton_fbx_export_use_space_transform(obj: bpy.types.Object) -> bool:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_use_space_transform
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["use_space_transform"]
 
 def get_skeleton_export_axis_forward(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_forward
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_forward"]
 
 def get_skeleton_export_axis_up(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_up
     else:
         return bfu_skeletal_mesh.bfu_export_procedure.get_obj_skeleton_fbx_procedure_preset(obj)["axis_up"]
 
 def get_static_fbx_export_use_space_transform(obj: bpy.types.Object) -> bool:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_use_space_transform
     else:
         return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["use_space_transform"]
 
 def get_static_fbx_export_axis_forward(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_forward
     else:
         return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_forward"]
 
 def get_static_fbx_export_axis_up(obj: bpy.types.Object) -> str:
-    if obj.bfu_override_procedure_preset:
+    if bfu_adv_object.bfu_adv_obj_props.get_object_override_procedure_preset(obj):
         return obj.bfu_fbx_export_axis_up
     else:
         return bfu_static_mesh.bfu_export_procedure.get_obj_static_fbx_procedure_preset(obj)["axis_up"]
@@ -778,3 +795,99 @@ def get_static_axis_conversion(obj: bpy.types.Object) -> mathutils.Matrix:
     except Exception as e:
         print(f"For asset \"{obj.name}\" : {e}")
         return axis_conversion("-Z", "Y").to_4x4()
+    
+class ArmatureRestPoseData():
+    def __init__(self, obj: bpy.types.Object):
+        self.previous_pose_position: str = ''
+        self.obj: bpy.types.Object = obj
+
+        if isinstance(obj.data, bpy.types.Armature):
+            self.previous_pose_position = obj.data.pose_position
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def set_armature_to_rest_pose(self):
+        if isinstance(self.obj.data, bpy.types.Armature):
+            self.previous_pose_position = self.obj.data.pose_position
+            self.obj.data.pose_position = 'REST'
+            
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def set_armature_to_pose_position(self):
+        if isinstance(self.obj.data, bpy.types.Armature):
+            self.previous_pose_position = self.obj.data.pose_position
+            self.obj.data.pose_position = 'POSE'
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def reset_armature_pose_position(self):
+        if isinstance(self.obj.data, bpy.types.Armature):
+            self.obj.data.pose_position = self.previous_pose_position # type: ignore
+        else:
+            raise ValueError("The provided object is not an armature.")
+
+def set_armature_to_rest_pose(obj: bpy.types.Object) -> ArmatureRestPoseData:
+    # Set armature to rest pose for export
+    # Return ArmatureRestPoseData for reset after export
+    armature_rest_pose_data = ArmatureRestPoseData(obj)
+    armature_rest_pose_data.set_armature_to_rest_pose()
+    return armature_rest_pose_data
+    
+class ArmatureEnabledContraintsData():
+    def __init__(self, obj: bpy.types.Object):
+        self.bone_constraints_enabled: Dict[str, Dict[str, bool]] = {}
+        self.obj: bpy.types.Object = obj
+
+        if isinstance(obj.data, bpy.types.Armature):
+            self.previous_pose_position = obj.data.pose_position
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def save_bone_constraints_enabled(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            self.bone_constraints_enabled[b.name] = {}
+            for c in b.constraints:
+                self.bone_constraints_enabled[b.name][c.name] = c.enabled
+        
+    def disable_all_bone_constraints(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            for c in b.constraints:
+                c.enabled = False
+
+    def enable_all_bone_constraints(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            for c in b.constraints:
+                c.enabled = True
+
+    def reset_all_bone_constraints(self):
+        pose_data = self.obj.pose
+        if not pose_data:
+            raise ValueError("The provided object does not have pose data. Please ensure you are in pose mode.")
+        
+        for b in pose_data.bones:
+            if b.name in self.bone_constraints_enabled:
+                for c in b.constraints:
+                    if c.name in self.bone_constraints_enabled[b.name]:
+                        c.enabled = self.bone_constraints_enabled[b.name][c.name]
+
+
+def disable_all_bone_constraints(obj: bpy.types.Object) -> ArmatureEnabledContraintsData:
+    # Disable all bone constraints for export
+    # Return ArmatureEnabledContraintsData for reset after export
+    armature_constraints_data = ArmatureEnabledContraintsData(obj)
+    armature_constraints_data.save_bone_constraints_enabled()
+    armature_constraints_data.disable_all_bone_constraints()
+    return armature_constraints_data

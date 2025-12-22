@@ -13,7 +13,7 @@ import string
 import fnmatch
 import math
 import os
-from typing import List, Tuple, Optional, Union, TYPE_CHECKING, Any
+from typing import List, Tuple, Optional, TYPE_CHECKING, Any
 from pathlib import Path
 import bpy
 import bmesh
@@ -224,39 +224,20 @@ def get_all_collision_and_sockets_obj(objs_list=None):
     return colObjs
 
 
-def GetExportDesiredChilds(obj: bpy.types.Object) -> List[bpy.types.Object]:
+def get_export_desired_childs(obj: bpy.types.Object) -> List[bpy.types.Object]:
     # Get only all child objects that must be exported with parent object
 
-    DesiredObj = []
+    w = bpy.context.window
+    if not w:
+        raise RuntimeError("No window found in context.")
+
+    desired_objs: List[bpy.types.Object] = []
     for child in bbpl.basics.get_recursive_obj_childs(obj):
         if bfu_export_control.bfu_export_control_utils.is_auto_or_export_recursive(child):
-            if child.name in bpy.context.window.view_layer.objects:
-                DesiredObj.append(child)
+            if child.name in w.view_layer.objects:
+                desired_objs.append(child)
 
-    return DesiredObj
-
-
-def disable_all_bones_consraints(obj: bpy.types.Object):
-    for b in obj.pose.bones:
-        for c in b.constraints:
-            c.enabled = False
-
-
-def remove_all_bones_consraints(obj: bpy.types.Object):
-    for b in obj.pose.bones:
-        for c in b.constraints:
-
-            # In Blender 4.4 for some constraint when I remove a constraint from python code it crash.
-            # Disable it and clear drivers before remove fix the crash. I don't know why...
-            fcurve_path = f'pose.bones["{b.name}"].constraints["{c.name}"].influence'
-            if obj.animation_data and obj.animation_data.drivers:
-                for fcurve in obj.animation_data.drivers:
-                    if fcurve.data_path == fcurve_path:
-                        obj.animation_data.drivers.remove(fcurve)
-                        break
-
-            c.enabled = False
-            b.constraints.remove(c)
+    return desired_objs
 
 class ProxyRigConsraint():
     def __init__(self, constraint: bpy.types.Constraint):
@@ -443,7 +424,7 @@ class ModifiersDataScale():
         self.saved_data = {}
 
 
-    def RescaleForUnrealEngine(self):
+    def rescale_for_unreal_engine(self):
         for x, mod in enumerate(self.modifiers):
             if mod.type == "MIRROR":
                 self.saved_data[x] = mod.merge_threshold
@@ -506,83 +487,6 @@ def evaluate_camera_position_for_unreal(camera: bpy.types.Object, previous_euler
 
     return array_transform
 
-
-def get_desired_action_start_end_range(obj: bpy.types.Object, action: bpy.types.Action)-> Tuple[float, float]:
-    # Returns desired action or camera anim start/end time
-    scene = bpy.context.scene
-
-    if obj.bfu_anim_action_start_end_time_enum == "with_keyframes":
-        # GetFirstActionFrame + Offset
-        startTime = int(action.frame_range.x) + obj.bfu_anim_action_start_frame_offset
-        # GetLastActionFrame + Offset
-        endTime = int(action.frame_range.y) + obj.bfu_anim_action_end_frame_offset
-        if endTime <= startTime:
-            endTime = startTime+1
-        return (startTime, endTime)
-
-    elif obj.bfu_anim_action_start_end_time_enum == "with_sceneframes":
-        startTime = scene.frame_start + obj.bfu_anim_action_start_frame_offset
-        endTime = scene.frame_end + obj.bfu_anim_action_end_frame_offset
-        if endTime <= startTime:
-            endTime = startTime+1
-        return (startTime, endTime)
-
-    elif obj.bfu_anim_action_start_end_time_enum == "with_customframes":
-        startTime = obj.bfu_anim_action_custom_start_frame
-        endTime = obj.bfu_anim_action_custom_end_frame
-        if endTime <= startTime:
-            endTime = startTime+1
-        return (startTime, endTime)
-
-
-def get_desired_nla_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
-    # Returns desired nla anim start/end time
-    if bpy.context is None:
-        return (0.0, 1.0)
-    scene = bpy.context.scene
-
-    if obj.bfu_anim_nla_start_end_time_enum == "with_sceneframes":
-        startTime = scene.frame_start + obj.bfu_anim_nla_start_frame_offset
-        endTime = scene.frame_end + obj.bfu_anim_nla_end_frame_offset
-        if endTime <= startTime:
-            endTime = startTime
-
-        return (startTime, endTime)
-
-    elif obj.bfu_anim_nla_start_end_time_enum == "with_customframes":
-        startTime = obj.bfu_anim_nla_custom_start_frame
-        endTime = obj.bfu_anim_nla_custom_end_frame
-        if endTime <= startTime:
-            endTime = startTime
-
-        return (startTime, endTime)
-
-def get_desired_alembic_start_end_range(obj: bpy.types.Object) -> Tuple[float, float]:
-    # Returns desired alembic anim start/end time
-    if bpy.context is None:
-        return (0.0, 1.0)
-    scene = bpy.context.scene
-    return (scene.frame_start, scene.frame_end)
-
-def get_desired_camera_start_end_range(obj: bpy.types.Object)-> Tuple[float, float]:
-    # Returns desired action or camera anim start/end time
-    
-    if obj.type != "CAMERA":  # type: ignore
-        return (0.0, 1.0)
-    
-    if bpy.context is None:
-        return (0.0, 1.0)
-    scene = bpy.context.scene
-    startTime = scene.frame_start
-    endTime = scene.frame_end
-    if endTime <= startTime:
-        endTime = startTime+1
-    return (startTime, endTime)
-
-def action_is_one_frame(action: bpy.types.Action) -> bool:
-    # return True if action is one frame
-    return action.frame_range.y - action.frame_range.x == 0
-
 def get_export_collection_objects(collection: bpy.types.Collection) -> List[bpy.types.Object]:
     # Found all objects that must be exported in a collection
     found_objs = []
@@ -594,7 +498,8 @@ def get_export_collection_objects(collection: bpy.types.Collection) -> List[bpy.
     return found_objs
 
 def draw_proxy_propertys(obj: bpy.types.Object):
-    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     # Debug option to alway show linked propertys
     if addon_prefs.show_hiden_linked_propertys:
         return True
@@ -639,7 +544,7 @@ def SelectParentAndDesiredChilds(active: bpy.types.Object):
 
     new_select_list = []
     bpy.ops.object.select_all(action='DESELECT')
-    for obj in GetExportDesiredChilds(active):
+    for obj in get_export_desired_childs(active):
         if obj.name in bpy.context.view_layer.objects:
             new_select_list.append(obj)
 
@@ -1105,7 +1010,7 @@ def get_armature_root_bones(armature: bpy.types.Object) -> List[bpy.types.EditBo
 
 
 def get_desired_export_armature_name(obj: bpy.types.Object) -> str:
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     single_root = len(get_armature_root_bones(obj)) == 1
     if addon_prefs.add_skeleton_root_bone or single_root != 1:
         return addon_prefs.skeleton_root_bone_name

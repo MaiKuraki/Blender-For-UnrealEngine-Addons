@@ -28,7 +28,6 @@ def process_skeletal_mesh_export_from_package(
     op: bpy.types.Operator,
     package: AssetPackage
 ) -> bool:
-
     if package.file:
         return export_as_skeletal_mesh(
             op=op,
@@ -63,7 +62,7 @@ def export_as_skeletal_mesh(
     if scene is None:
         raise ValueError("No active scene found!")
     
-    is_library = armature.data.library is not None
+    is_library: bool = armature.data.library is not None  # type: ignore
 
     # [SAVE ASSET DATA]
     # Save asset data before export like transforms, animation data, etc.
@@ -137,12 +136,12 @@ def export_as_skeletal_mesh(
         my_skeletal_export_scale = bfu_utils.SkeletalExportScale(active)
         my_skeletal_export_scale.apply_skeletal_export_scale(rrf)
         my_modifiers_data_scale = bfu_utils.ModifiersDataScale(rrf)
-        my_modifiers_data_scale.RescaleForUnrealEngine()
+        my_modifiers_data_scale.rescale_for_unreal_engine()
 
     # Set rename temporarily the Armature as "Armature"
-    bfu_utils.disable_all_bones_consraints(active)
-    bpy.context.object.data.pose_position = 'REST'  # type: ignore
-    bfu_export.bfu_export_utils.ConvertArmatureConstraintToModifiers(active)
+    armature_bones_constraints = bfu_export.bfu_export_utils.disable_all_bone_constraints(active) # @TODO: Please what the reason to disable all bones constraints at skeletal mesh export?
+    armature_rest_pose_data = bfu_export.bfu_export_utils.set_armature_to_rest_pose(active)
+    bfu_export.bfu_export_utils.convert_armature_constraint_to_modifiers(active)
 
     # [PREPARE SCENE FOR EXPORT]
     # Prepare scene for export (frame range, simplefying, etc.)
@@ -186,7 +185,7 @@ def export_as_skeletal_mesh(
             use_metadata=active.bfu_export_with_meta_data,
             primary_bone_axis=bfu_export.bfu_export_utils.get_final_fbx_export_primary_bone_axis(active),
             secondary_bone_axis=bfu_export.bfu_export_utils.get_final_fbx_export_secondary_bone_axis(active),
-            mirror_symmetry_right_side_bones=active.bfu_mirror_symmetry_right_side_bones,
+            mirror_symmetry_right_side_bones=bfu_skeletal_mesh.bfu_skeletal_mesh_props.get_object_mirror_symmetry_right_side_bones(active),
             use_ue_mannequin_bone_alignment=active.bfu_use_ue_mannequin_bone_alignment,
             disable_free_scale_animation=active.bfu_disable_free_scale_animation,
             use_space_transform=bfu_export.bfu_export_utils.get_skeleton_fbx_export_use_space_transform(active),
@@ -235,8 +234,8 @@ def export_as_skeletal_mesh(
             check_existing=False,
             use_selection=True,
             export_def_bones=active.bfu_export_deform_only,
-            export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active),
-            export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active),
+            export_materials=bfu_material.bfu_material_utils.get_gltf_export_materials(active),  # type: ignore
+            export_image_format=bfu_material.bfu_material_utils.get_gltf_export_textures(active),  # type: ignore
             export_apply = True,
             export_animations = False,
 
@@ -262,17 +261,22 @@ def export_as_skeletal_mesh(
         my_modifiers_data_scale.ResetScaleAfterExport()  # type: ignore
 
     bfu_vertex_color.bfu_vertex_color_utils.clear_vertex_color_for_unreal_export(active)
-    bfu_export.bfu_export_utils.ResetArmatureConstraintToModifiers(active)
+    bfu_export.bfu_export_utils.reset_armature_constraint_to_modifiers(active)
     bfu_export.bfu_export_utils.reset_sockets_export_name(active)
     bfu_export.bfu_export_utils.reset_sockets_transform(active)
     
-    if not is_library:
+    if is_library:
+        armature_bones_constraints.reset_all_bone_constraints()
+        armature_rest_pose_data.reset_armature_pose_position()
+    else:
         bfu_utils.clean_delete_objects(bpy.context.selected_objects)
 
         for data in duplicate_data.data_to_remove:
             data.remove_data()
 
         duplicate_data.reset_duplicate_name_after_export()
+
+        
 
     for obj in scene.objects:
         bfu_utils.clear_all_bfu_temp_vars(obj)

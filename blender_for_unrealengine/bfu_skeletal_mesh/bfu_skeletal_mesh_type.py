@@ -24,9 +24,9 @@ from .. import bfu_vertex_color
 from .. import bfu_material
 from .. import bfu_lod
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
-from .. import bfu_export_nomenclature
 from .. import bfu_base_object
 from .. import bfu_export_filter
+from ..bfu_export_filter.bfu_export_filter_props import BFU_ExportSelectionFilterEnum
 
 
 
@@ -58,7 +58,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
         return bfu_export_filter.bfu_export_filter_utils.get_use_skeletal_export()
 
     def get_asset_import_directory_path(self, data: Any, details: Any = None, extra_path: Optional[Path] = None) -> Path:
-        dirpath = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_import_location(data)
+        dirpath = bfu_base_object.bfu_base_obj_utils.get_obj_import_location(data)
         return dirpath if extra_path is None else dirpath / extra_path  # Add extra path if provided
 
 # ###################################################################
@@ -144,6 +144,9 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
     def get_asset_export_data(self, data: bpy.types.Object, details: Any, search_mode: AssetDataSearchMode) -> List[AssetToExport]:
 
         scene = bpy.context.scene
+        if scene is None:
+            return []
+
         asset_list: List[AssetToExport] = []
         
         # Export the armature and all mesh as a single skeletal mesh
@@ -189,9 +192,9 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
 
         # Export specified parts of the modular skeletal mesh
         elif bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.modular_mode_is_specified_parts(data):
-            export_filter = scene.bfu_export_selection_filter  # type: ignore[attr-defined]
+            export_filter: BFU_ExportSelectionFilterEnum = bfu_export_filter.bfu_export_filter_props.scene_export_selection_filter(scene)
             active_part: int = -1
-            if export_filter == "only_object_and_active":
+            if export_filter.value == BFU_ExportSelectionFilterEnum.ONLY_OBJECT_AND_ACTIVE.value:
                 active_part = data.bfu_modular_skeletal_specified_parts_meshs_template.active_template_property  # type: ignore[attr-defined]
 
             template = bfu_modular_skeletal_mesh.bfu_modular_skeletal_mesh_utils.get_modular_skeletal_specified_parts_meshs_template(data)
@@ -202,7 +205,7 @@ class BFU_SkeletalMesh(BFU_ObjectAssetClass):
                 if part.enabled == False:
                     should_export = False
                 # Check export filter
-                if export_filter == "only_object_and_active":
+                if export_filter.value == BFU_ExportSelectionFilterEnum.ONLY_OBJECT_AND_ACTIVE.value:
                     if x != active_part:
                         should_export = False
                 

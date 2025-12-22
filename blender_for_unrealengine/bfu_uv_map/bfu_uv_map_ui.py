@@ -30,7 +30,7 @@ def draw_obj_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy
     if bfu_ui.bfu_ui_utils.DisplayPropertyFilter("OBJECT", "MISC"):
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_uv_map_properties_expanded")
         _, panel = accordion.draw(layout)
-        if accordion.is_expend():
+        if accordion.is_expanded():
             # Geometry Node Uv
             bfu_convert_geometry_node_attribute_to_uv = panel.column()
             convert_geometry_node_attribute_to_uv_use = bfu_convert_geometry_node_attribute_to_uv.row()
@@ -55,7 +55,7 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_uv_map_properties_expanded")
     _, panel = accordion.draw(layout)
-    if accordion.is_expend():
+    if accordion.is_expanded():
         ready_for_correct_extrem_uv_scale = False
         obj = bpy.context.object
         if obj and obj.type == "MESH":

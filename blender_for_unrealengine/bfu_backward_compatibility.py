@@ -89,9 +89,12 @@ def update_old_variables(print_log: bool = False) -> None:
 
         bfu_addon_updater.update_data_variable(obj, ["exportWithCustomProps", "bfu_export_with_custom_props"], "bfu_fbx_export_with_custom_props")
 
+        bfu_addon_updater.update_data_variable(obj, ["computedStaticMeshLightMapRes"], "bfu_computed_static_mesh_light_map_res")
+
     for col in bpy.data.collections:
         bfu_addon_updater.update_data_variable(col, ["exportFolderName"], "bfu_export_folder_name")
-
+        bfu_addon_updater.update_data_variable(col, ["bfu_collection_export_procedure"], "bfu_static_collection_export_procedure")
+        
     for scene in bpy.data.scenes:
         bfu_addon_updater.update_data_variable(scene, ["static_mesh_prefix_export_name"], "bfu_static_mesh_prefix_export_name")
         bfu_addon_updater.update_data_variable(scene, ["skeletal_mesh_prefix_export_name"], "bfu_skeletal_mesh_prefix_export_name")
@@ -112,8 +115,8 @@ def update_old_variables(print_log: bool = False) -> None:
         bfu_addon_updater.update_data_variable(scene, ["unreal_import_module"], "bfu_unreal_import_module")
         bfu_addon_updater.update_data_variable(scene, ["unreal_import_location"], "bfu_unreal_import_location")
 
-        bfu_addon_updater.update_data_variable(scene, ["CollectionExportList"], "bfu_collection_asset_list")
-        bfu_addon_updater.update_data_variable(scene, ["active_CollectionExportList"], "bfu_active_collection_asset_list")
+        bfu_addon_updater.update_data_variable(scene, ["CollectionExportList", "bfu_collection_asset_list"], "bfu_static_collection_asset_list")
+        bfu_addon_updater.update_data_variable(scene, ["active_CollectionExportList", "bfu_active_collection_asset_list"], "bfu_active_static_collection_asset_list")
 
         bfu_addon_updater.update_data_variable(scene, ["static_export"], "bfu_use_static_export")
         bfu_addon_updater.update_data_variable(scene, ["static_collection_export"], "bfu_use_static_collection_export")
@@ -143,7 +146,7 @@ def bfu_load_handler(dummy: Any):
 
 def deferred_execution():
     update_old_variables()
-    return None  # Important pour que le timer ne se répète pas
+    return None  # Important so the timer doesn't repeat
 
 classes = (
 )

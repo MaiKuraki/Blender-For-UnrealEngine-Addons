@@ -15,7 +15,7 @@ from .. import bfu_addon_prefs
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     scene = context.scene
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_export_filter_properties_expanded")
     if accordion:

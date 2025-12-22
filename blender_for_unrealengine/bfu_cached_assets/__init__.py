@@ -10,11 +10,8 @@
 import bpy
 import importlib
 
-from . import bfu_cached_assets_types
 from . import bfu_cached_assets_blender_class
 
-if "bfu_cached_assets_types" in locals():
-    importlib.reload(bfu_cached_assets_types)
 if "bfu_cached_assets_blender_class" in locals():
     importlib.reload(bfu_cached_assets_blender_class)
 

@@ -162,7 +162,7 @@ class BFU_UI_ModularSkeletalSpecifiedPartsMeshs(BBPL_UI_TemplateList): # Draw It
     def draw(self, layout: bpy.types.UILayout):
         super().draw(layout)
 
-        box = layout.box()  # Créez un box dans le layout courant
+        box = layout.box()  # Create a box in the current layout
         item = self.get_active_item()
         box
         if item:

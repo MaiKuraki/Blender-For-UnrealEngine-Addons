@@ -8,7 +8,7 @@
 # ----------------------------------------------
 
 import bpy
-from typing import List, TYPE_CHECKING, Optional
+from typing import List, Optional
 from . import select_save
 from .. import utils
 
@@ -27,33 +27,32 @@ class SavedObject():
             self.hide_viewport = obj.hide_viewport
 
     def get_obj(self, use_names: bool = False)-> Optional[bpy.types.Object]:
-        if bpy.context is None:
-            return None
 
         scene = bpy.context.scene  
+        if scene is None:
+            return None
+
         if use_names:
             if self.name != "":
                 if self.name in scene.objects:
-                    if self.name in bpy.context.view_layer.objects:
-                        return scene.objects[self.name]
+                    if bpy.context.view_layer:
+                        if self.name in bpy.context.view_layer.objects:
+                            return scene.objects[self.name]
             return None
         else:
             return self.ref
-
-
-
 
 class SavedBones():
     """
     Saved data from a blender armature bone.
     """
 
-    def __init__(self, bone):
+    def __init__(self, bone: bpy.types.Bone):
         if bone:
             self.name = bone.name
-            self.select = bone.select
+            if bpy.app.version < (5, 0, 0):
+                self.select = bone.select
             self.hide = bone.hide
-
 
 class SavedCollection():
     """
@@ -68,9 +67,6 @@ class SavedCollection():
             self.hide_viewport = col.hide_viewport
 
     def get_col(self, use_names: bool = False)-> Optional[bpy.types.Collection]:
-        if bpy.context is None:
-            return None
-
         if use_names:
             if self.name != "":
                 if self.name in bpy.data.collections:
@@ -91,7 +87,6 @@ class SavedViewLayerChildren():
             self.exclude = child_col.exclude
             self.hide_viewport = child_col.hide_viewport
 
-
 class UserSceneSave():
     """
     Manager for saving and resetting the user scene.
@@ -101,8 +96,8 @@ class UserSceneSave():
         # Select
         self.user_select_class = select_save.UserSelectSave()
 
-        self.user_bone_active = None
-        self.user_bone_active_name = ""
+        self.user_bone_active: Optional[bpy.types.Bone] = None
+        self.user_bone_active_name: Optional[str] = None
 
         # Stats
         self.user_mode = None
@@ -121,10 +116,9 @@ class UserSceneSave():
         Save the current scene data.
         """
         # Save data (This can take time)
-        if bpy.context is None:
-            return
-
         scene = bpy.context.scene
+        if scene is None:
+            return
 
         # Select
         self.user_select_class.save_current_select()
@@ -133,7 +127,7 @@ class UserSceneSave():
         if self.user_select_class.user_active:
             if bpy.ops.object.mode_set.poll():  # type: ignore
                 self.user_mode = self.user_select_class.user_active.mode  # Save current mode
-        self.use_simplify = bpy.context.scene.render.use_simplify
+        self.use_simplify = scene.render.use_simplify
 
         # Data
         for obj in scene.objects:
@@ -151,11 +145,11 @@ class UserSceneSave():
 
         # Data for armature
         if self.user_select_class.user_active:
-            if self.user_select_class.user_active.type == "ARMATURE":
-                if self.user_select_class.user_active.data.bones.active:  # type: ignore
-                    self.user_bone_active = self.user_select_class.user_active.data.bones.active  # type: ignore
-                    self.user_bone_active_name = self.user_select_class.user_active.data.bones.active.name  # type: ignore
-                for bone in self.user_select_class.user_active.data.bones:  # type: ignore
+            if isinstance(self.user_select_class.user_active.data, bpy.types.Armature):
+                if self.user_select_class.user_active.data.bones.active:
+                    self.user_bone_active = self.user_select_class.user_active.data.bones.active
+                    self.user_bone_active_name = self.user_select_class.user_active.data.bones.active.name
+                for bone in self.user_select_class.user_active.data.bones:
                     self.object_bones.append(SavedBones(bone))
 
     def reset_select(self, use_names: bool = False):
@@ -176,10 +170,11 @@ class UserSceneSave():
                 if bpy.ops.object.mode_set.poll():  # type: ignore
                     if user_active.mode == "POSE":
                         bpy.ops.pose.select_all(action='DESELECT')
-                        for bone in self.object_bones:
-                            if bone.select:
-                                if bone.name in user_active.data.bones:  # type: ignore
-                                    user_active.data.bones[bone.name].select = True  # type: ignore
+                        if bpy.app.version < (5, 0, 0):
+                            for bone in self.object_bones:
+                                if bone.select:
+                                    if bone.name in user_active.data.bones:  # type: ignore
+                                        user_active.data.bones[bone.name].select = True  # type: ignore
 
                         if self.user_bone_active_name is not None:
                             if self.user_bone_active_name in user_active.data.bones:  # type: ignore
@@ -193,17 +188,18 @@ class UserSceneSave():
         if self.user_mode:
             utils.safe_mode_set(self.user_mode, bpy.ops.object)  # type: ignore
 
-    def reset_scene_at_save(self, print_removed_items = False, use_names: bool = False):
+    def reset_scene_at_save(self, print_removed_items: bool = False, use_names: bool = False):
         """
         Reset the user scene to at the last save.
         """
-        if bpy.context is None:
-            return
 
         scene = bpy.context.scene
+        if scene is None:
+            return
+        
         self.reset_mode_at_save()
 
-        bpy.context.scene.render.use_simplify = self.use_simplify
+        scene.render.use_simplify = self.use_simplify
 
         # Reset hide and select
         for obj in self.objects:
@@ -243,7 +239,7 @@ class UserSceneSave():
         for vlayer in scene.view_layers:
             layer_collections = utils.get_layer_collections_recursive(vlayer.layer_collection)
 
-            def get_layer_collection_in_list(name, collections) -> Optional[bpy.types.LayerCollection]:
+            def get_layer_collection_in_list(name: str, collections: list[bpy.types.LayerCollection]) -> Optional[bpy.types.LayerCollection]:
                 for layer_collection in collections:
                     if layer_collection.name == name:
                         return layer_collection

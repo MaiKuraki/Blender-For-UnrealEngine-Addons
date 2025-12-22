@@ -8,17 +8,11 @@
 # ----------------------------------------------
 
 import bpy
-import fnmatch
-from . import bfu_groom_config
-from .. import bbpl
-from .. import bfu_basics
-from .. import bfu_utils
-from .. import bfu_unreal_utils
 from .. import bfu_assets_manager
 from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 
-def is_groom(obj):
+def is_groom(obj: bpy.types.Object) -> bool:
     asset_class = bfu_assets_manager.bfu_asset_manager_utils.get_primary_supported_asset_class(obj)
     if asset_class:
         if asset_class.get_asset_type(obj) == AssetType.GROOM_SIMULATION:

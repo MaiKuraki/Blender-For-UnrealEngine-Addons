@@ -11,11 +11,14 @@ import bpy
 import importlib
 
 from . import bfu_light_map_props
+from . import bfu_light_map_operator
 from . import bfu_light_map_ui
 from . import bfu_light_map_utils
 
 if "bfu_light_map_props" in locals():
     importlib.reload(bfu_light_map_props)
+if "bfu_light_map_operator" in locals():
+    importlib.reload(bfu_light_map_operator)
 if "bfu_light_map_ui" in locals():
     importlib.reload(bfu_light_map_ui)
 if "bfu_light_map_utils" in locals():

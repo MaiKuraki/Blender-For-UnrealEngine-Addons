@@ -1080,7 +1080,7 @@ class ObjectWrapper(metaclass=MetaObjectWrapper):
                 if par_type in {'OBJECT', 'BONE'}:
                     return True
                 else:
-                    print("Sorry, '{}' parenting type is not supported".format(par_type))
+                    print("Sorry, “{}” parenting type is not supported".format(par_type))
                     return False
             return True
         return False

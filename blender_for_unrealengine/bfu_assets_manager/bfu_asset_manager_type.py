@@ -15,8 +15,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from ..bfu_simple_file_type_enum import BFU_FileTypeEnum
 from .. import bfu_basics
-from .. import bfu_export_nomenclature
+from .. import bfu_base_collection
 from .. import bfu_addon_prefs
+from .. import bfu_base_object
 
 class AssetToSearch(Enum):
     ALL_ASSETS = "all_assets"  # Search for all assets.
@@ -215,13 +216,37 @@ class AssetPackage:
         # Set the package file with the given directory path and filename
         self.file = PackageFile(dirpath, filename, file_type)
         return self.file
+
+    def check_object_in_scene(self, obj: bpy.types.Object) -> bool:
+        # Check if the object is valid in the current scene
+        scene = bpy.context.scene
+        if not scene:
+            raise ValueError("No active scene found in the current context.")
+        
+        if not obj.name in scene.objects:
+            raise ValueError(f"Object {obj.name} not found in the current scene.")
+        
+        scene_obj = scene.objects[obj.name]
+        if scene_obj != obj:
+            error_text = (f"Object {obj.name} is not valid in the current scene. " + 
+            "if the object comes from a library, you need get scene reference created at the link.")  
+            raise ValueError(error_text)
+        return True
     
+    def check_objects_in_scene(self, objects: List[bpy.types.Object]) -> bool:
+        # Check if all objects are valid in the current scene
+        for obj in objects:
+            self.check_object_in_scene(obj)
+        return True
+
     def add_object(self, obj: bpy.types.Object) -> None:
         # Add an object to the package
+        self.check_object_in_scene(obj)
         self.objects.append(obj)
 
     def add_objects(self, objects: List[bpy.types.Object]) -> None:
         # Add multiple objects to the package
+        self.check_objects_in_scene(objects)
         self.objects.extend(objects)
 
     def set_collection(self, collection: bpy.types.Collection) -> None:
@@ -427,7 +452,7 @@ class BFU_BaseAssetClass(ABC):
         if search_mode.search_packages():
             scene = bpy.context.scene
             if scene:
-                addon_prefs = bfu_addon_prefs.get_addon_prefs()
+                addon_prefs = bfu_addon_prefs.get_addon_preferences()
                 if (scene.bfu_use_text_additional_data and addon_prefs.useGeneratedScripts):  # type: ignore[attr-defined]
 
                     # Set additional data for the asset to export.
@@ -444,6 +469,9 @@ class BFU_BaseAssetClass(ABC):
     
     def get_asset_additional_data(self, data: Any, details: Any, search_mode: AssetDataSearchMode) -> Dict[str, Any]:
         return {}
+    
+    def get_batch_asset_export_data(self, search_mode: AssetDataSearchMode, force_cache_update: bool = False) -> List[AssetToExport]:
+        return []
     
 class BFU_ObjectAssetClass(BFU_BaseAssetClass):
 
@@ -481,7 +509,7 @@ class BFU_ObjectAssetClass(BFU_BaseAssetClass):
         
     def get_asset_folder_path(self, data: bpy.types.Object, details: Any = None) -> Path:
         # Add object folder path
-        obj_folder_path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_obj_export_folder(data)
+        obj_folder_path = bfu_base_object.bfu_base_obj_utils.get_obj_export_folder(data)
         if obj_folder_path:
             return Path(obj_folder_path)
         return Path()
@@ -509,7 +537,7 @@ class BFU_CollectionAssetClass(BFU_BaseAssetClass):
         
     def get_asset_folder_path(self, data: bpy.types.Collection, details: Any = None) -> Path:
         # Add collection folder path
-        col_folder_path = bfu_export_nomenclature.bfu_export_nomenclature_utils.get_col_export_folder(data)
+        col_folder_path = bfu_base_collection.bfu_base_col_utils.get_col_export_folder(data)
         if col_folder_path:
             return Path(col_folder_path)
         return Path()

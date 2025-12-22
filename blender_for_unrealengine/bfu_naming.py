@@ -11,15 +11,17 @@
 import bpy
 from typing import TYPE_CHECKING
 from . import bfu_basics
+from . import bfu_anim_action
+from . bfu_anim_action.bfu_anim_action_props import BFU_AnimNamingTypeEnum
 
 
 def get_collection_file_name(collection: bpy.types.Collection, desired_name: str = "", fileType: str = ".fbx") -> str:
     # Generate assset file name for skeletal mesh
     
-    if bpy.context is None:
-        return ""
-
     scene = bpy.context.scene
+    if scene is None:
+        raise ValueError("Scene is None")
+
     if TYPE_CHECKING:
         class FakeScene(bpy.types.Scene):
             bfu_static_mesh_prefix_export_name: str = ""
@@ -48,11 +50,11 @@ def get_nonlinear_animation_file_name(obj: bpy.types.Object, fileType: str = ".f
             bfu_anim_nla_export_name: str = ""
         obj = FakeObject()
 
-    if obj.bfu_anim_naming_type == "include_armature_name":
+    if bfu_anim_action.bfu_anim_action_props.get_object_anim_naming_type_enum(obj) == BFU_AnimNamingTypeEnum.INCLUDE_ARMATURE_NAME:
         armature_name: str = obj.name+"_"
-    elif obj.bfu_anim_naming_type == "action_name":
+    elif bfu_anim_action.bfu_anim_action_props.get_object_anim_naming_type_enum(obj) == BFU_AnimNamingTypeEnum.ACTION_NAME:
         armature_name: str = ""
-    elif obj.bfu_anim_naming_type == "include_custom_name":
+    elif bfu_anim_action.bfu_anim_action_props.get_object_anim_naming_type_enum(obj) == BFU_AnimNamingTypeEnum.INCLUDE_CUSTOM_NAME:
         armature_name: str = obj.bfu_anim_naming_custom+"_"
     else:
         armature_name: str = ""

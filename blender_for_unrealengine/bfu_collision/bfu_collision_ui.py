@@ -22,7 +22,7 @@ from ..bbpl.blender_layout import layout_doc_button
 
 def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
     scene = bpy.context.scene 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
 
     # Hide filters
     is_static_mesh = bfu_static_mesh.bfu_static_mesh_utils.is_static_mesh(obj)
@@ -40,7 +40,7 @@ def draw_ui_object(layout: bpy.types.UILayout, context: bpy.types.Context, obj: 
         accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_object_collision_properties_expanded")
         if accordion:
             _, panel = accordion.draw(layout)
-            if accordion.is_expend() and panel:
+            if accordion.is_expanded() and panel:
                 # StaticMesh prop
                 if is_static_mesh:
                     if not bfu_lod.bfu_lod_props.get_object_export_as_lod_mesh(obj):
@@ -69,7 +69,7 @@ def draw_tools_ui(layout: bpy.types.UILayout, context: bpy.types.Context):
     accordion = bbpl.blender_layout.layout_accordion.get_accordion(scene, "bfu_tools_collision_properties_expanded")
     if accordion:
         _, panel = accordion.draw(layout)
-        if accordion.is_expend() and panel:
+        if accordion.is_expanded() and panel:
 
             # Check draw collision settings
             layout_doc_button.add_doc_page_operator(

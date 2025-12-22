@@ -7,7 +7,6 @@
 #  https://github.com/xavier150/Blender-For-UnrealEngine-Addons
 # ----------------------------------------------
 
-import os
 import bpy
 from typing import Any, Dict, Optional, TYPE_CHECKING
 from pathlib import Path

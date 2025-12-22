@@ -9,6 +9,7 @@
 
 import bpy
 import webbrowser
+from typing import Set, TYPE_CHECKING
 from . import utils
 
 
@@ -19,7 +20,10 @@ class CustomOpenTargetWebPage_Operator(bpy.types.Operator):
     bl_description = "Click for open URL."
     url: bpy.props.StringProperty(default="https://github.com/xavier150/BleuRavenBlenderPythonLibrary")  # type: ignore
 
-    def execute(self, context):
+    if TYPE_CHECKING:
+        url: str
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:  # type: ignore
         # Check if the URL starts with http:// or https://
         if self.url.startswith("http://") or self.url.startswith("https://"):
             webbrowser.open(self.url)
@@ -55,7 +59,8 @@ def register():
         bpy.utils.register_class(cls)
 
     global BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS
-    bpy.utils.register_class(BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS)
+    if BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS:
+        bpy.utils.register_class(BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS)
 
 
 def unregister():
@@ -63,4 +68,5 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     global BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS
-    bpy.utils.unregister_class(BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS)
+    if BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS:
+        bpy.utils.unregister_class(BBPL_OT_OpenTargetWebPage_CUSTOM_CLASS)

@@ -106,7 +106,6 @@ def export_single_groom_simulation(
             filepath=str(fullpath),
             check_existing=False,
             selected=True,
-            visible_objects_only=True,
             global_scale=1,
             start=frame,
             end=frame,

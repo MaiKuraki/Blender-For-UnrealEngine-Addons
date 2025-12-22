@@ -38,7 +38,7 @@ def is_a_socket(obj: bpy.types.Object) -> bool:
 
 def get_socket_desired_children(target_obj: bpy.types.Object) -> List[bpy.types.Object]:
     sockets: List[bpy.types.Object] = []
-    for obj in bfu_utils.GetExportDesiredChilds(target_obj):
+    for obj in bfu_utils.get_export_desired_childs(target_obj):
         if is_a_socket(obj):
             sockets.append(obj)
 
@@ -57,7 +57,7 @@ def get_skeletal_mesh_socket_data(obj: bpy.types.Object) -> List[Dict[str, Any]]
     if not isinstance(obj.data, bpy.types.Armature):
         return []
 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    addon_prefs = bfu_addon_prefs.get_addon_preferences()
     sockets: List[bpy.types.Object] = []
 
     for socket in get_socket_desired_children(obj):

@@ -9,25 +9,23 @@
 
 
 import bpy
-from .. import bfu_basics
-from .. import bfu_utils
 from .. import bfu_ui
 from .. import bbpl
 from .. import bfu_skeletal_mesh
 from .. import bfu_alembic_animation
 from .. import bfu_camera
 from .. import bfu_export_control
-from .. import bfu_addon_prefs
+from .. import bfu_anim_action
+from .. bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum, BFU_AnimActionStartEndTimeEnum, BFU_AnimNamingTypeEnum
 
 
 def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.types.Object):
 
     scene = bpy.context.scene 
-    addon_prefs = bfu_addon_prefs.get_addon_prefs()
+    if scene is None:
+        return
 
     # Hide filters
-    if obj is None:
-        return
     if bfu_export_control.bfu_export_control_utils.is_not_export_recursive(obj):
         return
     is_skeletal_mesh = bfu_skeletal_mesh.bfu_skeletal_mesh_utils.is_skeletal_mesh(obj)
@@ -43,10 +41,12 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
             if panel:
                 if is_skeletal_mesh:
                     # Action list
-                    ActionListProperty = panel.column()
-                    ActionListProperty.prop(obj, 'bfu_anim_action_export_enum')
-                    if obj.bfu_anim_action_export_enum == "export_specific_list":
-                        ActionListProperty.template_list(
+                    action_list_property = panel.column()
+                    action_list_property.prop(obj, 'bfu_anim_action_export_enum')
+                    
+                    if bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj) == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_LIST:
+                        action_list_panel_box = panel.box()                        
+                        action_list_panel_box.template_list(
                             # type and unique id
                             "BFU_UL_ActionExportTarget", "",
                             # pointer to the CollectionProperty
@@ -56,26 +56,30 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                             maxrows=5,
                             rows=5
                         )
-                        UpdateObjActionList = ActionListProperty.row()
-                        UpdateObjActionList.operator(
-                            "object.updateobjactionlist",
-                            icon='RECOVER_LAST')
-                        SelectDeselectObjActionList = ActionListProperty.row()
-                        SelectDeselectObjActionList.operator("object.selectallobjactionlist")
-                        SelectDeselectObjActionList.operator("object.deselectallobjactionlist")
-                    if obj.bfu_anim_action_export_enum == "export_specific_prefix":
-                        ActionListProperty.prop(obj, 'bfu_prefix_name_to_export')
+                        update_obj_action_list = action_list_panel_box.row(align=True)
+                        update_obj_action_list.operator("object.updateobjactionlist", icon='RECOVER_LAST')
+                        update_obj_action_list.operator("object.clearobjactionlist", icon='X', text="")
+
+                        wm = context.window_manager
+                        action_list_panel_box.prop(wm, 'bfu_debug_show_action_list')
+
+                        select_deselect_obj_action_list = action_list_panel_box.row()
+                        select_deselect_obj_action_list.operator("object.selectallobjactionlist")
+                        select_deselect_obj_action_list.operator("object.deselectallobjactionlist")
+                    elif bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj) == BFU_AnimActionExportEnum.EXPORT_SPECIFIC_PREFIX:
+                        panel.prop(obj, 'bfu_prefix_name_to_export')
 
                 # Action Time
                 if obj.type != "CAMERA":
                     ActionTimeProperty = panel.column()
-                    ActionTimeProperty.enabled = obj.bfu_anim_action_export_enum != "dont_export"
+                    ActionTimeProperty.enabled = bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj) != BFU_AnimActionExportEnum.DONT_EXPORT
                     ActionTimeProperty.prop(obj, 'bfu_anim_action_start_end_time_enum')
-                    if obj.bfu_anim_action_start_end_time_enum == "with_customframes":
+                    
+                    if bfu_anim_action.bfu_anim_action_props.get_object_anim_action_start_end_time_enum(obj) == BFU_AnimActionStartEndTimeEnum.WITH_CUSTOMFRAMES:
                         OfsetTime = ActionTimeProperty.row()
                         OfsetTime.prop(obj, 'bfu_anim_action_custom_start_frame')
                         OfsetTime.prop(obj, 'bfu_anim_action_custom_end_frame')
-                    if obj.bfu_anim_action_start_end_time_enum != "with_customframes":
+                    if bfu_anim_action.bfu_anim_action_props.get_object_anim_action_start_end_time_enum(obj) != BFU_AnimActionStartEndTimeEnum.WITH_CUSTOMFRAMES:
                         OfsetTime = ActionTimeProperty.row()
                         OfsetTime.prop(obj, 'bfu_anim_action_start_frame_offset')
                         OfsetTime.prop(obj, 'bfu_anim_action_end_frame_offset')
@@ -90,8 +94,8 @@ def draw_ui(layout: bpy.types.UILayout, context: bpy.types.Context, obj: bpy.typ
                 # Nomenclature
                 if is_skeletal_mesh:
                     export_anim_naming = panel.column()
-                    export_anim_naming.enabled = obj.bfu_anim_action_export_enum != "dont_export"
+                    export_anim_naming.enabled = bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj) != BFU_AnimActionExportEnum.DONT_EXPORT
                     export_anim_naming.prop(obj, 'bfu_anim_naming_type')
-                    if obj.bfu_anim_naming_type == "include_custom_name":
+                    if bfu_anim_action.bfu_anim_action_props.get_object_anim_naming_type_enum(obj) == BFU_AnimNamingTypeEnum.INCLUDE_CUSTOM_NAME:
                         export_anim_naming_text = export_anim_naming.column()
                         export_anim_naming_text.prop(obj, 'bfu_anim_naming_custom')

@@ -85,7 +85,7 @@ class ProxyCopy_NLATrack:
             self.mute = nla_track.mute
             self.name = nla_track.name
             self.select = nla_track.select
-            self.strips = []
+            self.strips: List[ProxyCopy_NlaStrip] = []
             for strip in nla_track.strips:
                 self.strips.append(ProxyCopy_NlaStrip(strip))
 
@@ -162,7 +162,7 @@ class ProxyCopy_NlaStrip:
         nla_strip.influence = 0.5
         
         # I don't know why but when I set use_animated_influence or influence 
-        # it automaticaly add a key in the curve...
+        # it automatically adds a key in the curve...
         # This is why I override and not do a simple paste
         nla_strip.use_animated_influence = self.use_animated_influence
         for fcurve in self.fcurves:
@@ -560,7 +560,7 @@ class ProxyCopy_Constraint:
     It is used to safely copy Blender PoseBoneConstraints.
     """
 
-    def __init__(self, constraint):
+    def __init__(self, constraint: bpy.types.Constraint):
         """
         Initializes the ProxyCopy_Constraint object.
 

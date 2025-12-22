@@ -21,7 +21,7 @@ from ..bfu_assets_manager.bfu_asset_manager_type import AssetType
 
 def get_socket_in_desired_childs(obj: bpy.types.Object):
     socket_objs = []
-    for obj in bfu_utils.GetExportDesiredChilds(obj):
+    for obj in bfu_utils.get_export_desired_childs(obj):
         if fnmatch.fnmatchcase(obj.name, "SOCKET*"):
             socket_objs.append(obj)
     return socket_objs

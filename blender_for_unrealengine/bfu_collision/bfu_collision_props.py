@@ -22,10 +22,10 @@ def get_preset_values() -> List[str]:
     return preset_values
 
 def get_scene_object_collision_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_object_collision_properties_expanded.is_expend() # type: ignore
+    return scene.bfu_object_collision_properties_expanded.is_expanded() # type: ignore
 
 def get_scene_tools_collision_properties_expanded(scene: bpy.types.Scene) -> bool:
-    return scene.bfu_tools_collision_properties_expanded.is_expend() # type: ignore
+    return scene.bfu_tools_collision_properties_expanded.is_expanded() # type: ignore
 
 def get_scene_keep_original_geometry(scene: bpy.types.Scene) -> bool:
     return scene.bfu_keep_original_geometry_for_collision # type: ignore

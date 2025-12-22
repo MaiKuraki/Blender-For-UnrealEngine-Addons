@@ -11,7 +11,6 @@
 from typing import List, Set, TYPE_CHECKING, Tuple
 from enum import Enum
 import bpy
-from .. import bfu_basics
 from .. import bbpl
 from . import bfu_spline_utils
 from . import bfu_spline_write_paste_commands
@@ -61,7 +60,7 @@ class BFU_OT_CopyActivesplineOperator(bpy.types.Operator):
         if obj:
             result = bfu_spline_write_paste_commands.get_spline_unreal_clipboard([obj])
             if result[0]:
-                bfu_basics.set_windows_clipboard(result[1])
+                bbpl.basics.set_windows_clipboard(result[1])
                 self.report({'INFO'}, result[2])
             else:
                 self.report({'WARNING'}, result[2])
@@ -79,7 +78,7 @@ class BFU_OT_CopySelectedsplinesOperator(bpy.types.Operator):
         objs = context.selected_objects
         result = bfu_spline_write_paste_commands.get_spline_unreal_clipboard(objs)
         if result[0]:
-            bfu_basics.set_windows_clipboard(result[1])
+            bbpl.basics.set_windows_clipboard(result[1])
             self.report({'INFO'}, result[2])
         else:
             self.report({'WARNING'}, result[2])
@@ -111,7 +110,7 @@ class BFU_OT_ConvertAnyCurveToBezier(bpy.types.Operator):
     
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:  # type: ignore
-        # Cela appelle la boîte de dialogue permettant à l'utilisateur de modifier les propriétés avant l'exécution
+        # This calls the dialog allowing the user to modify properties before execution
         return context.window_manager.invoke_props_dialog(self)  # type: ignore
 
         return {'FINISHED'}

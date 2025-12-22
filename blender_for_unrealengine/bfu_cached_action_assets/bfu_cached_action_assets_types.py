@@ -24,6 +24,7 @@ from .. import bfu_export_filter
 from .. import bfu_anim_action
 from ..bfu_anim_action.bfu_anim_action_props import BFU_AnimActionExportEnum
 from .. import bfu_debug_settings
+from .. import bfu_anim_nla
 
 class CachedActionObjectInfo():
     def __init__(self) -> None:
@@ -53,7 +54,7 @@ class CachedActionArmatureInfo():
         else:
             self.armature_bone_count = 0
         self.export_as_lod_mesh = obj.bfu_export_as_lod_mesh  # type: ignore[attr-defined]
-        self.anim_nla_use = obj.bfu_anim_nla_use  # type: ignore[attr-defined]
+        self.anim_nla_use = bfu_anim_nla.bfu_anim_nla_props.get_object_anim_nla_use(obj)
         self.export_skeletal_mesh_as_static_mesh = obj.bfu_export_skeletal_mesh_as_static_mesh  # type: ignore[attr-defined]
         self.action_export_enum = bfu_anim_action.bfu_anim_action_props.get_object_anim_action_export_enum(obj)
 
@@ -64,7 +65,7 @@ class CachedActionArmatureInfo():
             return False
         if self.export_as_lod_mesh != obj.bfu_export_as_lod_mesh:  # type: ignore[attr-defined]
             return False
-        if self.anim_nla_use != obj.bfu_anim_nla_use:  # type: ignore[attr-defined]
+        if self.anim_nla_use != bfu_anim_nla.bfu_anim_nla_props.get_object_anim_nla_use(obj):
             return False
         if self.export_skeletal_mesh_as_static_mesh != obj.bfu_export_skeletal_mesh_as_static_mesh:  # type: ignore[attr-defined]
             return False
