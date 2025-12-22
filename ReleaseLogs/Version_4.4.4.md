@@ -10,3 +10,4 @@ Release Logs: https://github.com/xavier150/Blender-For-UnrealEngine-Addons/wiki/
 - Fixed: Custom FBX exporter don't load in Blender 2.80 to 2.82.
 - Fixed: Update Action List button cached already cached actions from library files. The the action list contains doubled items.
 - Fixed: When export a skeletal mesh with modular parts set in a linked object, the export produce a script fail.
+- Fixed: pose_position of armature is not reset after export when exporting as skeletal mesh from a library file.

@@ -140,7 +140,7 @@ def export_as_skeletal_mesh(
 
     # Set rename temporarily the Armature as "Armature"
     bfu_utils.disable_all_bones_consraints(active)
-    bpy.context.object.data.pose_position = 'REST'  # type: ignore
+    armature_rest_pose_data = bfu_export.bfu_export_utils.set_armature_to_rest_pose(active)
     bfu_export.bfu_export_utils.ConvertArmatureConstraintToModifiers(active)
 
     # [PREPARE SCENE FOR EXPORT]
@@ -265,13 +265,17 @@ def export_as_skeletal_mesh(
     bfu_export.bfu_export_utils.reset_sockets_export_name(active)
     bfu_export.bfu_export_utils.reset_sockets_transform(active)
     
-    if not is_library:
+    if is_library:
+        armature_rest_pose_data.reset_armature_pose_position()
+    else:
         bfu_utils.clean_delete_objects(bpy.context.selected_objects)
 
         for data in duplicate_data.data_to_remove:
             data.remove_data()
 
         duplicate_data.reset_duplicate_name_after_export()
+
+        
 
     for obj in scene.objects:
         bfu_utils.clear_all_bfu_temp_vars(obj)

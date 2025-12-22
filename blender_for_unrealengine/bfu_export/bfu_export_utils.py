@@ -779,3 +779,42 @@ def get_static_axis_conversion(obj: bpy.types.Object) -> mathutils.Matrix:
     except Exception as e:
         print(f"For asset \"{obj.name}\" : {e}")
         return axis_conversion("-Z", "Y").to_4x4()
+    
+class ArmatureRestPoseData():
+    def __init__(self, obj: bpy.types.Object):
+        self.previous_pose_position: str = ''
+        self.obj: bpy.types.Object = obj
+
+        if isinstance(obj.data, bpy.types.Armature):
+            self.previous_pose_position = obj.data.pose_position
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def set_armature_to_rest_pose(self):
+        if isinstance(self.obj.data, bpy.types.Armature):
+            self.previous_pose_position = self.obj.data.pose_position
+            self.obj.data.pose_position = 'REST'
+            
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def set_armature_to_pose_position(self):
+        if isinstance(self.obj.data, bpy.types.Armature):
+            self.previous_pose_position = self.obj.data.pose_position
+            self.obj.data.pose_position = 'POSE'
+        else:
+            raise ValueError("The provided object is not an armature.")
+        
+    def reset_armature_pose_position(self):
+        if isinstance(self.obj.data, bpy.types.Armature):
+            self.obj.data.pose_position = self.previous_pose_position # type: ignore
+        else:
+            raise ValueError("The provided object is not an armature.")
+
+def set_armature_to_rest_pose(obj: bpy.types.Object) -> ArmatureRestPoseData:
+    # Set armature to rest pose for export
+    # Return ArmatureRestPoseData for reset after export
+    armature_rest_pose_data = ArmatureRestPoseData(obj)
+    armature_rest_pose_data.set_armature_to_rest_pose()
+    return armature_rest_pose_data
+    
